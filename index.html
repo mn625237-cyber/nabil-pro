@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0f1e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nabil Pro">
+<title>Nabil Pro 🛵</title>
+<link id="manifest-link" rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+<!-- ======= FIREBASE SDK ======= -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<style>
+/* ==============================
+   DESIGN SYSTEM - MOTORSPORT DARK
+   ============================== */
+:root {
+  --bg: #0a0f1e;
+  --bg2: #111827;
+  --bg3: #1a2236;
+  --card: rgba(17,24,39,0.95);
+  --card-border: rgba(255,255,255,0.07);
+  --text: #f1f5f9;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --primary: #f97316;
+  --primary-dark: #c2410c;
+  --primary-glow: rgba(249,115,22,0.15);
+  --primary-glow2: rgba(249,115,22,0.08);
+  --success: #22c55e;
+  --success-glow: rgba(34,197,94,0.15);
+  --danger: #ef4444;
+  --danger-glow: rgba(239,68,68,0.12);
+  --visa: #818cf8;
+  --visa-glow: rgba(129,140,248,0.15);
+  --cash: #22c55e;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
+  --glow-primary: 0 0 30px rgba(249,115,22,0.2);
+  --nav-h: 68px;
+  --header-h: 62px;
+}
+[data-theme="light"] {
+  --bg: #f0f4f8;
+  --bg2: #ffffff;
+  --bg3: #e8edf3;
+  --card: rgba(255,255,255,0.95);
+  --card-border: rgba(0,0,0,0.06);
+  --text: #0f172a;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --primary-glow: rgba(249,115,22,0.1);
+  --primary-glow2: rgba(249,115,22,0.06);
+  --shadow: 0 8px 32px rgba(0,0,0,0.1);
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body, .header, .bottom-nav, .card, .stat-card, .order-card, .welcome,
+.nav-item, .btn, .icon-btn, .rest-chip, .select-opt, .filter-chip,
+.amount-tag, .report-row, .section-title, .modal-title {
+  -webkit-user-select: none; user-select: none;
+}
+input, textarea { -webkit-user-select: text; user-select: text; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* === LOADING SCREEN === */
+#loadingScreen {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 20px;
+}
+.loading-logo {
+  animation: logoPulse 2s ease-in-out infinite;
+}
+@keyframes logoPulse {
+  0%,100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(249,115,22,0.3)); }
+  50% { transform: scale(1.05); filter: drop-shadow(0 0 40px rgba(249,115,22,0.6)); }
+}
+.loading-bar {
+  width: 160px; height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden;
+}
+.loading-bar-inner {
+  height: 100%; background: linear-gradient(90deg, var(--primary), #fbbf24);
+  border-radius: 2px; animation: loadBar 2s ease infinite;
+}
+@keyframes loadBar {
+  0% { width: 0%; } 70% { width: 100%; } 100% { width: 100%; opacity: 0; }
+}
+.loading-text {
+  font-size: 14px; font-weight: 700; color: var(--text2);
+}
+
+/* === FIREBASE SETUP MODAL === */
+#setupModal {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--bg);
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+#setupModal.show { display: flex; }
+.setup-card {
+  width: 100%; max-width: 400px;
+  background: var(--bg2); border: 1px solid var(--card-border);
+  border-radius: var(--radius); padding: 24px;
+  box-shadow: var(--shadow);
+}
+.setup-logo { text-align: center; margin-bottom: 20px; }
+.setup-title { font-size: 20px; font-weight: 900; text-align: center; margin-bottom: 8px; }
+.setup-sub { font-size: 13px; color: var(--text2); text-align: center; margin-bottom: 20px; line-height: 1.8; }
+.setup-note {
+  background: var(--primary-glow); border: 1px solid var(--primary);
+  border-radius: 12px; padding: 12px; font-size: 12px;
+  color: var(--primary); line-height: 1.8; margin-bottom: 20px;
+}
+
+/* === HEADER === */
+.header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--header-h);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--card-border);
+  padding: 0 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  backdrop-filter: blur(10px);
+}
+.header-logo { display: flex; align-items: center; gap: 10px; }
+.header-title {
+  font-size: 21px; font-weight: 900;
+  background: linear-gradient(135deg, var(--primary) 0%, #fbbf24 60%, var(--primary) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.header-actions { display: flex; gap: 8px; align-items: center; }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: var(--bg3); color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 18px; transition: all 0.2s;
+  position: relative;
+}
+.icon-btn:active { transform: scale(0.88); }
+.online-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 6px var(--success);
+}
+.offline-dot { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+
+/* === SWIPE CONTAINER === */
+.swipe-container {
+  position: fixed;
+  top: var(--header-h);
+  bottom: var(--nav-h);
+  left: 0; right: 0;
+  overflow: hidden;
+}
+.pages-wrapper {
+  display: flex;
+  width: 400%;
+  height: 100%;
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+.pages-wrapper.no-transition { transition: none; }
+.page {
+  width: 25%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 16px 20px;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+/* scrollbar hide */
+.page::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+.page { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* === PAGE INDICATOR === */
+.page-indicator {
+  position: fixed;
+  top: calc(var(--header-h) + 8px);
+  left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 50;
+  pointer-events: none;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 3px;
+  background: var(--text2); transition: all 0.3s;
+}
+.dot.active { width: 18px; background: var(--primary); }
+
+/* === BOTTOM NAV === */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  height: var(--nav-h);
+  background: var(--bg2);
+  border-top: 1px solid var(--card-border);
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+  backdrop-filter: blur(10px);
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; padding: 8px 4px; cursor: pointer; transition: all 0.2s;
+  color: var(--text2); font-size: 10px; font-weight: 700;
+  position: relative;
+}
+.nav-item.active { color: var(--primary); }
+.nav-item svg { width: 22px; height: 22px; transition: transform 0.2s; }
+.nav-item.active svg { transform: scale(1.15); }
+.nav-pip {
+  position: absolute; top: 6px;
+  width: 4px; height: 4px; border-radius: 2px;
+  background: var(--primary); opacity: 0; transition: opacity 0.2s;
+}
+.nav-item.active .nav-pip { opacity: 1; }
+
+/* === CARDS === */
+.card {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
+}
+
+/* === WELCOME BANNER === */
+.welcome {
+  border-radius: var(--radius); padding: 20px; margin-bottom: 14px;
+  background: linear-gradient(135deg, #1a1008 0%, #2a1505 40%, #1a0f08 100%);
+  border: 1px solid rgba(249,115,22,0.3);
+  position: relative; overflow: hidden;
+}
+.welcome::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 80% 50%, rgba(249,115,22,0.15) 0%, transparent 70%);
+}
+[data-theme="light"] .welcome {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 40%, #fff7ed 100%);
+  border-color: rgba(249,115,22,0.2);
+}
+.welcome-content { position: relative; }
+.welcome-name { font-size: 20px; font-weight: 900; color: var(--text); }
+.welcome-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.welcome-time {
+  font-size: 32px; font-weight: 900; color: var(--primary);
+  margin-top: 6px; font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 20px rgba(249,115,22,0.4);
+}
+.welcome-vespa {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  opacity: 0.15;
+}
+[data-theme="light"] .welcome-vespa { opacity: 0.1; }
+
+/* === DASH GRID === */
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--radius); padding: 16px;
+  display: flex; flex-direction: column; gap: 6px;
+  position: relative; overflow: hidden;
+  transition: transform 0.2s;
+}
+.stat-card:active { transform: scale(0.97); }
+.stat-card::before {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px; transition: opacity 0.3s;
+}
+.stat-card.s-orders::before { background: var(--primary); }
+.stat-card.s-profit::before { background: var(--success); }
+.stat-card.s-cash::before { background: #fbbf24; }
+.stat-card.s-visa::before { background: var(--visa); }
+.stat-icon { font-size: 22px; }
+.stat-label { font-size: 11px; color: var(--text2); font-weight: 600; }
+.stat-value {
+  font-size: 24px; font-weight: 900;
+  animation: countUp 0.4s ease-out;
+}
+@keyframes countUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.stat-value.orange { color: var(--primary); }
+.stat-value.profit { color: var(--success); }
+.stat-value.yellow { color: #fbbf24; }
+.stat-value.viola { color: var(--visa); }
+
+/* === SECTION TITLE === */
+.section-title {
+  font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--card-border);
+}
+.divider { height: 1px; background: var(--card-border); margin: 12px 0; }
+
+/* === FORM === */
+.form-group { margin-bottom: 14px; }
+.form-label {
+  font-size: 12px; font-weight: 800; color: var(--text2);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.form-input {
+  width: 100%; padding: 13px 16px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--card-border); background: var(--bg3);
+  color: var(--text); font-family: 'Cairo', sans-serif; font-size: 15px;
+  outline: none; transition: all 0.25s;
+  -webkit-appearance: none;
+}
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow2);
+  background: var(--bg2);
+}
+.form-input::placeholder { color: var(--text2); }
+.input-voice-row { display: flex; gap: 8px; align-items: center; }
+.input-voice-row .form-input { flex: 1; }
+.voice-btn {
+  width: 48px; height: 48px; border-radius: var(--radius-sm); border: none;
+  background: var(--primary-glow); color: var(--primary);
+  font-size: 20px; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; transition: all 0.2s; flex-shrink: 0;
+}
+.voice-btn.recording {
+  background: var(--danger-glow); color: var(--danger);
+  animation: recPulse 1s ease-in-out infinite;
+}
+@keyframes recPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+}
+
+/* === SELECT === */
+.select-row { display: flex; gap: 8px; }
+.select-opt {
+  flex: 1; padding: 13px 8px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--card-border); background: var(--bg3);
+  color: var(--text); font-family: 'Cairo', sans-serif; font-size: 13px;
+  font-weight: 800; cursor: pointer; text-align: center; transition: all 0.25s;
+}
+.select-opt.active.cash { border-color: var(--success); background: var(--success-glow); color: var(--success); }
+.select-opt.active.visa { border-color: var(--visa); background: var(--visa-glow); color: var(--visa); }
+.select-opt.active.orange { border-color: var(--primary); background: var(--primary-glow); color: var(--primary); }
+
+/* === REST CHIPS === */
+.rest-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rest-chip {
+  padding: 9px 16px; border-radius: 24px; border: 1.5px solid var(--card-border);
+  background: var(--bg3); color: var(--text3); font-family: 'Cairo', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.rest-chip.active {
+  border-color: var(--primary); background: var(--primary-glow);
+  color: var(--primary); box-shadow: 0 0 12px var(--primary-glow);
+}
+
+/* === BUTTONS === */
+.btn {
+  width: 100%; padding: 14px; border-radius: var(--radius-sm); border: none;
+  font-family: 'Cairo', sans-serif; font-size: 15px; font-weight: 800;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center;
+  justify-content: center; gap: 8px; letter-spacing: 0.3px;
+}
+.btn:active { transform: scale(0.96); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, #fb923c 100%);
+  color: white; box-shadow: 0 4px 20px rgba(249,115,22,0.3);
+}
+.btn-primary:active { box-shadow: 0 2px 10px rgba(249,115,22,0.2); }
+.btn-whatsapp {
+  background: linear-gradient(135deg, #25d366 0%, #1da851 100%);
+  color: white; box-shadow: 0 4px 20px rgba(37,211,102,0.25);
+}
+.btn-outline {
+  background: transparent; border: 1.5px solid var(--card-border); color: var(--text);
+}
+.btn-danger {
+  background: var(--danger-glow); color: var(--danger);
+  border: 1.5px solid rgba(239,68,68,0.3);
+}
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+
+/* === ORDER CARDS === */
+.order-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--radius); padding: 14px; margin-bottom: 10px;
+  border-right: 3px solid var(--primary);
+  animation: slideIn 0.3s ease;
+}
+.order-card.visa-card { border-right-color: var(--visa); }
+@keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.order-rest { font-size: 14px; font-weight: 800; color: var(--primary); }
+.order-time { font-size: 10px; color: var(--text2); font-weight: 600; }
+.order-address { font-size: 13px; color: var(--text); margin-bottom: 4px; line-height: 1.5; }
+.order-phone { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+.order-amounts { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.amount-tag {
+  padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; white-space: nowrap;
+}
+.tag-total { background: var(--primary-glow); color: var(--primary); }
+.tag-delivery { background: var(--success-glow); color: var(--success); }
+.tag-rest { background: rgba(148,163,184,0.1); color: var(--text2); }
+.tag-visa { background: var(--visa-glow); color: var(--visa); }
+.tag-cash { background: var(--success-glow); color: var(--success); }
+.order-actions { display: flex; gap: 8px; }
+.small-btn {
+  flex: 1; padding: 8px 4px; border-radius: 10px; border: none;
+  font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+}
+.small-btn:active { transform: scale(0.93); }
+.small-btn.edit { background: var(--primary-glow); color: var(--primary); }
+.small-btn.del { background: var(--danger-glow); color: var(--danger); }
+.small-btn.wa { background: rgba(37,211,102,0.1); color: #25d366; }
+
+/* === FILTER === */
+.filter-row {
+  display: flex; gap: 8px; margin-bottom: 14px;
+  overflow-x: auto; padding-bottom: 4px;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-chip {
+  padding: 7px 16px; border-radius: 24px; white-space: nowrap;
+  border: 1.5px solid var(--card-border); background: var(--bg3);
+  color: var(--text2); font-family: 'Cairo', sans-serif;
+  font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.filter-chip.active {
+  border-color: var(--primary); background: var(--primary-glow);
+  color: var(--primary);
+}
+
+/* === MODAL === */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.75);
+  display: none; align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  width: 100%; background: var(--bg2);
+  border-radius: 24px 24px 0 0;
+  padding: 20px 16px max(24px, env(safe-area-inset-bottom));
+  max-height: 90vh; overflow-y: auto;
+  animation: slideUp 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-top: 1px solid var(--card-border);
+}
+@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-handle {
+  width: 40px; height: 4px; border-radius: 2px;
+  background: var(--card-border); margin: 0 auto 18px;
+}
+.modal-title { font-size: 18px; font-weight: 900; margin-bottom: 16px; }
+
+/* === TOAST === */
+.toast {
+  position: fixed; bottom: calc(var(--nav-h) + 10px); left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: var(--bg);
+  padding: 10px 22px; border-radius: 24px;
+  font-size: 13px; font-weight: 800; z-index: 300;
+  opacity: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none; white-space: nowrap; max-width: 90vw;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* === REPORT === */
+.report-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid var(--card-border);
+}
+.report-row:last-child { border-bottom: none; }
+.report-key { font-size: 13px; color: var(--text2); }
+.report-val { font-size: 14px; font-weight: 800; }
+.report-val.green { color: var(--success); }
+.report-val.orange { color: var(--primary); }
+.report-val.purple { color: var(--visa); }
+
+/* === SETTINGS === */
+.rest-item {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm); padding: 14px; margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.2s;
+}
+.rest-name { font-size: 14px; font-weight: 700; }
+.rest-toggle {
+  width: 48px; height: 27px; border-radius: 14px; background: var(--bg3);
+  border: none; cursor: pointer; position: relative; transition: background 0.3s;
+  flex-shrink: 0;
+}
+.rest-toggle.on { background: var(--primary); }
+.rest-toggle::after {
+  content: ''; position: absolute; width: 21px; height: 21px;
+  border-radius: 50%; background: white;
+  top: 3px; right: 3px; transition: transform 0.3s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.rest-toggle.on::after { transform: translateX(-21px); }
+.add-rest-form { display: flex; gap: 8px; margin-bottom: 14px; }
+.add-rest-form .form-input { flex: 1; }
+.add-btn {
+  padding: 12px 18px; border-radius: var(--radius-sm); border: none;
+  background: var(--primary); color: white;
+  font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 800;
+  cursor: pointer; white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.3);
+  transition: all 0.2s;
+}
+.add-btn:active { transform: scale(0.95); }
+.trash-btn {
+  width: 36px; height: 36px; border-radius: 9px; border: none;
+  background: var(--danger-glow); color: var(--danger);
+  font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.trash-btn:active { transform: scale(0.9); }
+
+/* === EMPTY STATE === */
+.empty {
+  text-align: center; padding: 50px 20px; color: var(--text2);
+}
+.empty-icon { font-size: 52px; margin-bottom: 14px; }
+.empty-text { font-size: 15px; font-weight: 700; }
+.empty-sub { font-size: 13px; margin-top: 6px; opacity: 0.7; }
+
+/* === FIREBASE STATUS === */
+.firebase-status {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 12px;
+  background: var(--success-glow); border: 1px solid rgba(34,197,94,0.3);
+  font-size: 12px; font-weight: 700; color: var(--success);
+  margin-bottom: 12px;
+}
+.firebase-status.offline {
+  background: var(--danger-glow); border-color: rgba(239,68,68,0.3); color: var(--danger);
+}
+.firebase-status.syncing {
+  background: var(--primary-glow); border-color: rgba(249,115,22,0.3); color: var(--primary);
+}
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: currentColor;
+  flex-shrink: 0;
+}
+.status-dot.pulse { animation: dotPulse 1.5s ease-in-out infinite; }
+@keyframes dotPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* === PAYMENT NOTE === */
+.payment-note {
+  background: var(--visa-glow); border: 1px solid rgba(129,140,248,0.3);
+  border-radius: var(--radius-sm); padding: 12px;
+  font-size: 13px; color: var(--visa); line-height: 1.7;
+}
+
+/* === PROGRESS BAR === */
+.shift-progress {
+  height: 6px; background: var(--bg3); border-radius: 3px; margin-top: 8px; overflow: hidden;
+}
+.shift-bar {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--primary), #fbbf24);
+  transition: width 0.5s ease;
+}
+
+/* === SYNC INDICATOR === */
+.sync-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 8px;
+  background: var(--primary-glow); color: var(--primary);
+  font-size: 10px; font-weight: 700; animation: syncSpin 1s linear infinite;
+}
+@keyframes syncSpin { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+/* === DRIVER CHIP === */
+.driver-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 14px;
+  background: var(--bg3); border: 1px solid var(--card-border);
+  margin-bottom: 12px;
+}
+.driver-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--primary-glow); border: 2px solid var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.driver-info { flex: 1; }
+.driver-name { font-size: 14px; font-weight: 800; }
+.driver-sub { font-size: 11px; color: var(--text2); }
+
+/* === ANIMATIONS === */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeInUp 0.35s ease both; }
+.fade-in-1 { animation-delay: 0.05s; }
+.fade-in-2 { animation-delay: 0.1s; }
+.fade-in-3 { animation-delay: 0.15s; }
+.fade-in-4 { animation-delay: 0.2s; }
+</style>
+</head>
+
+<body data-theme="dark">
+
+<!-- ========================= LOADING SCREEN ========================= -->
+<div id="loadingScreen">
+  <div class="loading-logo">
+    <svg width="80" height="80" viewBox="0 0 80 80">
+      <!-- Vespa/Scooter Logo SVG -->
+      <circle cx="40" cy="40" r="38" fill="none" stroke="rgba(249,115,22,0.2)" stroke-width="1.5"/>
+      <circle cx="40" cy="40" r="30" fill="none" stroke="rgba(249,115,22,0.1)" stroke-width="1"/>
+      <!-- Scooter body -->
+      <ellipse cx="42" cy="38" rx="18" ry="10" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Handlebars -->
+      <path d="M52 30 L58 26" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M56 24 L62 24" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Seat -->
+      <path d="M36 30 Q40 27 48 30" stroke="#fbbf24" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Front wheel -->
+      <circle cx="58" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
+      <circle cx="58" cy="48" r="3" fill="#f97316" opacity="0.5"/>
+      <!-- Rear wheel -->
+      <circle cx="24" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
+      <circle cx="24" cy="48" r="3" fill="#f97316" opacity="0.5"/>
+      <!-- Exhaust -->
+      <path d="M24 44 L18 46 L14 44" stroke="#f97316" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Delivery box -->
+      <rect x="26" y="32" width="12" height="9" rx="2" fill="none" stroke="#fbbf24" stroke-width="2"/>
+      <path d="M26 36 L38 36" stroke="#fbbf24" stroke-width="1" opacity="0.6"/>
+    </svg>
+  </div>
+  <div class="loading-bar"><div class="loading-bar-inner"></div></div>
+  <div class="loading-text">جاري التحميل...</div>
+</div>
+
+<!-- ========================= FIREBASE SETUP ========================= -->
+<div id="setupModal">
+  <div class="setup-card">
+    <div class="setup-logo">
+      <svg width="60" height="60" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="38" fill="rgba(249,115,22,0.1)" stroke="rgba(249,115,22,0.3)" stroke-width="1.5"/>
+        <ellipse cx="42" cy="38" rx="18" ry="10" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M52 30 L58 26" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M56 24 L62 24" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="58" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
+        <circle cx="24" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
+        <rect x="26" y="32" width="12" height="9" rx="2" fill="none" stroke="#fbbf24" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="setup-title">🔥 إعداد Firebase</div>
+    <div class="setup-sub">لازم تضيف بيانات Firebase الخاصة بيك عشان التطبيق يشتغل ويحفظ بياناتك في الكلاود</div>
+    <div class="setup-note">
+      📋 الخطوات:<br>
+      1. روح console.firebase.google.com<br>
+      2. أنشئ مشروع جديد أو افتح مشروعك<br>
+      3. Project Settings → Your Apps → Add Web App<br>
+      4. انسخ الـ config وحطه في الكود (مكانه مشار إليه بـ YOUR_)<br>
+      5. فعّل Firestore Database من قائمة Build
+    </div>
+    <div class="form-group">
+      <label class="form-label">👤 اسم السائق</label>
+      <input type="text" class="form-input" id="setupDriverName" placeholder="نابل - مندوب دليفري">
+    </div>
+    <button class="btn btn-primary" onclick="saveSetup()">🚀 ابدأ</button>
+  </div>
+</div>
+
+<!-- ========================= HEADER ========================= -->
+<div class="header">
+  <div class="header-logo">
+    <!-- Vespa Logo Mini -->
+    <svg width="32" height="32" viewBox="0 0 80 80" style="flex-shrink:0">
+      <circle cx="40" cy="40" r="38" fill="rgba(249,115,22,0.12)" stroke="rgba(249,115,22,0.3)" stroke-width="1.5"/>
+      <ellipse cx="42" cy="38" rx="18" ry="10" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M52 30 L58 26" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M56 24 L62 24" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="58" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
+      <circle cx="24" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
+      <rect x="26" y="32" width="12" height="9" rx="2" fill="none" stroke="#fbbf24" stroke-width="2"/>
+    </svg>
+    <div class="header-title">Nabil Pro</div>
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" id="installBtn" onclick="showInstallGuide()" title="تثبيت التطبيق" style="display:none">📲</button>
+    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="تغيير الثيم">🌙</button>
+    <button class="icon-btn" id="syncBtn" title="حالة الاتصال" style="position:relative">
+      🔥
+      <span class="online-dot" id="onlineDot"></span>
+    </button>
+  </div>
+</div>
+
+<!-- ========================= PAGE INDICATOR ========================= -->
+<div class="page-indicator">
+  <div class="dot active" id="dot-0"></div>
+  <div class="dot" id="dot-1"></div>
+  <div class="dot" id="dot-2"></div>
+  <div class="dot" id="dot-3"></div>
+</div>
+
+<!-- ========================= SWIPE PAGES ========================= -->
+<div class="swipe-container" id="swipeContainer">
+  <div class="pages-wrapper" id="pagesWrapper">
+
+    <!-- PAGE 0: HOME -->
+    <div class="page" id="page-home">
+      <div class="welcome fade-in">
+        <!-- Background Vespa -->
+        <svg class="welcome-vespa" width="120" height="80" viewBox="0 0 80 80">
+          <ellipse cx="42" cy="38" rx="18" ry="10" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          <path d="M52 30 L58 26" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          <path d="M56 24 L62 24" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="58" cy="48" r="8" fill="none" stroke="white" stroke-width="3"/>
+          <circle cx="24" cy="48" r="8" fill="none" stroke="white" stroke-width="3"/>
+          <rect x="26" y="32" width="12" height="9" rx="2" fill="none" stroke="white" stroke-width="2.5"/>
+        </svg>
+        <div class="welcome-content">
+          <div class="welcome-name" id="welcomeGreet">مرحباً 👋</div>
+          <div class="welcome-sub" id="driverNameDisplay">مندوب دليفري</div>
+          <div class="welcome-time" id="welcomeTime">00:00</div>
+        </div>
+      </div>
+
+      <!-- Firebase Status -->
+      <div class="firebase-status syncing fade-in fade-in-1" id="fbStatus">
+        <div class="status-dot pulse"></div>
+        <span id="fbStatusText">جاري الاتصال بـ Firebase...</span>
+      </div>
+
+      <div class="dash-grid">
+        <div class="stat-card s-orders fade-in fade-in-1">
+          <div class="stat-icon">📦</div>
+          <div class="stat-label">أوردرات اليوم</div>
+          <div class="stat-value orange" id="stat-orders">0</div>
+        </div>
+        <div class="stat-card s-profit fade-in fade-in-2">
+          <div class="stat-icon">💰</div>
+          <div class="stat-label">أرباح التوصيل</div>
+          <div class="stat-value profit" id="stat-profit">0 ج</div>
+        </div>
+        <div class="stat-card s-cash fade-in fade-in-3">
+          <div class="stat-icon">💵</div>
+          <div class="stat-label">تحصيل كاش</div>
+          <div class="stat-value yellow" id="stat-cash">0 ج</div>
+        </div>
+        <div class="stat-card s-visa fade-in fade-in-4">
+          <div class="stat-icon">💳</div>
+          <div class="stat-label">فيزا (أكسب)</div>
+          <div class="stat-value viola" id="stat-visa-earn">0 ج</div>
+        </div>
+      </div>
+
+      <div class="card fade-in">
+        <div class="section-title">📊 تقرير الشيفت</div>
+        <div id="shiftReport">
+          <div style="color:var(--text2);font-size:13px;text-align:center;padding:10px;">
+            لا أوردرات اليوم بعد
+          </div>
+        </div>
+      </div>
+
+      <div class="card fade-in">
+        <div class="section-title">⚡ آخر الأوردرات</div>
+        <div id="recentOrders">
+          <div class="empty" style="padding:20px">
+            <div class="empty-icon">🛵</div>
+            <div class="empty-text">استنى الأوردر الأول</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 1: ADD ORDER -->
+    <div class="page" id="page-add">
+      <div class="section-title">➕ أوردر جديد</div>
+
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">🏪 المطعم</label>
+          <div class="rest-chips" id="restChips"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">📍 العنوان</label>
+          <div class="input-voice-row">
+            <input type="text" class="form-input" id="inp-address" placeholder="حي / شارع / علامة مميزة">
+            <button class="voice-btn" onclick="startVoice('inp-address', this)">🎙️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">📱 موبايل العميل</label>
+          <div class="input-voice-row">
+            <input type="tel" class="form-input" id="inp-phone" placeholder="01xxxxxxxxx">
+            <button class="voice-btn" onclick="startVoice('inp-phone', this)">🎙️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">💰 ثمن الأوردر (شامل التوصيل)</label>
+          <div class="input-voice-row">
+            <input type="number" class="form-input" id="inp-total" placeholder="500" inputmode="numeric">
+            <button class="voice-btn" onclick="startVoice('inp-total', this)">🎙️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">🛵 رسوم التوصيل (أرباحك)</label>
+          <div class="input-voice-row">
+            <input type="number" class="form-input" id="inp-delivery" placeholder="100" inputmode="numeric">
+            <button class="voice-btn" onclick="startVoice('inp-delivery', this)">🎙️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">💳 طريقة الدفع</label>
+          <div class="select-row">
+            <button class="select-opt active cash" id="opt-cash" onclick="selectPayment('cash')">💵 كاش</button>
+            <button class="select-opt" id="opt-visa" onclick="selectPayment('visa')">💳 فيزا مسبق</button>
+          </div>
+        </div>
+
+        <div id="paymentNote" style="display:none;margin-bottom:14px;"></div>
+      </div>
+
+      <button class="btn btn-primary" id="saveOrderBtn" onclick="saveOrder()" style="margin-bottom:10px">
+        💾 حفظ الأوردر
+      </button>
+      <button class="btn btn-whatsapp" onclick="sendWhatsapp()" style="margin-bottom:10px">
+        📲 إرسال واتساب
+      </button>
+      <button class="btn btn-outline" onclick="clearForm()">
+        🗑️ مسح الفورم
+      </button>
+    </div>
+
+    <!-- PAGE 2: RECORDS -->
+    <div class="page" id="page-records">
+      <div class="section-title">📋 السجلات</div>
+      <div class="filter-row">
+        <button class="filter-chip active" onclick="filterOrders('all', this)">الكل</button>
+        <button class="filter-chip" onclick="filterOrders('today', this)">اليوم</button>
+        <button class="filter-chip" onclick="filterOrders('week', this)">الأسبوع</button>
+        <button class="filter-chip" onclick="filterOrders('cash', this)">كاش</button>
+        <button class="filter-chip" onclick="filterOrders('visa', this)">فيزا</button>
+      </div>
+      <div id="ordersList"></div>
+    </div>
+
+    <!-- PAGE 3: SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="section-title">⚙️ الإعدادات</div>
+
+      <!-- Driver Info -->
+      <div class="driver-chip card" id="driverChip" style="margin-bottom:12px;">
+        <div class="driver-avatar">🛵</div>
+        <div class="driver-info">
+          <div class="driver-name" id="settingsDriverName">—</div>
+          <div class="driver-sub">مندوب دليفري نشط</div>
+        </div>
+      </div>
+
+      <!-- Restaurants -->
+      <div class="card">
+        <div class="section-title">🏪 إدارة المطاعم</div>
+        <div class="add-rest-form">
+          <input type="text" class="form-input" id="newRestName" placeholder="اسم المطعم الجديد">
+          <button class="add-btn" onclick="addRestaurant()">+ إضافة</button>
+        </div>
+        <div id="restList"></div>
+      </div>
+
+      <!-- Theme -->
+      <div class="card">
+        <div class="section-title">🎨 المظهر</div>
+        <div class="select-row">
+          <button class="select-opt" id="theme-auto" onclick="setThemeMode('auto')">تلقائي</button>
+          <button class="select-opt active orange" id="theme-dark" onclick="setThemeMode('dark')">داكن</button>
+          <button class="select-opt" id="theme-light" onclick="setThemeMode('light')">فاتح</button>
+        </div>
+      </div>
+
+      <!-- Firebase Info -->
+      <div class="card">
+        <div class="section-title">🔥 Firebase</div>
+        <div id="fbInfo" style="font-size:13px;color:var(--text2);line-height:2;"></div>
+      </div>
+
+      <!-- Data Management -->
+      <div class="card">
+        <div class="section-title">🗑️ إدارة البيانات</div>
+        <button class="btn btn-danger" onclick="clearTodayOrders()" style="margin-bottom:10px">
+          حذف أوردرات اليوم
+        </button>
+        <button class="btn btn-outline" onclick="clearAllOrders()">
+          حذف كل الأوردرات
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /pages-wrapper -->
+</div><!-- /swipe-container -->
+
+<!-- ========================= TOAST ========================= -->
+<div class="toast" id="toast"></div>
+
+<!-- ========================= BOTTOM NAV ========================= -->
+<nav class="bottom-nav">
+  <div class="nav-item active" id="nav-0" onclick="goPage(0)">
+    <div class="nav-pip"></div>
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6"/>
+    </svg>
+    الرئيسية
+  </div>
+  <div class="nav-item" id="nav-1" onclick="goPage(1)">
+    <div class="nav-pip"></div>
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path d="M12 4v16m8-8H4"/>
+    </svg>
+    أوردر
+  </div>
+  <div class="nav-item" id="nav-2" onclick="goPage(2)">
+    <div class="nav-pip"></div>
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+    </svg>
+    السجلات
+  </div>
+  <div class="nav-item" id="nav-3" onclick="goPage(3)">
+    <div class="nav-pip"></div>
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+      <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+    </svg>
+    الإعدادات
+  </div>
+</nav>
+
+<!-- ========================= EDIT MODAL ========================= -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ تعديل الأوردر</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-group">
+      <label class="form-label">📍 العنوان</label>
+      <input type="text" class="form-input" id="edit-address" placeholder="العنوان">
+    </div>
+    <div class="form-group">
+      <label class="form-label">📱 الموبايل</label>
+      <input type="tel" class="form-input" id="edit-phone" placeholder="الموبايل">
+    </div>
+    <div class="form-group">
+      <label class="form-label">💰 ثمن الأوردر الكلي</label>
+      <input type="number" class="form-input" id="edit-total" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label class="form-label">🛵 رسوم التوصيل</label>
+      <input type="number" class="form-input" id="edit-delivery" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label class="form-label">💳 طريقة الدفع</label>
+      <div class="select-row">
+        <button class="select-opt active cash" id="edit-opt-cash" onclick="selectEditPayment('cash')">💵 كاش</button>
+        <button class="select-opt" id="edit-opt-visa" onclick="selectEditPayment('visa')">💳 فيزا</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveEdit()">💾 حفظ</button>
+      <button class="btn btn-outline" onclick="closeModal('editModal')">❌ إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= CONFIRM MODAL ========================= -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;padding:10px 0 20px;">
+      <div style="font-size:52px;margin-bottom:12px;" id="confirmIcon">⚠️</div>
+      <div class="modal-title" id="confirmTitle" style="text-align:center;"></div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px;" id="confirmMsg"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-danger" id="confirmOkBtn">تأكيد</button>
+      <button class="btn btn-outline" onclick="closeModal('confirmModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= INSTALL MODAL ========================= -->
+<div class="modal-overlay" id="installModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📲 تثبيت Nabil Pro</div>
+    <div id="installContent"></div>
+    <div style="margin-top:14px;">
+      <button class="btn btn-outline" onclick="closeModal('installModal')">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ⚠️  FIREBASE CONFIG - ضع بياناتك هنا
+// ============================================================
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
+  authDomain:        "nabil-pro.firebaseapp.com",
+  projectId:         "nabil-pro",
+  storageBucket:     "nabil-pro.firebasestorage.app",
+  messagingSenderId: "82099030853",
+  appId:             "1:82099030853:web:89de9eabad2cc53817cc2c"
+};
+
+// Check if Firebase is configured
+const FB_CONFIGURED = !Object.values(FIREBASE_CONFIG).some(v => v.includes('YOUR_'));
+
+// ============================================================
+// DEVICE ID - هوية الجهاز (مؤقتة حتى إضافة Auth)
+// ============================================================
+// نستخدم sessionStorage فقط لـ device ID مش للبيانات
+let DRIVER_ID = sessionStorage.getItem('nabil_driver_id');
+if (!DRIVER_ID) {
+  DRIVER_ID = 'driver_' + Math.random().toString(36).substr(2, 9);
+  sessionStorage.setItem('nabil_driver_id', DRIVER_ID);
+}
+
+// ============================================================
+// FIREBASE INIT
+// ============================================================
+let db = null;
+let appState = { online: false, driverName: 'مندوب دليفري', themeMode: 'dark' };
+let ordersCache = [];
+let restaurantsCache = [];
+
+// Firestore references
+let ordersRef, restaurantsRef, settingsRef;
+
+function initFirebase() {
+  if (!FB_CONFIGURED) return false;
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    // Enable offline persistence
+    db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+      console.log('Persistence error:', err.code);
+    });
+    ordersRef = db.collection('orders').where('driverId', '==', DRIVER_ID);
+    restaurantsRef = db.collection('restaurants').where('driverId', '==', DRIVER_ID);
+    settingsRef = db.collection('settings').doc(DRIVER_ID);
+    return true;
+  } catch (e) {
+    console.error('Firebase init error:', e);
+    return false;
+  }
+}
+
+// ============================================================
+// SETTINGS - Firestore
+// ============================================================
+async function loadSettings() {
+  if (!db) return;
+  try {
+    const doc = await settingsRef.get();
+    if (doc.exists) {
+      const data = doc.data();
+      appState.driverName = data.driverName || 'مندوب دليفري';
+      appState.themeMode = data.themeMode || 'dark';
+    }
+    updateDriverUI();
+    applyTheme(appState.themeMode);
+  } catch (e) { console.log('Settings load error:', e); }
+}
+
+async function saveSettings(updates) {
+  if (!db) return;
+  Object.assign(appState, updates);
+  try {
+    await settingsRef.set(appState, { merge: true });
+  } catch (e) { console.log('Settings save error:', e); }
+}
+
+function updateDriverUI() {
+  const name = appState.driverName;
+  const el1 = document.getElementById('driverNameDisplay');
+  const el2 = document.getElementById('settingsDriverName');
+  if (el1) el1.textContent = name;
+  if (el2) el2.textContent = name;
+}
+
+// ============================================================
+// RESTAURANTS - Firestore
+// ============================================================
+const DEFAULT_RESTAURANTS = [
+  { name: 'ماكدونالدز', active: true },
+  { name: 'KFC', active: true },
+  { name: 'بيتزا هت', active: true },
+  { name: 'سوشي سوشي', active: true },
+];
+
+async function loadRestaurants() {
+  if (!db) return;
+  try {
+    setFbStatus('syncing', '🔄 تحميل المطاعم...');
+    const snap = await restaurantsRef.get();
+    if (snap.empty) {
+      // First time: seed defaults
+      await seedDefaultRestaurants();
+    } else {
+      restaurantsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+    renderRestChips();
+    renderSettings();
+  } catch (e) {
+    console.log('Restaurants load error:', e);
+    setFbStatus('offline', '📴 خطأ في تحميل المطاعم');
+  }
+}
+
+async function seedDefaultRestaurants() {
+  const batch = db.batch();
+  DEFAULT_RESTAURANTS.forEach(r => {
+    const ref = db.collection('restaurants').doc();
+    batch.set(ref, { ...r, driverId: DRIVER_ID, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  });
+  await batch.commit();
+  // Reload
+  const snap = await restaurantsRef.get();
+  restaurantsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+async function addRestaurant() {
+  const name = document.getElementById('newRestName').value.trim();
+  if (!name) { showToast('اكتب اسم المطعم!'); return; }
+  if (!db) { showToast('⚠️ Firebase غير متصل'); return; }
+  try {
+    const docRef = await db.collection('restaurants').add({
+      name, active: true, driverId: DRIVER_ID,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    restaurantsCache.push({ id: docRef.id, name, active: true, driverId: DRIVER_ID });
+    document.getElementById('newRestName').value = '';
+    renderRestChips();
+    renderSettings();
+    showToast('✅ تم إضافة ' + name);
+  } catch (e) {
+    showToast('❌ خطأ في الإضافة');
+    console.log(e);
+  }
+}
+
+async function toggleRest(id) {
+  const r = restaurantsCache.find(x => x.id === id);
+  if (!r) return;
+  r.active = !r.active;
+  try {
+    await db.collection('restaurants').doc(id).update({ active: r.active });
+    renderSettings();
+    renderRestChips();
+  } catch (e) { showToast('❌ خطأ'); }
+}
+
+async function deleteRest(id) {
+  customConfirm('🏪', 'حذف المطعم', 'هيتحذف المطعم من القائمة، متأكد؟', async () => {
+    try {
+      await db.collection('restaurants').doc(id).delete();
+      restaurantsCache = restaurantsCache.filter(r => r.id !== id);
+      renderSettings();
+      renderRestChips();
+      showToast('🗑️ تم حذف المطعم');
+    } catch (e) { showToast('❌ خطأ في الحذف'); }
+  });
+}
+
+function getActiveRestaurants() {
+  return restaurantsCache.filter(r => r.active);
+}
+
+// ============================================================
+// ORDERS - Firestore
+// ============================================================
+function listenToOrders() {
+  if (!db) return;
+  setFbStatus('syncing', '🔄 جاري المزامنة...');
+  // Listen to all orders for this driver, ordered by timestamp
+  db.collection('orders')
+    .where('driverId', '==', DRIVER_ID)
+    .orderBy('timestamp', 'desc')
+    .onSnapshot(snap => {
+      ordersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setFbStatus('online', '🔥 Firebase متصل • ' + ordersCache.length + ' أوردر');
+      renderDashboard();
+      if (currentPage === 2) renderOrders(currentFilter);
+    }, err => {
+      console.log('Orders listener error:', err);
+      setFbStatus('offline', '📴 خطأ في المزامنة');
+    });
+}
+
+async function saveOrder() {
+  const address = document.getElementById('inp-address').value.trim();
+  const phone = document.getElementById('inp-phone').value.trim();
+  const total = parseFloat(document.getElementById('inp-total').value);
+  const delivery = parseFloat(document.getElementById('inp-delivery').value);
+
+  if (!selectedRest) { showToast('اختار مطعم أول!'); return; }
+  if (!address) { showToast('اكتب العنوان!'); return; }
+  if (!phone) { showToast('اكتب الموبايل!'); return; }
+  if (!total || total <= 0) { showToast('اكتب ثمن الأوردر!'); return; }
+  if (!delivery || delivery < 0) { showToast('اكتب رسوم التوصيل!'); return; }
+  if (delivery > total) { showToast('التوصيل أكبر من الأوردر!'); return; }
+  if (!db) { showToast('⚠️ Firebase غير متصل'); return; }
+
+  const rest = restaurantsCache.find(r => r.id === selectedRest);
+  const btn = document.getElementById('saveOrderBtn');
+  btn.textContent = '⏳ جاري الحفظ...';
+  btn.disabled = true;
+
+  try {
+    await db.collection('orders').add({
+      restId: selectedRest,
+      restName: rest ? rest.name : 'غير معروف',
+      address, phone, total, delivery,
+      restAmount: total - delivery,
+      payment: selectedPayment,
+      driverId: DRIVER_ID,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ تم حفظ الأوردر في Firebase!');
+    clearForm();
+    // Go to home to see update
+    goPage(0);
+  } catch (e) {
+    showToast('❌ خطأ في الحفظ: ' + e.message);
+    console.log(e);
+  } finally {
+    btn.textContent = '💾 حفظ الأوردر';
+    btn.disabled = false;
+  }
+}
+
+async function saveEdit() {
+  const id = document.getElementById('edit-id').value;
+  const address = document.getElementById('edit-address').value.trim();
+  const phone = document.getElementById('edit-phone').value.trim();
+  const total = parseFloat(document.getElementById('edit-total').value);
+  const delivery = parseFloat(document.getElementById('edit-delivery').value);
+
+  if (!address || !phone || !total || !delivery) { showToast('اكمل البيانات!'); return; }
+  if (!db) return;
+
+  try {
+    await db.collection('orders').doc(id).update({
+      address, phone, total, delivery,
+      restAmount: total - delivery,
+      payment: editPayment
+    });
+    closeModal('editModal');
+    showToast('✅ تم التعديل!');
+  } catch (e) {
+    showToast('❌ خطأ في التعديل');
+  }
+}
+
+async function deleteOrder(id) {
+  customConfirm('🗑️', 'حذف الأوردر', 'مش هترجع تاني، متأكد؟', async () => {
+    try {
+      await db.collection('orders').doc(id).delete();
+      showToast('🗑️ تم الحذف');
+    } catch (e) { showToast('❌ خطأ في الحذف'); }
+  });
+}
+
+async function clearTodayOrders() {
+  const today = new Date().toDateString();
+  const todayOrders = ordersCache.filter(o => {
+    const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
+    return ts.toDateString() === today;
+  });
+  customConfirm('⚠️', 'حذف أوردرات اليوم', `هتتحذف ${todayOrders.length} أوردر، متأكد؟`, async () => {
+    try {
+      const batch = db.batch();
+      todayOrders.forEach(o => batch.delete(db.collection('orders').doc(o.id)));
+      await batch.commit();
+      showToast('✅ تم حذف أوردرات اليوم');
+    } catch (e) { showToast('❌ خطأ في الحذف'); }
+  });
+}
+
+async function clearAllOrders() {
+  customConfirm('🚨', 'حذف كل الأوردرات', 'هتتمسح كل البيانات من Firebase نهائياً!', async () => {
+    try {
+      const batch = db.batch();
+      ordersCache.forEach(o => batch.delete(db.collection('orders').doc(o.id)));
+      await batch.commit();
+      showToast('🗑️ تم حذف كل الأوردرات');
+    } catch (e) { showToast('❌ خطأ في الحذف'); }
+  });
+}
+
+// ============================================================
+// FIREBASE STATUS UI
+// ============================================================
+function setFbStatus(type, text) {
+  const el = document.getElementById('fbStatus');
+  const dot = document.getElementById('onlineDot');
+  if (!el) return;
+  el.className = 'firebase-status ' + type;
+  el.querySelector('.status-dot').className = 'status-dot' + (type === 'syncing' ? ' pulse' : '');
+  document.getElementById('fbStatusText').textContent = text;
+  if (dot) {
+    dot.className = type === 'online' ? 'online-dot' : type === 'offline' ? 'online-dot offline-dot' : 'online-dot';
+  }
+  appState.online = type === 'online';
+}
+
+// ============================================================
+// DASHBOARD RENDER
+// ============================================================
+function renderDashboard() {
+  const today = new Date().toDateString();
+  const todayOrders = ordersCache.filter(o => {
+    const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp || Date.now());
+    return ts.toDateString() === today;
+  });
+
+  const cashOrders = todayOrders.filter(o => o.payment === 'cash');
+  const visaOrders = todayOrders.filter(o => o.payment === 'visa');
+
+  const totalProfit = todayOrders.reduce((s, o) => s + (o.delivery || 0), 0);
+  const totalCashCollected = cashOrders.reduce((s, o) => s + (o.total || 0), 0);
+  const visaEarnings = visaOrders.reduce((s, o) => s + (o.delivery || 0), 0);
+
+  animateNumber('stat-orders', todayOrders.length, '', 500);
+  animateNumber('stat-profit', totalProfit, ' ج', 600);
+  animateNumber('stat-cash', totalCashCollected, ' ج', 700);
+  animateNumber('stat-visa-earn', visaEarnings, ' ج', 800);
+
+  // Shift report
+  const rests = {};
+  todayOrders.forEach(o => {
+    if (!rests[o.restName]) rests[o.restName] = { cash: 0, visa: 0, delivery: 0, orders: 0 };
+    rests[o.restName].orders++;
+    rests[o.restName].delivery += (o.delivery || 0);
+    if (o.payment === 'cash') rests[o.restName].cash += (o.restAmount || 0);
+    else rests[o.restName].visa += (o.delivery || 0);
+  });
+
+  const cashToRestaurant = cashOrders.reduce((s, o) => s + (o.restAmount || 0), 0);
+
+  let report = '';
+  Object.entries(rests).forEach(([name, data]) => {
+    const netToRest = data.cash - data.visa;
+    report += `
+      <div class="report-row">
+        <span class="report-key">🏪 ${name} <span style="color:var(--primary);font-size:11px;">(${data.orders} أوردر)</span></span>
+        <span class="report-val ${netToRest >= 0 ? 'orange' : 'green'}">
+          ${netToRest >= 0 ? 'توريد ' + netToRest : 'يكسب ' + Math.abs(netToRest)} ج
+        </span>
+      </div>`;
+  });
+
+  if (!report) {
+    document.getElementById('shiftReport').innerHTML =
+      '<div style="color:var(--text2);font-size:13px;text-align:center;padding:10px;">لا أوردرات اليوم بعد 🕐</div>';
+  } else {
+    report += `
+      <div class="report-row" style="margin-top:8px;border-top:2px solid var(--primary);padding-top:8px;">
+        <span class="report-key" style="font-weight:800;color:var(--text)">💰 إجمالي أرباحك</span>
+        <span class="report-val green" style="font-size:18px;">${totalProfit} ج</span>
+      </div>
+      <div class="report-row">
+        <span class="report-key" style="font-weight:800;color:var(--text)">🏪 توريد صافي للمطاعم</span>
+        <span class="report-val orange">${Math.max(0, cashToRestaurant - visaEarnings)} ج</span>
+      </div>`;
+    document.getElementById('shiftReport').innerHTML = report;
+  }
+
+  // Recent orders (last 3 today)
+  const recent = todayOrders.slice(0, 3);
+  document.getElementById('recentOrders').innerHTML = recent.length
+    ? recent.map(o => renderOrderCard(o, true)).join('')
+    : '<div class="empty" style="padding:20px"><div class="empty-icon">🛵</div><div class="empty-text">استنى الأوردر الأول</div></div>';
+}
+
+// Animate number change
+function animateNumber(id, target, suffix, delay) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  setTimeout(() => {
+    el.textContent = target + suffix;
+  }, delay);
+}
+
+// ============================================================
+// ORDERS LIST
+// ============================================================
+let currentFilter = 'all';
+
+function filterOrders(type, el) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderOrders(type);
+}
+
+function renderOrders(filter) {
+  let orders = [...ordersCache];
+  const today = new Date().toDateString();
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+
+  if (filter === 'today') orders = orders.filter(o => {
+    const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp || 0);
+    return ts.toDateString() === today;
+  });
+  else if (filter === 'week') orders = orders.filter(o => {
+    const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp || 0);
+    return ts >= weekAgo;
+  });
+  else if (filter === 'cash') orders = orders.filter(o => o.payment === 'cash');
+  else if (filter === 'visa') orders = orders.filter(o => o.payment === 'visa');
+
+  const container = document.getElementById('ordersList');
+  if (!container) return;
+  if (!orders.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">لا أوردرات هنا</div><div class="empty-sub">جرب فلتر تاني</div></div>`;
+    return;
+  }
+  container.innerHTML = orders.map(o => renderOrderCard(o, false)).join('');
+}
+
+function renderOrderCard(o, mini) {
+  const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp || Date.now());
+  const timeStr = ts.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = ts.toLocaleDateString('ar-EG');
+  const isVisa = o.payment === 'visa';
+
+  return `<div class="order-card ${isVisa ? 'visa-card' : ''}">
+    <div class="order-header">
+      <span class="order-rest">🏪 ${o.restName}</span>
+      <span class="order-time">${dateStr} ${timeStr}</span>
+    </div>
+    <div class="order-address">📍 ${o.address}</div>
+    <div class="order-phone">📱 ${o.phone}</div>
+    <div class="order-amounts">
+      <span class="amount-tag tag-total">إجمالي: ${o.total} ج</span>
+      <span class="amount-tag tag-delivery">توصيل: ${o.delivery} ج</span>
+      <span class="amount-tag tag-rest">مطعم: ${o.restAmount} ج</span>
+      <span class="amount-tag ${isVisa ? 'tag-visa' : 'tag-cash'}">${isVisa ? '💳 فيزا' : '💵 كاش'}</span>
+    </div>
+    ${!mini ? `<div class="order-actions">
+      <button class="small-btn wa" onclick="sendWhatsappForOrder(${JSON.stringify(o).replace(/"/g,'&quot;')})">📲 واتساب</button>
+      <button class="small-btn edit" onclick="openEdit('${o.id}')">✏️ تعديل</button>
+      <button class="small-btn del" onclick="deleteOrder('${o.id}')">🗑️ حذف</button>
+    </div>` : ''}
+  </div>`;
+}
+
+// ============================================================
+// EDIT ORDER
+// ============================================================
+function openEdit(id) {
+  const o = ordersCache.find(x => x.id === id);
+  if (!o) return;
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-address').value = o.address || '';
+  document.getElementById('edit-phone').value = o.phone || '';
+  document.getElementById('edit-total').value = o.total || '';
+  document.getElementById('edit-delivery').value = o.delivery || '';
+  editPayment = o.payment || 'cash';
+  selectEditPayment(editPayment);
+  document.getElementById('editModal').classList.add('open');
+}
+
+// ============================================================
+// SETTINGS RENDER
+// ============================================================
+function renderSettings() {
+  // Restaurants
+  const restListEl = document.getElementById('restList');
+  if (restListEl) {
+    restListEl.innerHTML = restaurantsCache.map(r => `
+      <div class="rest-item">
+        <span class="rest-name">${r.name}</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="rest-toggle ${r.active ? 'on' : ''}" onclick="toggleRest('${r.id}')"></button>
+          <button class="trash-btn" onclick="deleteRest('${r.id}')">🗑️</button>
+        </div>
+      </div>
+    `).join('') || '<p style="color:var(--text2);font-size:13px;text-align:center;padding:10px;">لا مطاعم. أضف من الأعلى.</p>';
+  }
+
+  // Firebase info
+  const fbInfoEl = document.getElementById('fbInfo');
+  if (fbInfoEl) {
+    const today = new Date().toDateString();
+    const todayCount = ordersCache.filter(o => {
+      const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp || 0);
+      return ts.toDateString() === today;
+    }).length;
+    fbInfoEl.innerHTML = `
+      🔥 حالة: <strong style="color:${appState.online ? 'var(--success)' : 'var(--danger)'}">
+        ${appState.online ? 'متصل ✅' : 'غير متصل ❌'}
+      </strong><br>
+      📦 إجمالي الأوردرات: <strong style="color:var(--text)">${ordersCache.length}</strong><br>
+      📅 أوردرات النهارده: <strong style="color:var(--primary)">${todayCount}</strong><br>
+      🗄️ التخزين: <strong style="color:var(--text)">Firebase Firestore</strong><br>
+      👤 Driver ID: <strong style="color:var(--text2);font-size:11px;">${DRIVER_ID}</strong>
+    `;
+  }
+
+  // Theme buttons
+  ['auto','dark','light'].forEach(m => {
+    const el = document.getElementById('theme-' + m);
+    if (el) el.className = 'select-opt' + (m === appState.themeMode ? ' active orange' : '');
+  });
+}
+
+// ============================================================
+// RESTAURANT CHIPS
+// ============================================================
+let selectedRest = null;
+
+function renderRestChips() {
+  const active = getActiveRestaurants();
+  const container = document.getElementById('restChips');
+  if (!container) return;
+  if (!active.length) {
+    container.innerHTML = '<p style="color:var(--text2);font-size:13px;">لا مطاعم نشطة. أضف من الإعدادات.</p>';
+    return;
+  }
+  if (!selectedRest || !active.find(r => r.id === selectedRest)) {
+    selectedRest = active[0].id;
+  }
+  container.innerHTML = active.map(r => `
+    <button class="rest-chip ${r.id === selectedRest ? 'active' : ''}" onclick="selectRest('${r.id}')">${r.name}</button>
+  `).join('');
+}
+
+function selectRest(id) {
+  selectedRest = id;
+  renderRestChips();
+}
+
+// ============================================================
+// PAYMENT
+// ============================================================
+let selectedPayment = 'cash';
+
+function selectPayment(type) {
+  selectedPayment = type;
+  document.getElementById('opt-cash').className = 'select-opt' + (type === 'cash' ? ' active cash' : '');
+  document.getElementById('opt-visa').className = 'select-opt' + (type === 'visa' ? ' active visa' : '');
+  const note = document.getElementById('paymentNote');
+  if (type === 'visa') {
+    note.style.display = 'block';
+    note.innerHTML = `<div class="payment-note">💳 <strong>دفع مسبق:</strong> العميل دفع للمطعم مباشرة. التوصيل عند المطعم ويخصمه من الكاش.</div>`;
+  } else {
+    note.style.display = 'none';
+  }
+}
+
+let editPayment = 'cash';
+function selectEditPayment(type) {
+  editPayment = type;
+  document.getElementById('edit-opt-cash').className = 'select-opt' + (type === 'cash' ? ' active cash' : '');
+  document.getElementById('edit-opt-visa').className = 'select-opt' + (type === 'visa' ? ' active visa' : '');
+}
+
+// ============================================================
+// WHATSAPP
+// ============================================================
+function getGreeting() {
+  const h = new Date().getHours();
+  return h >= 5 && h < 12 ? 'صباح الخير' : 'مساء الخير';
+}
+
+function sendWhatsapp() {
+  const phone = document.getElementById('inp-phone').value.trim();
+  if (!phone) { showToast('اكتب الموبايل الأول!'); return; }
+  const rest = restaurantsCache.find(r => r.id === selectedRest);
+  const restName = rest ? rest.name : 'المطعم';
+  sendWaMessage(phone, restName);
+}
+
+function sendWhatsappForOrder(o) {
+  sendWaMessage(o.phone, o.restName);
+}
+
+function sendWaMessage(phone, restName) {
+  const greeting = getGreeting();
+  const msg = `${greeting} يا فندم 🙏\nأنا مندوب ${restName} 🛵\nممكن بس لوكيشن وأنا في الطريق إن شاء الله ✨`;
+  let cleanPhone = phone.replace(/[^0-9]/g, '');
+  if (cleanPhone.startsWith('0')) cleanPhone = '20' + cleanPhone.substring(1);
+  window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function clearForm() {
+  ['inp-address', 'inp-phone', 'inp-total', 'inp-delivery'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  selectPayment('cash');
+}
+
+// ============================================================
+// SETUP FIRST TIME
+// ============================================================
+function saveSetup() {
+  const name = document.getElementById('setupDriverName').value.trim() || 'مندوب دليفري';
+  appState.driverName = name;
+  if (db) saveSettings({ driverName: name, themeMode: 'dark' });
+  document.getElementById('setupModal').classList.remove('show');
+  updateDriverUI();
+  showToast('🎉 أهلاً ' + name + '!');
+  loadRestaurants();
+  listenToOrders();
+}
+
+// ============================================================
+// THEME
+// ============================================================
+function applyTheme(mode) {
+  appState.themeMode = mode;
+  let theme = mode;
+  if (mode === 'auto') {
+    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.body.dataset.theme = theme;
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = theme === 'dark' ? '#0a0f1e' : '#f0f4f8';
+}
+
+function toggleTheme() {
+  const newMode = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+  setThemeMode(newMode);
+}
+
+function setThemeMode(mode) {
+  applyTheme(mode);
+  saveSettings({ themeMode: mode });
+  ['auto','dark','light'].forEach(m => {
+    const el = document.getElementById('theme-' + m);
+    if (el) el.className = 'select-opt' + (m === mode ? ' active orange' : '');
+  });
+}
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (appState.themeMode === 'auto') applyTheme('auto');
+});
+
+// ============================================================
+// SWIPE NAVIGATION
+// ============================================================
+let currentPage = 0;
+const totalPages = 4;
+let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+let isDragging = false, dragDeltaX = 0;
+
+const wrapper = document.getElementById('pagesWrapper');
+
+function goPage(page) {
+  currentPage = Math.max(0, Math.min(totalPages - 1, page));
+  wrapper.style.transform = `translateX(${currentPage * 25}%)`;
+
+  // Update nav
+  document.querySelectorAll('.nav-item').forEach((n, i) => {
+    n.classList.toggle('active', i === currentPage);
+  });
+
+  // Update dots
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('active', i === currentPage);
+  });
+
+  // Refresh content on visit
+  if (currentPage === 0) renderDashboard();
+  if (currentPage === 2) renderOrders(currentFilter);
+  if (currentPage === 3) { renderSettings(); }
+  if (currentPage === 1) renderRestChips();
+}
+
+// Touch swipe
+const swipeContainer = document.getElementById('swipeContainer');
+swipeContainer.addEventListener('touchstart', e => {
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+  touchStartTime = Date.now();
+  isDragging = false;
+  dragDeltaX = 0;
+}, { passive: true });
+
+swipeContainer.addEventListener('touchmove', e => {
+  if (!e.touches[0]) return;
+  const dx = e.touches[0].clientX - touchStartX;
+  const dy = e.touches[0].clientY - touchStartY;
+
+  // Only start dragging if horizontal
+  if (!isDragging && Math.abs(dx) < Math.abs(dy) * 1.2) return;
+  isDragging = true;
+
+  // Prevent vertical scroll during horizontal swipe
+  e.preventDefault();
+
+  dragDeltaX = dx;
+  const basePct = currentPage * 25;
+  const offsetPct = (dx / window.innerWidth) * 25;
+  wrapper.classList.add('no-transition');
+  wrapper.style.transform = `translateX(${basePct - offsetPct}%)`;
+}, { passive: false });
+
+swipeContainer.addEventListener('touchend', e => {
+  if (!isDragging) return;
+  wrapper.classList.remove('no-transition');
+
+  const elapsed = Date.now() - touchStartTime;
+  const velocity = Math.abs(dragDeltaX) / elapsed;
+  const threshold = window.innerWidth * 0.25;
+
+  if (dragDeltaX < -threshold || velocity > 0.4 && dragDeltaX < 0) {
+    goPage(currentPage + 1);
+  } else if (dragDeltaX > threshold || velocity > 0.4 && dragDeltaX > 0) {
+    goPage(currentPage - 1);
+  } else {
+    goPage(currentPage); // snap back
+  }
+  isDragging = false;
+  dragDeltaX = 0;
+});
+
+// ============================================================
+// CUSTOM CONFIRM
+// ============================================================
+function customConfirm(icon, title, msg, onOk) {
+  document.getElementById('confirmIcon').textContent = icon;
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmOkBtn').onclick = () => { closeModal('confirmModal'); onOk(); };
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('editModal');
+});
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('confirmModal');
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ============================================================
+// CLOCK
+// ============================================================
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours();
+  const greeting = h >= 5 && h < 12 ? 'صباح الخير 👋' : h < 17 ? 'النهارده شغال 💪' : 'مساء الخير 👋';
+  const el = document.getElementById('welcomeGreet');
+  if (el) el.textContent = greeting;
+  const timeEl = document.getElementById('welcomeTime');
+  if (timeEl) timeEl.textContent = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ============================================================
+// VOICE INPUT
+// ============================================================
+let recognition = null, activeVoiceBtn = null;
+
+function startVoice(inputId, btn) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) { showToast('⚠️ الإدخال الصوتي مش متاح'); return; }
+  if (recognition) {
+    recognition.stop();
+    if (activeVoiceBtn) { activeVoiceBtn.classList.remove('recording'); activeVoiceBtn.textContent = '🎙️'; }
+    if (activeVoiceBtn === btn) { recognition = null; activeVoiceBtn = null; return; }
+  }
+  recognition = new SpeechRecognition();
+  recognition.lang = 'ar-EG';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  btn.classList.add('recording'); btn.textContent = '🔴';
+  activeVoiceBtn = btn;
+  recognition.onresult = (e) => {
+    document.getElementById(inputId).value = e.results[0][0].transcript;
+    btn.classList.remove('recording'); btn.textContent = '🎙️';
+    activeVoiceBtn = null; recognition = null;
+  };
+  recognition.onerror = () => {
+    btn.classList.remove('recording'); btn.textContent = '🎙️';
+    activeVoiceBtn = null; recognition = null;
+    showToast('❌ خطأ في الصوت');
+  };
+  recognition.onend = () => {
+    btn.classList.remove('recording'); btn.textContent = '🎙️';
+    activeVoiceBtn = null; recognition = null;
+  };
+  recognition.start();
+}
+
+// ============================================================
+// PWA INSTALL
+// ============================================================
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  document.getElementById('installBtn').style.display = 'none';
+  showToast('✅ تم تثبيت التطبيق!');
+});
+
+function showInstallGuide() {
+  const content = document.getElementById('installContent');
+  if (deferredPrompt) {
+    content.innerHTML = `<p style="font-size:14px;color:var(--text2);margin-bottom:14px;">اضغط تثبيت وهيتضاف لشاشتك الرئيسية 🎉</p>
+      <button class="btn btn-primary" onclick="triggerInstall()">📲 تثبيت الآن</button>`;
+  } else {
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    content.innerHTML = isIOS ? `
+      <div style="font-size:13px;color:var(--text2);line-height:2;">
+        <div style="background:var(--bg3);border-radius:12px;padding:12px;margin-bottom:10px;">
+          <strong style="color:var(--text)">تثبيت على iPhone:</strong><br>
+          1️⃣ اضغط على زر المشاركة 📤 في Safari<br>
+          2️⃣ اختر "Add to Home Screen"<br>
+          3️⃣ اضغط Add ✅
+        </div>
+      </div>` : `
+      <div style="font-size:13px;color:var(--text2);line-height:2;">
+        <div style="background:var(--bg3);border-radius:12px;padding:12px;">
+          <strong style="color:var(--text)">تثبيت على Android:</strong><br>
+          1️⃣ النقاط الثلاث ⋮ في Chrome<br>
+          2️⃣ "إضافة إلى الشاشة الرئيسية"<br>
+          3️⃣ اضغط إضافة ✅
+        </div>
+      </div>`;
+  }
+  document.getElementById('installModal').classList.add('open');
+}
+
+async function triggerInstall() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') showToast('✅ تم التثبيت!');
+  deferredPrompt = null;
+  document.getElementById('installBtn').style.display = 'none';
+  closeModal('installModal');
+}
+
+// ============================================================
+// ONLINE / OFFLINE DETECTION
+// ============================================================
+window.addEventListener('online', () => {
+  if (appState.online) return;
+  showToast('✅ رجع الإنترنت!');
+});
+window.addEventListener('offline', () => {
+  setFbStatus('offline', '📴 لا يوجد إنترنت - Firebase Offline Mode');
+  showToast('📴 لا إنترنت - Firebase هيشتغل Offline');
+});
+
+// ============================================================
+// APP INIT
+// ============================================================
+async function initApp() {
+  applyTheme('dark');
+
+  const fbOk = initFirebase();
+
+  if (!fbOk) {
+    // Show setup
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('setupModal').classList.add('show');
+    return;
+  }
+
+  // Load settings first
+  await loadSettings();
+
+  // Check if driver has a name
+  if (!appState.driverName || appState.driverName === 'مندوب دليفري') {
+    // Check Firestore for existing settings
+    const docExists = await settingsRef.get().then(d => d.exists).catch(() => false);
+    if (!docExists) {
+      document.getElementById('loadingScreen').style.display = 'none';
+      document.getElementById('setupModal').classList.add('show');
+      return;
+    }
+  }
+
+  // Load data
+  await loadRestaurants();
+  listenToOrders();
+
+  // Hide loading
+  setTimeout(() => {
+    document.getElementById('loadingScreen').style.display = 'none';
+  }, 800);
+
+  // Initial render
+  goPage(0);
+  updateDriverUI();
+}
+
+// ============================================================
+// SERVICE WORKER
+// ============================================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(e => console.log('SW error:', e));
+}
+
+// Start!
+initApp();
+</script>
+</body>
+</html>

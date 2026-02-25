@@ -8,19 +8,21 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Nabil Pro">
 <title>Nabil Pro 🛵</title>
-<link id="manifest-link" rel="manifest" href="./manifest.json">
+<link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32x32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
-<!-- ======= FIREBASE SDK ======= -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js" defer></script>
 
 <style>
-/* ==============================
-   DESIGN SYSTEM - MOTORSPORT DARK
-   ============================== */
+/* ============================================================
+   DESIGN SYSTEM
+   ============================================================ */
 :root {
   --bg: #0a0f1e;
   --bg2: #111827;
@@ -28,1012 +30,1176 @@
   --card: rgba(17,24,39,0.95);
   --card-border: rgba(255,255,255,0.07);
   --text: #f1f5f9;
-  --text2: #64748b;
-  --text3: #94a3b8;
+  --text2: #94a3b8;
+  --text3: #64748b;
   --primary: #f97316;
   --primary-dark: #c2410c;
-  --primary-glow: rgba(249,115,22,0.15);
-  --primary-glow2: rgba(249,115,22,0.08);
+  --primary-glow: rgba(249,115,22,0.2);
   --success: #22c55e;
-  --success-glow: rgba(34,197,94,0.15);
+  --success-bg: rgba(34,197,94,0.1);
   --danger: #ef4444;
-  --danger-glow: rgba(239,68,68,0.12);
+  --danger-bg: rgba(239,68,68,0.1);
   --visa: #818cf8;
-  --visa-glow: rgba(129,140,248,0.15);
   --cash: #22c55e;
   --radius: 18px;
   --radius-sm: 12px;
   --shadow: 0 8px 32px rgba(0,0,0,0.5);
-  --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
-  --glow-primary: 0 0 30px rgba(249,115,22,0.2);
   --nav-h: 68px;
   --header-h: 62px;
 }
 [data-theme="light"] {
-  --bg: #f0f4f8;
+  --bg: #f1f5f9;
   --bg2: #ffffff;
-  --bg3: #e8edf3;
-  --card: rgba(255,255,255,0.95);
+  --bg3: #e2e8f0;
+  --card: #ffffff;
   --card-border: rgba(0,0,0,0.06);
   --text: #0f172a;
-  --text2: #64748b;
+  --text2: #475569;
   --text3: #94a3b8;
-  --primary-glow: rgba(249,115,22,0.1);
-  --primary-glow2: rgba(249,115,22,0.06);
-  --shadow: 0 8px 32px rgba(0,0,0,0.1);
-  --shadow-sm: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family:'Cairo',sans-serif; background:var(--bg); color:var(--text); height:100dvh; overflow:hidden; }
+input,textarea,select { font-family:'Cairo',sans-serif; }
 
-body, .header, .bottom-nav, .card, .stat-card, .order-card, .welcome,
-.nav-item, .btn, .icon-btn, .rest-chip, .select-opt, .filter-chip,
-.amount-tag, .report-row, .section-title, .modal-title {
-  -webkit-user-select: none; user-select: none;
+/* ============================================================
+   SCREEN MANAGEMENT
+   ============================================================ */
+.screen { display:none; width:100%; height:100dvh; position:fixed; inset:0; z-index:10; }
+.screen.active { display:flex; }
+
+/* ============================================================
+   OFFLINE SCREEN
+   ============================================================ */
+#offlineScreen {
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:var(--bg);
+  gap:20px;
+  padding:40px;
 }
-input, textarea { -webkit-user-select: text; user-select: text; }
-
-body {
-  font-family: 'Cairo', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  height: 100vh;
-  overflow: hidden;
-  transition: background 0.3s, color 0.3s;
+.offline-icon {
+  width:100px; height:100px;
+  background:rgba(239,68,68,0.1);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:48px;
+  animation: pulse-red 2s infinite;
+}
+@keyframes pulse-red {
+  0%,100% { box-shadow:0 0 0 0 rgba(239,68,68,0.3); }
+  50% { box-shadow:0 0 0 20px rgba(239,68,68,0); }
+}
+.offline-title { font-size:22px; font-weight:700; color:var(--text); }
+.offline-sub { font-size:14px; color:var(--text2); text-align:center; line-height:1.6; }
+.offline-btn {
+  background:var(--primary); color:#fff; border:none;
+  padding:14px 32px; border-radius:50px; font-size:15px;
+  font-weight:700; font-family:'Cairo',sans-serif; cursor:pointer;
+  margin-top:10px;
 }
 
-/* === LOADING SCREEN === */
+/* ============================================================
+   LOADING SCREEN
+   ============================================================ */
 #loadingScreen {
-  position: fixed; inset: 0; z-index: 1000;
-  background: var(--bg);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 20px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:var(--bg);
+  gap:16px;
 }
 .loading-logo {
-  animation: logoPulse 2s ease-in-out infinite;
+  width:80px; height:80px;
+  background:var(--primary-glow);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:38px;
+  animation: spin-glow 2s linear infinite;
 }
-@keyframes logoPulse {
-  0%,100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(249,115,22,0.3)); }
-  50% { transform: scale(1.05); filter: drop-shadow(0 0 40px rgba(249,115,22,0.6)); }
+@keyframes spin-glow {
+  0%,100% { box-shadow:0 0 20px var(--primary-glow); transform:scale(1); }
+  50% { box-shadow:0 0 40px var(--primary-glow); transform:scale(1.05); }
 }
+.loading-text { font-size:13px; color:var(--text2); }
 .loading-bar {
-  width: 160px; height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden;
+  width:160px; height:3px;
+  background:var(--bg3);
+  border-radius:10px;
+  overflow:hidden;
 }
-.loading-bar-inner {
-  height: 100%; background: linear-gradient(90deg, var(--primary), #fbbf24);
-  border-radius: 2px; animation: loadBar 2s ease infinite;
+.loading-bar-fill {
+  height:100%;
+  background:var(--primary);
+  border-radius:10px;
+  animation:loading-anim 1.5s ease-in-out infinite;
 }
-@keyframes loadBar {
-  0% { width: 0%; } 70% { width: 100%; } 100% { width: 100%; opacity: 0; }
-}
-.loading-text {
-  font-size: 14px; font-weight: 700; color: var(--text2);
-}
-
-/* === FIREBASE SETUP MODAL === */
-#setupModal {
-  position: fixed; inset: 0; z-index: 999;
-  background: var(--bg);
-  display: none; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 20px;
-}
-#setupModal.show { display: flex; }
-.setup-card {
-  width: 100%; max-width: 400px;
-  background: var(--bg2); border: 1px solid var(--card-border);
-  border-radius: var(--radius); padding: 24px;
-  box-shadow: var(--shadow);
-}
-.setup-logo { text-align: center; margin-bottom: 20px; }
-.setup-title { font-size: 20px; font-weight: 900; text-align: center; margin-bottom: 8px; }
-.setup-sub { font-size: 13px; color: var(--text2); text-align: center; margin-bottom: 20px; line-height: 1.8; }
-.setup-note {
-  background: var(--primary-glow); border: 1px solid var(--primary);
-  border-radius: 12px; padding: 12px; font-size: 12px;
-  color: var(--primary); line-height: 1.8; margin-bottom: 20px;
+@keyframes loading-anim {
+  0% { width:0%; margin-right:100%; }
+  50% { width:60%; margin-right:40%; }
+  100% { width:0%; margin-right:0%; margin-left:100%; }
 }
 
-/* === HEADER === */
+/* ============================================================
+   AUTH SCREEN
+   ============================================================ */
+#authScreen {
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:var(--bg);
+  padding:24px;
+}
+.auth-card {
+  width:100%;
+  max-width:380px;
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:24px;
+  padding:32px 24px;
+  box-shadow:var(--shadow);
+}
+.auth-logo {
+  width:70px; height:70px;
+  background:var(--primary-glow);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:34px;
+  margin:0 auto 16px;
+}
+.auth-title { text-align:center; font-size:22px; font-weight:900; margin-bottom:4px; }
+.auth-sub { text-align:center; font-size:13px; color:var(--text2); margin-bottom:28px; }
+
+.auth-step { display:none; flex-direction:column; gap:16px; }
+.auth-step.active { display:flex; }
+
+.input-group { display:flex; flex-direction:column; gap:6px; }
+.input-label { font-size:13px; font-weight:600; color:var(--text2); }
+.input-row {
+  display:flex;
+  background:var(--bg3);
+  border:1px solid var(--card-border);
+  border-radius:14px;
+  overflow:hidden;
+  transition:border-color .2s;
+}
+.input-row:focus-within { border-color:var(--primary); }
+.input-prefix {
+  padding:0 14px;
+  display:flex; align-items:center;
+  font-size:15px; font-weight:600;
+  color:var(--text2);
+  border-left:1px solid var(--card-border);
+}
+.input-row input {
+  flex:1;
+  background:transparent;
+  border:none; outline:none;
+  padding:14px 16px;
+  font-size:16px;
+  color:var(--text);
+  direction:ltr;
+  text-align:right;
+}
+.otp-input {
+  background:var(--bg3);
+  border:1px solid var(--card-border);
+  border-radius:14px;
+  padding:16px;
+  font-size:24px;
+  font-weight:700;
+  text-align:center;
+  color:var(--text);
+  width:100%;
+  letter-spacing:8px;
+  direction:ltr;
+  outline:none;
+  transition:border-color .2s;
+}
+.otp-input:focus { border-color:var(--primary); }
+
+.auth-btn {
+  background:var(--primary);
+  color:#fff; border:none;
+  padding:16px;
+  border-radius:14px;
+  font-size:16px; font-weight:700;
+  font-family:'Cairo',sans-serif;
+  cursor:pointer;
+  transition:opacity .2s, transform .1s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.auth-btn:active { transform:scale(0.98); }
+.auth-btn:disabled { opacity:0.5; cursor:default; }
+.auth-btn.secondary {
+  background:transparent;
+  color:var(--text2);
+  border:1px solid var(--card-border);
+  font-size:14px;
+}
+
+.otp-timer { text-align:center; font-size:13px; color:var(--text3); }
+.otp-timer span { color:var(--primary); font-weight:700; }
+#recaptcha-container { margin:0 auto; }
+
+/* ============================================================
+   DRIVER APP
+   ============================================================ */
+#driverApp {
+  flex-direction:column;
+  background:var(--bg);
+  overflow:hidden;
+}
+
+/* Header */
 .header {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  height: var(--header-h);
-  background: var(--bg2);
-  border-bottom: 1px solid var(--card-border);
-  padding: 0 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  backdrop-filter: blur(10px);
+  height:var(--header-h);
+  background:var(--card);
+  border-bottom:1px solid var(--card-border);
+  display:flex; align-items:center;
+  padding:0 16px;
+  gap:10px;
+  position:relative;
+  z-index:100;
+  flex-shrink:0;
 }
-.header-logo { display: flex; align-items: center; gap: 10px; }
-.header-title {
-  font-size: 21px; font-weight: 900;
-  background: linear-gradient(135deg, var(--primary) 0%, #fbbf24 60%, var(--primary) 100%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  animation: shimmer 3s ease-in-out infinite;
-}
-@keyframes shimmer {
-  0%,100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-.header-actions { display: flex; gap: 8px; align-items: center; }
+.header-logo { font-size:26px; }
+.header-title { font-size:18px; font-weight:900; color:var(--primary); flex:1; }
 .icon-btn {
-  width: 38px; height: 38px; border-radius: 10px;
-  border: 1px solid var(--card-border);
-  background: var(--bg3); color: var(--text);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 18px; transition: all 0.2s;
-  position: relative;
+  width:40px; height:40px;
+  background:var(--bg3);
+  border:none; border-radius:12px;
+  font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .2s;
+  color:var(--text);
 }
-.icon-btn:active { transform: scale(0.88); }
-.online-dot {
-  position: absolute; top: 6px; right: 6px;
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 6px var(--success);
-}
-.offline-dot { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+.icon-btn:active { background:var(--primary-glow); }
 
-/* === SWIPE CONTAINER === */
-.swipe-container {
-  position: fixed;
-  top: var(--header-h);
-  bottom: var(--nav-h);
-  left: 0; right: 0;
-  overflow: hidden;
-}
-.pages-wrapper {
-  display: flex;
-  width: 400%;
-  height: 100%;
-  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform;
-}
-.pages-wrapper.no-transition { transition: none; }
-.page {
-  width: 25%;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 16px 16px 20px;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-}
-/* scrollbar hide */
-.page::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
-.page { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* === PAGE INDICATOR === */
-.page-indicator {
-  position: fixed;
-  top: calc(var(--header-h) + 8px);
-  left: 50%; transform: translateX(-50%);
-  display: flex; gap: 6px; z-index: 50;
-  pointer-events: none;
-}
-.dot {
-  width: 6px; height: 6px; border-radius: 3px;
-  background: var(--text2); transition: all 0.3s;
-}
-.dot.active { width: 18px; background: var(--primary); }
-
-/* === BOTTOM NAV === */
-.bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-  height: var(--nav-h);
-  background: var(--bg2);
-  border-top: 1px solid var(--card-border);
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  padding-bottom: max(0px, env(safe-area-inset-bottom));
-  backdrop-filter: blur(10px);
-}
-.nav-item {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px; padding: 8px 4px; cursor: pointer; transition: all 0.2s;
-  color: var(--text2); font-size: 10px; font-weight: 700;
-  position: relative;
-}
-.nav-item.active { color: var(--primary); }
-.nav-item svg { width: 22px; height: 22px; transition: transform 0.2s; }
-.nav-item.active svg { transform: scale(1.15); }
-.nav-pip {
-  position: absolute; top: 6px;
-  width: 4px; height: 4px; border-radius: 2px;
-  background: var(--primary); opacity: 0; transition: opacity 0.2s;
-}
-.nav-item.active .nav-pip { opacity: 1; }
-
-/* === CARDS === */
-.card {
-  background: var(--card); border: 1px solid var(--card-border);
-  border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(10px);
-}
-
-/* === WELCOME BANNER === */
-.welcome {
-  border-radius: var(--radius); padding: 20px; margin-bottom: 14px;
-  background: linear-gradient(135deg, #1a1008 0%, #2a1505 40%, #1a0f08 100%);
-  border: 1px solid rgba(249,115,22,0.3);
-  position: relative; overflow: hidden;
-}
-.welcome::before {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(circle at 80% 50%, rgba(249,115,22,0.15) 0%, transparent 70%);
-}
-[data-theme="light"] .welcome {
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 40%, #fff7ed 100%);
-  border-color: rgba(249,115,22,0.2);
-}
-.welcome-content { position: relative; }
-.welcome-name { font-size: 20px; font-weight: 900; color: var(--text); }
-.welcome-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
-.welcome-time {
-  font-size: 32px; font-weight: 900; color: var(--primary);
-  margin-top: 6px; font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 20px rgba(249,115,22,0.4);
-}
-.welcome-vespa {
-  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-  opacity: 0.15;
-}
-[data-theme="light"] .welcome-vespa { opacity: 0.1; }
-
-/* === DASH GRID === */
-.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-.stat-card {
-  background: var(--card); border: 1px solid var(--card-border);
-  border-radius: var(--radius); padding: 16px;
-  display: flex; flex-direction: column; gap: 6px;
-  position: relative; overflow: hidden;
-  transition: transform 0.2s;
-}
-.stat-card:active { transform: scale(0.97); }
-.stat-card::before {
-  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-  height: 2px; transition: opacity 0.3s;
-}
-.stat-card.s-orders::before { background: var(--primary); }
-.stat-card.s-profit::before { background: var(--success); }
-.stat-card.s-cash::before { background: #fbbf24; }
-.stat-card.s-visa::before { background: var(--visa); }
-.stat-icon { font-size: 22px; }
-.stat-label { font-size: 11px; color: var(--text2); font-weight: 600; }
-.stat-value {
-  font-size: 24px; font-weight: 900;
-  animation: countUp 0.4s ease-out;
-}
-@keyframes countUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.stat-value.orange { color: var(--primary); }
-.stat-value.profit { color: var(--success); }
-.stat-value.yellow { color: #fbbf24; }
-.stat-value.viola { color: var(--visa); }
-
-/* === SECTION TITLE === */
-.section-title {
-  font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text);
-  display: flex; align-items: center; gap: 8px;
-}
-.section-title::after {
-  content: ''; flex: 1; height: 1px; background: var(--card-border);
-}
-.divider { height: 1px; background: var(--card-border); margin: 12px 0; }
-
-/* === FORM === */
-.form-group { margin-bottom: 14px; }
-.form-label {
-  font-size: 12px; font-weight: 800; color: var(--text2);
-  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
-  text-transform: uppercase; letter-spacing: 0.5px;
-}
-.form-input {
-  width: 100%; padding: 13px 16px; border-radius: var(--radius-sm);
-  border: 1.5px solid var(--card-border); background: var(--bg3);
-  color: var(--text); font-family: 'Cairo', sans-serif; font-size: 15px;
-  outline: none; transition: all 0.25s;
-  -webkit-appearance: none;
-}
-.form-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-glow2);
-  background: var(--bg2);
-}
-.form-input::placeholder { color: var(--text2); }
-.input-voice-row { display: flex; gap: 8px; align-items: center; }
-.input-voice-row .form-input { flex: 1; }
-.voice-btn {
-  width: 48px; height: 48px; border-radius: var(--radius-sm); border: none;
-  background: var(--primary-glow); color: var(--primary);
-  font-size: 20px; cursor: pointer; display: flex; align-items: center;
-  justify-content: center; transition: all 0.2s; flex-shrink: 0;
-}
-.voice-btn.recording {
-  background: var(--danger-glow); color: var(--danger);
-  animation: recPulse 1s ease-in-out infinite;
-}
-@keyframes recPulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
-}
-
-/* === SELECT === */
-.select-row { display: flex; gap: 8px; }
-.select-opt {
-  flex: 1; padding: 13px 8px; border-radius: var(--radius-sm);
-  border: 1.5px solid var(--card-border); background: var(--bg3);
-  color: var(--text); font-family: 'Cairo', sans-serif; font-size: 13px;
-  font-weight: 800; cursor: pointer; text-align: center; transition: all 0.25s;
-}
-.select-opt.active.cash { border-color: var(--success); background: var(--success-glow); color: var(--success); }
-.select-opt.active.visa { border-color: var(--visa); background: var(--visa-glow); color: var(--visa); }
-.select-opt.active.orange { border-color: var(--primary); background: var(--primary-glow); color: var(--primary); }
-
-/* === REST CHIPS === */
-.rest-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.rest-chip {
-  padding: 9px 16px; border-radius: 24px; border: 1.5px solid var(--card-border);
-  background: var(--bg3); color: var(--text3); font-family: 'Cairo', sans-serif;
-  font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-}
-.rest-chip.active {
-  border-color: var(--primary); background: var(--primary-glow);
-  color: var(--primary); box-shadow: 0 0 12px var(--primary-glow);
-}
-
-/* === BUTTONS === */
-.btn {
-  width: 100%; padding: 14px; border-radius: var(--radius-sm); border: none;
-  font-family: 'Cairo', sans-serif; font-size: 15px; font-weight: 800;
-  cursor: pointer; transition: all 0.2s; display: flex; align-items: center;
-  justify-content: center; gap: 8px; letter-spacing: 0.3px;
-}
-.btn:active { transform: scale(0.96); }
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, #fb923c 100%);
-  color: white; box-shadow: 0 4px 20px rgba(249,115,22,0.3);
-}
-.btn-primary:active { box-shadow: 0 2px 10px rgba(249,115,22,0.2); }
-.btn-whatsapp {
-  background: linear-gradient(135deg, #25d366 0%, #1da851 100%);
-  color: white; box-shadow: 0 4px 20px rgba(37,211,102,0.25);
-}
-.btn-outline {
-  background: transparent; border: 1.5px solid var(--card-border); color: var(--text);
-}
-.btn-danger {
-  background: var(--danger-glow); color: var(--danger);
-  border: 1.5px solid rgba(239,68,68,0.3);
-}
-.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-
-/* === ORDER CARDS === */
-.order-card {
-  background: var(--card); border: 1px solid var(--card-border);
-  border-radius: var(--radius); padding: 14px; margin-bottom: 10px;
-  border-right: 3px solid var(--primary);
-  animation: slideIn 0.3s ease;
-}
-.order-card.visa-card { border-right-color: var(--visa); }
-@keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.order-rest { font-size: 14px; font-weight: 800; color: var(--primary); }
-.order-time { font-size: 10px; color: var(--text2); font-weight: 600; }
-.order-address { font-size: 13px; color: var(--text); margin-bottom: 4px; line-height: 1.5; }
-.order-phone { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
-.order-amounts { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-.amount-tag {
-  padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; white-space: nowrap;
-}
-.tag-total { background: var(--primary-glow); color: var(--primary); }
-.tag-delivery { background: var(--success-glow); color: var(--success); }
-.tag-rest { background: rgba(148,163,184,0.1); color: var(--text2); }
-.tag-visa { background: var(--visa-glow); color: var(--visa); }
-.tag-cash { background: var(--success-glow); color: var(--success); }
-.order-actions { display: flex; gap: 8px; }
-.small-btn {
-  flex: 1; padding: 8px 4px; border-radius: 10px; border: none;
-  font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700;
-  cursor: pointer; transition: all 0.2s;
-}
-.small-btn:active { transform: scale(0.93); }
-.small-btn.edit { background: var(--primary-glow); color: var(--primary); }
-.small-btn.del { background: var(--danger-glow); color: var(--danger); }
-.small-btn.wa { background: rgba(37,211,102,0.1); color: #25d366; }
-
-/* === FILTER === */
-.filter-row {
-  display: flex; gap: 8px; margin-bottom: 14px;
-  overflow-x: auto; padding-bottom: 4px;
-}
-.filter-row::-webkit-scrollbar { display: none; }
-.filter-chip {
-  padding: 7px 16px; border-radius: 24px; white-space: nowrap;
-  border: 1.5px solid var(--card-border); background: var(--bg3);
-  color: var(--text2); font-family: 'Cairo', sans-serif;
-  font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-}
-.filter-chip.active {
-  border-color: var(--primary); background: var(--primary-glow);
-  color: var(--primary);
-}
-
-/* === MODAL === */
-.modal-overlay {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,0.75);
-  display: none; align-items: flex-end; justify-content: center;
-  backdrop-filter: blur(4px);
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  width: 100%; background: var(--bg2);
-  border-radius: 24px 24px 0 0;
-  padding: 20px 16px max(24px, env(safe-area-inset-bottom));
-  max-height: 90vh; overflow-y: auto;
-  animation: slideUp 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  border-top: 1px solid var(--card-border);
-}
-@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.modal-handle {
-  width: 40px; height: 4px; border-radius: 2px;
-  background: var(--card-border); margin: 0 auto 18px;
-}
-.modal-title { font-size: 18px; font-weight: 900; margin-bottom: 16px; }
-
-/* === TOAST === */
-.toast {
-  position: fixed; bottom: calc(var(--nav-h) + 10px); left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--text); color: var(--bg);
-  padding: 10px 22px; border-radius: 24px;
-  font-size: 13px; font-weight: 800; z-index: 300;
-  opacity: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  pointer-events: none; white-space: nowrap; max-width: 90vw;
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* === REPORT === */
-.report-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 9px 0; border-bottom: 1px solid var(--card-border);
-}
-.report-row:last-child { border-bottom: none; }
-.report-key { font-size: 13px; color: var(--text2); }
-.report-val { font-size: 14px; font-weight: 800; }
-.report-val.green { color: var(--success); }
-.report-val.orange { color: var(--primary); }
-.report-val.purple { color: var(--visa); }
-
-/* === SETTINGS === */
-.rest-item {
-  background: var(--card); border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm); padding: 14px; margin-bottom: 8px;
-  display: flex; align-items: center; justify-content: space-between;
-  transition: all 0.2s;
-}
-.rest-name { font-size: 14px; font-weight: 700; }
-.rest-toggle {
-  width: 48px; height: 27px; border-radius: 14px; background: var(--bg3);
-  border: none; cursor: pointer; position: relative; transition: background 0.3s;
-  flex-shrink: 0;
-}
-.rest-toggle.on { background: var(--primary); }
-.rest-toggle::after {
-  content: ''; position: absolute; width: 21px; height: 21px;
-  border-radius: 50%; background: white;
-  top: 3px; right: 3px; transition: transform 0.3s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-}
-.rest-toggle.on::after { transform: translateX(-21px); }
-.add-rest-form { display: flex; gap: 8px; margin-bottom: 14px; }
-.add-rest-form .form-input { flex: 1; }
-.add-btn {
-  padding: 12px 18px; border-radius: var(--radius-sm); border: none;
-  background: var(--primary); color: white;
-  font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 800;
-  cursor: pointer; white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(249,115,22,0.3);
-  transition: all 0.2s;
-}
-.add-btn:active { transform: scale(0.95); }
-.trash-btn {
-  width: 36px; height: 36px; border-radius: 9px; border: none;
-  background: var(--danger-glow); color: var(--danger);
-  font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.trash-btn:active { transform: scale(0.9); }
-
-/* === EMPTY STATE === */
-.empty {
-  text-align: center; padding: 50px 20px; color: var(--text2);
-}
-.empty-icon { font-size: 52px; margin-bottom: 14px; }
-.empty-text { font-size: 15px; font-weight: 700; }
-.empty-sub { font-size: 13px; margin-top: 6px; opacity: 0.7; }
-
-/* === FIREBASE STATUS === */
-.firebase-status {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; border-radius: 12px;
-  background: var(--success-glow); border: 1px solid rgba(34,197,94,0.3);
-  font-size: 12px; font-weight: 700; color: var(--success);
-  margin-bottom: 12px;
-}
-.firebase-status.offline {
-  background: var(--danger-glow); border-color: rgba(239,68,68,0.3); color: var(--danger);
-}
-.firebase-status.syncing {
-  background: var(--primary-glow); border-color: rgba(249,115,22,0.3); color: var(--primary);
+/* Status bar */
+.status-bar {
+  padding:6px 16px;
+  font-size:12px;
+  font-weight:600;
+  display:flex; align-items:center; gap:6px;
+  flex-shrink:0;
 }
 .status-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: currentColor;
-  flex-shrink: 0;
+  width:7px; height:7px;
+  border-radius:50%;
+  background:var(--success);
+  animation: pulse-dot 2s infinite;
 }
-.status-dot.pulse { animation: dotPulse 1.5s ease-in-out infinite; }
-@keyframes dotPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.status-dot.error { background:var(--danger); animation:none; }
+@keyframes pulse-dot {
+  0%,100% { opacity:1; } 50% { opacity:0.4; }
+}
+.status-bar.ok { background:rgba(34,197,94,0.08); color:var(--success); }
+.status-bar.err { background:rgba(239,68,68,0.08); color:var(--danger); }
 
-/* === PAYMENT NOTE === */
-.payment-note {
-  background: var(--visa-glow); border: 1px solid rgba(129,140,248,0.3);
-  border-radius: var(--radius-sm); padding: 12px;
-  font-size: 13px; color: var(--visa); line-height: 1.7;
+/* Page system */
+.pages-wrapper {
+  display:flex;
+  flex:1;
+  overflow:hidden;
+  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  width:400%;
+}
+.page { width:25%; flex-shrink:0; overflow-y:auto; padding:16px; padding-bottom:calc(var(--nav-h) + 16px); }
+
+/* Bottom Nav */
+.bottom-nav {
+  height:var(--nav-h);
+  background:var(--card);
+  border-top:1px solid var(--card-border);
+  display:flex;
+  position:fixed; bottom:0; left:0; right:0;
+  z-index:100;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:3px; border:none; background:transparent;
+  cursor:pointer; color:var(--text3);
+  font-size:10px; font-weight:600;
+  font-family:'Cairo',sans-serif;
+  transition:color .2s;
+  padding:8px 0;
+}
+.nav-item.active { color:var(--primary); }
+.nav-item .nav-icon { font-size:22px; }
+.nav-item .nav-plus {
+  width:48px; height:48px;
+  background:var(--primary);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:26px; color:#fff;
+  box-shadow:0 4px 16px var(--primary-glow);
+  margin-top:-8px;
 }
 
-/* === PROGRESS BAR === */
-.shift-progress {
-  height: 6px; background: var(--bg3); border-radius: 3px; margin-top: 8px; overflow: hidden;
+/* Welcome card */
+.welcome {
+  background:linear-gradient(135deg,#1a0a00,#2d1500);
+  border:1px solid rgba(249,115,22,0.2);
+  border-radius:var(--radius);
+  padding:20px;
+  position:relative;
+  overflow:hidden;
+  margin-bottom:16px;
 }
-.shift-bar {
-  height: 100%; border-radius: 3px;
-  background: linear-gradient(90deg, var(--primary), #fbbf24);
-  transition: width 0.5s ease;
+.welcome::before {
+  content:'🛵';
+  position:absolute; left:16px; bottom:-8px;
+  font-size:72px; opacity:0.08;
+}
+.welcome-greeting { font-size:13px; color:rgba(249,115,22,0.7); margin-bottom:2px; }
+.welcome-name { font-size:20px; font-weight:900; color:#fff; margin-bottom:4px; }
+.welcome-time { font-size:28px; font-weight:900; color:var(--primary); }
+
+/* Stats */
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.stat-card {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);
+  padding:14px;
+  position:relative;
+  overflow:hidden;
+}
+.stat-card::after {
+  content:'';
+  position:absolute; bottom:0; left:0; right:0; height:3px;
+}
+.stat-card.c1::after { background:var(--success); }
+.stat-card.c2::after { background:var(--primary); }
+.stat-card.c3::after { background:var(--visa); }
+.stat-card.c4::after { background:#f59e0b; }
+.stat-icon { font-size:22px; margin-bottom:6px; }
+.stat-label { font-size:11px; color:var(--text2); margin-bottom:4px; }
+.stat-val { font-size:20px; font-weight:900; }
+.stat-card.c1 .stat-val { color:var(--success); }
+.stat-card.c2 .stat-val { color:var(--primary); }
+.stat-card.c3 .stat-val { color:var(--visa); }
+.stat-card.c4 .stat-val { color:#f59e0b; }
+
+/* Section */
+.section-title {
+  font-size:14px; font-weight:700;
+  color:var(--text2); margin-bottom:12px;
+  display:flex; align-items:center; gap:6px;
 }
 
-/* === SYNC INDICATOR === */
-.sync-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 8px; border-radius: 8px;
-  background: var(--primary-glow); color: var(--primary);
-  font-size: 10px; font-weight: 700; animation: syncSpin 1s linear infinite;
+/* Report rows */
+.report-card {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);
+  margin-bottom:8px;
+  overflow:hidden;
 }
-@keyframes syncSpin { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+.report-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px;
+  cursor:pointer;
+}
+.report-rest { font-size:15px; font-weight:700; }
+.report-count { font-size:12px; color:var(--text2); }
+.report-delivery { font-size:15px; font-weight:700; color:var(--success); }
+.report-body { padding:0 16px 14px; display:none; }
+.report-body.open { display:block; }
+.report-detail { display:flex; justify-content:space-between; font-size:12px; color:var(--text2); padding:3px 0; }
 
-/* === DRIVER CHIP === */
-.driver-chip {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; border-radius: 14px;
-  background: var(--bg3); border: 1px solid var(--card-border);
-  margin-bottom: 12px;
+/* Add order page */
+.form-section { margin-bottom:16px; }
+.form-label {
+  font-size:13px; font-weight:600;
+  color:var(--text2); margin-bottom:8px;
+  display:flex; align-items:center; gap:6px;
 }
+.form-input {
+  width:100%; background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);
+  padding:14px 16px;
+  font-size:15px; color:var(--text);
+  font-family:'Cairo',sans-serif;
+  outline:none;
+  transition:border-color .2s;
+}
+.form-input:focus { border-color:var(--primary); }
+.input-with-voice { position:relative; }
+.voice-btn {
+  position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  background:var(--bg3); border:none; border-radius:8px;
+  width:32px; height:32px; font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.voice-btn.active { background:var(--danger); animation:pulse-red 1s infinite; }
+
+.rest-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.rest-chip {
+  padding:8px 16px;
+  background:var(--bg3);
+  border:1px solid var(--card-border);
+  border-radius:50px;
+  font-size:13px; font-weight:600;
+  cursor:pointer; color:var(--text2);
+  font-family:'Cairo',sans-serif;
+  transition:all .2s;
+}
+.rest-chip.active {
+  background:var(--primary-glow);
+  border-color:var(--primary);
+  color:var(--primary);
+}
+.rest-chip.add-chip {
+  background:transparent;
+  border-style:dashed;
+  color:var(--text3);
+}
+
+.payment-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.pay-opt {
+  padding:14px;
+  background:var(--bg3);
+  border:2px solid transparent;
+  border-radius:var(--radius-sm);
+  text-align:center; cursor:pointer;
+  transition:all .2s;
+}
+.pay-opt.active-cash { border-color:var(--cash); background:rgba(34,197,94,0.1); }
+.pay-opt.active-visa { border-color:var(--visa); background:rgba(129,140,248,0.1); }
+.pay-opt-icon { font-size:24px; margin-bottom:4px; }
+.pay-opt-label { font-size:13px; font-weight:700; }
+.pay-opt-note { font-size:11px; color:var(--text3); margin-top:2px; }
+
+.submit-btn {
+  width:100%; background:var(--primary); color:#fff;
+  border:none; padding:18px;
+  border-radius:var(--radius-sm);
+  font-size:17px; font-weight:900;
+  font-family:'Cairo',sans-serif;
+  cursor:pointer; margin-top:8px;
+  transition:opacity .2s, transform .1s;
+}
+.submit-btn:active { transform:scale(0.98); }
+
+/* Order cards */
+.filter-row { display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; padding-bottom:4px; }
+.filter-chip {
+  padding:6px 14px;
+  background:var(--bg3);
+  border:1px solid var(--card-border);
+  border-radius:50px;
+  font-size:12px; font-weight:600;
+  cursor:pointer; color:var(--text2);
+  white-space:nowrap;
+  font-family:'Cairo',sans-serif;
+  transition:all .2s;
+}
+.filter-chip.active { background:var(--primary-glow); border-color:var(--primary); color:var(--primary); }
+
+.order-card {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);
+  padding:14px;
+  margin-bottom:10px;
+  position:relative;
+  overflow:hidden;
+}
+.order-card::before {
+  content:'';
+  position:absolute; top:0; right:0; bottom:0; width:4px;
+}
+.order-card.cash::before { background:var(--cash); }
+.order-card.visa::before { background:var(--visa); }
+
+.order-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.order-rest { font-size:15px; font-weight:700; }
+.order-time { font-size:11px; color:var(--text3); }
+.order-body { display:flex; justify-content:space-between; align-items:center; }
+.order-details { font-size:12px; color:var(--text2); line-height:1.8; }
+.order-amount { text-align:left; }
+.order-delivery { font-size:18px; font-weight:900; color:var(--success); }
+.order-total { font-size:11px; color:var(--text3); }
+.order-actions { display:flex; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid var(--card-border); }
+.action-btn {
+  flex:1; padding:8px;
+  border-radius:10px; border:none;
+  font-size:12px; font-weight:700;
+  font-family:'Cairo',sans-serif;
+  cursor:pointer;
+}
+.action-btn.edit { background:rgba(249,115,22,0.1); color:var(--primary); }
+.action-btn.delete { background:var(--danger-bg); color:var(--danger); }
+
+/* Settings */
+.settings-card {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+  margin-bottom:16px;
+}
+.settings-row {
+  display:flex; align-items:center; gap:14px;
+  padding:16px; border-bottom:1px solid var(--card-border);
+  cursor:pointer;
+}
+.settings-row:last-child { border-bottom:none; }
+.settings-icon { font-size:20px; width:32px; text-align:center; }
+.settings-label { flex:1; font-size:14px; font-weight:600; }
+.settings-val { font-size:13px; color:var(--text2); }
+.toggle {
+  width:44px; height:24px;
+  background:var(--bg3); border-radius:50px;
+  position:relative; cursor:pointer; transition:background .2s;
+}
+.toggle::after {
+  content:'';
+  position:absolute; top:2px; right:2px;
+  width:20px; height:20px;
+  background:#fff; border-radius:50%;
+  transition:transform .2s;
+}
+.toggle.on { background:var(--primary); }
+.toggle.on::after { transform:translateX(-20px); }
+
+/* Empty state */
+.empty-state { text-align:center; padding:48px 16px; color:var(--text3); }
+.empty-icon { font-size:48px; margin-bottom:12px; opacity:0.5; }
+.empty-text { font-size:14px; }
+
+/* Toast */
+.toast {
+  position:fixed; bottom:calc(var(--nav-h) + 16px); left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:rgba(30,40,60,0.95);
+  color:#fff; padding:12px 20px;
+  border-radius:50px; font-size:14px; font-weight:600;
+  z-index:9999; white-space:nowrap;
+  opacity:0; transition:all .3s;
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.1);
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Modal */
+.modal-overlay {
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:500; display:none;
+  align-items:flex-end; justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background:var(--bg2);
+  border-radius:24px 24px 0 0;
+  padding:24px;
+  width:100%; max-height:80dvh;
+  overflow-y:auto;
+  animation:slide-up .3s ease;
+}
+@keyframes slide-up { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.modal-title { font-size:18px; font-weight:900; margin-bottom:20px; }
+.modal-actions { display:flex; gap:10px; margin-top:20px; }
+.modal-btn {
+  flex:1; padding:14px;
+  border-radius:var(--radius-sm);
+  border:none; font-size:15px; font-weight:700;
+  font-family:'Cairo',sans-serif; cursor:pointer;
+}
+.modal-btn.confirm { background:var(--primary); color:#fff; }
+.modal-btn.cancel { background:var(--bg3); color:var(--text); }
+.modal-btn.danger { background:var(--danger); color:#fff; }
+
+/* ============================================================
+   MANAGER APP
+   ============================================================ */
+#managerApp {
+  flex-direction:column;
+  background:var(--bg);
+  overflow:hidden;
+}
+
+.mgr-header {
+  background:var(--card);
+  border-bottom:1px solid var(--card-border);
+  padding:0 16px;
+  height:var(--header-h);
+  display:flex; align-items:center; gap:12px;
+  flex-shrink:0;
+  z-index:100;
+}
+.mgr-header-title { font-size:17px; font-weight:900; flex:1; }
+.mgr-badge {
+  background:var(--primary-glow);
+  color:var(--primary);
+  padding:4px 10px;
+  border-radius:50px;
+  font-size:11px; font-weight:700;
+}
+
+.mgr-tabs {
+  display:flex;
+  background:var(--card);
+  border-bottom:1px solid var(--card-border);
+  flex-shrink:0;
+  overflow-x:auto;
+}
+.mgr-tab {
+  flex:1; padding:12px 8px;
+  border:none; background:transparent;
+  font-family:'Cairo',sans-serif;
+  font-size:12px; font-weight:700;
+  color:var(--text3); cursor:pointer;
+  border-bottom:2px solid transparent;
+  white-space:nowrap;
+  transition:all .2s;
+  min-width:70px;
+}
+.mgr-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+.mgr-content {
+  flex:1; overflow-y:auto;
+  padding:16px;
+  padding-bottom:24px;
+}
+
+.mgr-tab-panel { display:none; }
+.mgr-tab-panel.active { display:block; }
+
+/* Manager Stats */
+.mgr-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.mgr-stat {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);
+  padding:16px;
+}
+.mgr-stat-icon { font-size:24px; margin-bottom:8px; }
+.mgr-stat-label { font-size:11px; color:var(--text2); margin-bottom:4px; }
+.mgr-stat-val { font-size:22px; font-weight:900; color:var(--primary); }
+
+/* Driver list */
+.search-bar {
+  display:flex;
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+  margin-bottom:14px;
+}
+.search-bar input {
+  flex:1; background:transparent; border:none; outline:none;
+  padding:12px 16px; font-size:14px; color:var(--text);
+  font-family:'Cairo',sans-serif;
+}
+.search-bar span { padding:0 14px; display:flex; align-items:center; font-size:18px; color:var(--text3); }
+
+.driver-card {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);
+  padding:14px;
+  margin-bottom:10px;
+  display:flex; align-items:center; gap:12px;
+  cursor:pointer;
+  transition:border-color .2s;
+}
+.driver-card:active { border-color:var(--primary); }
 .driver-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--primary-glow); border: 2px solid var(--primary);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
+  width:46px; height:46px;
+  background:var(--primary-glow);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; font-weight:900;
+  color:var(--primary);
+  flex-shrink:0;
 }
-.driver-info { flex: 1; }
-.driver-name { font-size: 14px; font-weight: 800; }
-.driver-sub { font-size: 11px; color: var(--text2); }
+.driver-info { flex:1; }
+.driver-name { font-size:15px; font-weight:700; margin-bottom:2px; }
+.driver-phone { font-size:12px; color:var(--text2); direction:ltr; text-align:right; }
+.driver-stats-row { display:flex; gap:10px; margin-top:6px; }
+.driver-mini-stat { font-size:11px; color:var(--text3); }
+.driver-mini-stat span { color:var(--success); font-weight:700; }
+.driver-online-dot {
+  width:10px; height:10px;
+  border-radius:50%;
+  background:var(--bg3);
+  flex-shrink:0;
+}
+.driver-online-dot.online { background:var(--success); box-shadow:0 0 6px rgba(34,197,94,0.5); }
 
-/* === ANIMATIONS === */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Add driver btn */
+.add-btn {
+  width:100%; padding:14px;
+  background:transparent;
+  border:2px dashed var(--card-border);
+  border-radius:var(--radius-sm);
+  color:var(--text2); font-size:14px; font-weight:600;
+  font-family:'Cairo',sans-serif; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  margin-bottom:16px;
+  transition:all .2s;
 }
-.fade-in { animation: fadeInUp 0.35s ease both; }
-.fade-in-1 { animation-delay: 0.05s; }
-.fade-in-2 { animation-delay: 0.1s; }
-.fade-in-3 { animation-delay: 0.15s; }
-.fade-in-4 { animation-delay: 0.2s; }
+.add-btn:hover { border-color:var(--primary); color:var(--primary); }
+
+/* Manager order card */
+.mgr-order-card {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);
+  padding:12px;
+  margin-bottom:8px;
+  display:flex; align-items:center; gap:10px;
+}
+.mgr-order-body { flex:1; }
+.mgr-order-rest { font-size:14px; font-weight:700; }
+.mgr-order-driver { font-size:12px; color:var(--text2); }
+.mgr-order-time { font-size:11px; color:var(--text3); }
+.mgr-order-amount { font-size:16px; font-weight:900; color:var(--success); }
+
+/* Restaurant manager */
+.rest-card {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-sm);
+  padding:14px;
+  margin-bottom:8px;
+  display:flex; align-items:center; gap:12px;
+}
+.rest-name-big { flex:1; font-size:15px; font-weight:700; }
+.rest-delete-btn {
+  background:var(--danger-bg); color:var(--danger);
+  border:none; border-radius:10px;
+  padding:8px 14px; font-size:13px; font-weight:700;
+  font-family:'Cairo',sans-serif; cursor:pointer;
+}
+
+/* Driver detail modal */
+.driver-detail-overlay {
+  position:fixed; inset:0;
+  background:var(--bg);
+  z-index:200;
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
+}
+.driver-detail-overlay.show { display:flex; }
+.driver-detail-header {
+  padding:16px;
+  background:var(--card);
+  border-bottom:1px solid var(--card-border);
+  display:flex; align-items:center; gap:12px;
+}
+.back-btn {
+  width:40px; height:40px;
+  background:var(--bg3); border:none; border-radius:12px;
+  font-size:20px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center;
+  color:var(--text);
+}
+.driver-detail-content { flex:1; overflow-y:auto; padding:16px; }
+.driver-detail-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+.driver-detail-stat {
+  background:var(--card); border:1px solid var(--card-border);
+  border-radius:var(--radius-sm); padding:12px; text-align:center;
+}
+.dds-val { font-size:18px; font-weight:900; color:var(--primary); }
+.dds-label { font-size:10px; color:var(--text2); margin-top:2px; }
+
+/* Report page */
+.date-filter {
+  display:flex; gap:8px; margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.date-btn {
+  padding:6px 14px;
+  background:var(--bg3); border:1px solid var(--card-border);
+  border-radius:50px; font-size:12px; font-weight:600;
+  font-family:'Cairo',sans-serif; cursor:pointer; color:var(--text2);
+  transition:all .2s;
+}
+.date-btn.active { background:var(--primary-glow); border-color:var(--primary); color:var(--primary); }
+
+.report-row {
+  background:var(--card); border:1px solid var(--card-border);
+  border-radius:var(--radius-sm); padding:14px;
+  margin-bottom:8px;
+  display:flex; align-items:center; gap:12px;
+}
+.report-driver-name { font-size:14px; font-weight:700; flex:1; }
+.report-driver-orders { font-size:12px; color:var(--text2); }
+.report-driver-income { font-size:16px; font-weight:900; color:var(--success); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--bg3); border-radius:4px; }
 </style>
 </head>
+<body>
 
-<body data-theme="dark">
+<!-- ============================================================
+     OFFLINE SCREEN
+     ============================================================ -->
+<div class="screen" id="offlineScreen">
+  <div class="offline-icon">📡</div>
+  <div class="offline-title">لا يوجد اتصال بالإنترنت</div>
+  <div class="offline-sub">التطبيق يعمل أونلاين فقط لضمان حفظ بياناتك في الكلاود</div>
+  <button class="offline-btn" onclick="checkOnline()">🔄 إعادة المحاولة</button>
+</div>
 
-<!-- ========================= LOADING SCREEN ========================= -->
-<div id="loadingScreen">
-  <div class="loading-logo">
-    <svg width="80" height="80" viewBox="0 0 80 80">
-      <!-- Vespa/Scooter Logo SVG -->
-      <circle cx="40" cy="40" r="38" fill="none" stroke="rgba(249,115,22,0.2)" stroke-width="1.5"/>
-      <circle cx="40" cy="40" r="30" fill="none" stroke="rgba(249,115,22,0.1)" stroke-width="1"/>
-      <!-- Scooter body -->
-      <ellipse cx="42" cy="38" rx="18" ry="10" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Handlebars -->
-      <path d="M52 30 L58 26" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M56 24 L62 24" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Seat -->
-      <path d="M36 30 Q40 27 48 30" stroke="#fbbf24" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <!-- Front wheel -->
-      <circle cx="58" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
-      <circle cx="58" cy="48" r="3" fill="#f97316" opacity="0.5"/>
-      <!-- Rear wheel -->
-      <circle cx="24" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
-      <circle cx="24" cy="48" r="3" fill="#f97316" opacity="0.5"/>
-      <!-- Exhaust -->
-      <path d="M24 44 L18 46 L14 44" stroke="#f97316" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-      <!-- Delivery box -->
-      <rect x="26" y="32" width="12" height="9" rx="2" fill="none" stroke="#fbbf24" stroke-width="2"/>
-      <path d="M26 36 L38 36" stroke="#fbbf24" stroke-width="1" opacity="0.6"/>
-    </svg>
-  </div>
-  <div class="loading-bar"><div class="loading-bar-inner"></div></div>
+<!-- ============================================================
+     LOADING SCREEN
+     ============================================================ -->
+<div class="screen active" id="loadingScreen">
+  <div class="loading-logo">🛵</div>
+  <div style="font-size:20px;font-weight:900;color:var(--primary);">Nabil Pro</div>
   <div class="loading-text">جاري التحميل...</div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
 </div>
 
-<!-- ========================= FIREBASE SETUP ========================= -->
-<div id="setupModal">
-  <div class="setup-card">
-    <div class="setup-logo">
-      <svg width="60" height="60" viewBox="0 0 80 80">
-        <circle cx="40" cy="40" r="38" fill="rgba(249,115,22,0.1)" stroke="rgba(249,115,22,0.3)" stroke-width="1.5"/>
-        <ellipse cx="42" cy="38" rx="18" ry="10" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M52 30 L58 26" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M56 24 L62 24" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="58" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
-        <circle cx="24" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
-        <rect x="26" y="32" width="12" height="9" rx="2" fill="none" stroke="#fbbf24" stroke-width="2"/>
-      </svg>
+<!-- ============================================================
+     AUTH SCREEN
+     ============================================================ -->
+<div class="screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">🛵</div>
+    <div class="auth-title">Nabil Pro</div>
+    <div class="auth-sub">تطبيق إدارة التوصيل</div>
+
+    <!-- Step 1: Phone -->
+    <div class="auth-step active" id="authStep1">
+      <div class="input-group">
+        <div class="input-label">رقم الموبايل</div>
+        <div class="input-row">
+          <div class="input-prefix">🇪🇬 +20</div>
+          <input type="tel" id="phoneInput" placeholder="10xxxxxxxx" maxlength="11"
+            oninput="this.value=this.value.replace(/\D/g,'')" inputmode="numeric">
+        </div>
+      </div>
+      <div id="recaptcha-container"></div>
+      <button class="auth-btn" id="sendOtpBtn" onclick="sendOTP()">
+        📱 إرسال كود التحقق
+      </button>
     </div>
-    <div class="setup-title">🔥 إعداد Firebase</div>
-    <div class="setup-sub">لازم تضيف بيانات Firebase الخاصة بيك عشان التطبيق يشتغل ويحفظ بياناتك في الكلاود</div>
-    <div class="setup-note">
-      📋 الخطوات:<br>
-      1. روح console.firebase.google.com<br>
-      2. أنشئ مشروع جديد أو افتح مشروعك<br>
-      3. Project Settings → Your Apps → Add Web App<br>
-      4. انسخ الـ config وحطه في الكود (مكانه مشار إليه بـ YOUR_)<br>
-      5. فعّل Firestore Database من قائمة Build
+
+    <!-- Step 2: OTP -->
+    <div class="auth-step" id="authStep2">
+      <div class="input-group">
+        <div class="input-label">كود التحقق (6 أرقام)</div>
+        <input type="tel" class="otp-input" id="otpInput" placeholder="• • • • • •"
+          maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+      </div>
+      <div class="otp-timer">الكود سينتهي خلال <span id="timerVal">60</span> ثانية</div>
+      <button class="auth-btn" id="verifyOtpBtn" onclick="verifyOTP()">
+        ✅ تأكيد الدخول
+      </button>
+      <button class="auth-btn secondary" onclick="backToPhone()">
+        ← تغيير الرقم
+      </button>
     </div>
-    <div class="form-group">
-      <label class="form-label">👤 اسم السائق</label>
-      <input type="text" class="form-input" id="setupDriverName" placeholder="نابل - مندوب دليفري">
-    </div>
-    <button class="btn btn-primary" onclick="saveSetup()">🚀 ابدأ</button>
   </div>
 </div>
 
-<!-- ========================= HEADER ========================= -->
-<div class="header">
-  <div class="header-logo">
-    <!-- Vespa Logo Mini -->
-    <svg width="32" height="32" viewBox="0 0 80 80" style="flex-shrink:0">
-      <circle cx="40" cy="40" r="38" fill="rgba(249,115,22,0.12)" stroke="rgba(249,115,22,0.3)" stroke-width="1.5"/>
-      <ellipse cx="42" cy="38" rx="18" ry="10" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M52 30 L58 26" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M56 24 L62 24" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="58" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
-      <circle cx="24" cy="48" r="8" fill="none" stroke="#f97316" stroke-width="2.5"/>
-      <rect x="26" y="32" width="12" height="9" rx="2" fill="none" stroke="#fbbf24" stroke-width="2"/>
-    </svg>
-    <div class="header-title">Nabil Pro</div>
+<!-- ============================================================
+     DRIVER APP
+     ============================================================ -->
+<div class="screen" id="driverApp">
+  <div class="header">
+    <span class="header-logo">🛵</span>
+    <span class="header-title">Nabil Pro</span>
+    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button class="icon-btn" onclick="confirmLogout()">🚪</button>
   </div>
-  <div class="header-actions">
-    <button class="icon-btn" id="installBtn" onclick="showInstallGuide()" title="تثبيت التطبيق" style="display:none">📲</button>
-    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="تغيير الثيم">🌙</button>
-    <button class="icon-btn" id="syncBtn" title="حالة الاتصال" style="position:relative">
-      🔥
-      <span class="online-dot" id="onlineDot"></span>
-    </button>
+
+  <div class="status-bar ok" id="driverStatus">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Firebase متصل • 0 أوردر</span>
   </div>
-</div>
 
-<!-- ========================= PAGE INDICATOR ========================= -->
-<div class="page-indicator">
-  <div class="dot active" id="dot-0"></div>
-  <div class="dot" id="dot-1"></div>
-  <div class="dot" id="dot-2"></div>
-  <div class="dot" id="dot-3"></div>
-</div>
-
-<!-- ========================= SWIPE PAGES ========================= -->
-<div class="swipe-container" id="swipeContainer">
   <div class="pages-wrapper" id="pagesWrapper">
 
-    <!-- PAGE 0: HOME -->
-    <div class="page" id="page-home">
-      <div class="welcome fade-in">
-        <!-- Background Vespa -->
-        <svg class="welcome-vespa" width="120" height="80" viewBox="0 0 80 80">
-          <ellipse cx="42" cy="38" rx="18" ry="10" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
-          <path d="M52 30 L58 26" stroke="white" stroke-width="3" stroke-linecap="round"/>
-          <path d="M56 24 L62 24" stroke="white" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="58" cy="48" r="8" fill="none" stroke="white" stroke-width="3"/>
-          <circle cx="24" cy="48" r="8" fill="none" stroke="white" stroke-width="3"/>
-          <rect x="26" y="32" width="12" height="9" rx="2" fill="none" stroke="white" stroke-width="2.5"/>
-        </svg>
-        <div class="welcome-content">
-          <div class="welcome-name" id="welcomeGreet">مرحباً 👋</div>
-          <div class="welcome-sub" id="driverNameDisplay">مندوب دليفري</div>
-          <div class="welcome-time" id="welcomeTime">00:00</div>
-        </div>
+    <!-- Page 0: Home -->
+    <div class="page" id="homePage">
+      <div class="welcome">
+        <div class="welcome-greeting" id="greeting">صباح الخير 👋</div>
+        <div class="welcome-name" id="driverNameDisplay">مندوب</div>
+        <div class="welcome-time" id="clockDisplay">00:00 ص</div>
       </div>
 
-      <!-- Firebase Status -->
-      <div class="firebase-status syncing fade-in fade-in-1" id="fbStatus">
-        <div class="status-dot pulse"></div>
-        <span id="fbStatusText">جاري الاتصال بـ Firebase...</span>
-      </div>
-
-      <div class="dash-grid">
-        <div class="stat-card s-orders fade-in fade-in-1">
+      <div class="stats-grid">
+        <div class="stat-card c1">
           <div class="stat-icon">📦</div>
           <div class="stat-label">أوردرات اليوم</div>
-          <div class="stat-value orange" id="stat-orders">0</div>
+          <div class="stat-val" id="statOrders">0</div>
         </div>
-        <div class="stat-card s-profit fade-in fade-in-2">
+        <div class="stat-card c2">
           <div class="stat-icon">💰</div>
           <div class="stat-label">أرباح التوصيل</div>
-          <div class="stat-value profit" id="stat-profit">0 ج</div>
+          <div class="stat-val" id="statDelivery">ج 0</div>
         </div>
-        <div class="stat-card s-cash fade-in fade-in-3">
-          <div class="stat-icon">💵</div>
-          <div class="stat-label">تحصيل كاش</div>
-          <div class="stat-value yellow" id="stat-cash">0 ج</div>
-        </div>
-        <div class="stat-card s-visa fade-in fade-in-4">
+        <div class="stat-card c3">
           <div class="stat-icon">💳</div>
           <div class="stat-label">فيزا (أكسب)</div>
-          <div class="stat-value viola" id="stat-visa-earn">0 ج</div>
+          <div class="stat-val" id="statVisa">ج 0</div>
+        </div>
+        <div class="stat-card c4">
+          <div class="stat-icon">💵</div>
+          <div class="stat-label">تحصيل كاش</div>
+          <div class="stat-val" id="statCash">ج 0</div>
         </div>
       </div>
 
-      <div class="card fade-in">
-        <div class="section-title">📊 تقرير الشيفت</div>
-        <div id="shiftReport">
-          <div style="color:var(--text2);font-size:13px;text-align:center;padding:10px;">
-            لا أوردرات اليوم بعد
-          </div>
-        </div>
-      </div>
-
-      <div class="card fade-in">
-        <div class="section-title">⚡ آخر الأوردرات</div>
-        <div id="recentOrders">
-          <div class="empty" style="padding:20px">
-            <div class="empty-icon">🛵</div>
-            <div class="empty-text">استنى الأوردر الأول</div>
-          </div>
-        </div>
-      </div>
+      <div class="section-title">📊 تقرير الشيفت</div>
+      <div id="shiftReport"><div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">لا أوردرات اليوم بعد</div></div></div>
     </div>
 
-    <!-- PAGE 1: ADD ORDER -->
-    <div class="page" id="page-add">
-      <div class="section-title">➕ أوردر جديد</div>
-
-      <div class="card">
-        <div class="form-group">
-          <label class="form-label">🏪 المطعم</label>
-          <div class="rest-chips" id="restChips"></div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">📍 العنوان</label>
-          <div class="input-voice-row">
-            <input type="text" class="form-input" id="inp-address" placeholder="حي / شارع / علامة مميزة">
-            <button class="voice-btn" onclick="startVoice('inp-address', this)">🎙️</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">📱 موبايل العميل</label>
-          <div class="input-voice-row">
-            <input type="tel" class="form-input" id="inp-phone" placeholder="01xxxxxxxxx">
-            <button class="voice-btn" onclick="startVoice('inp-phone', this)">🎙️</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">💰 ثمن الأوردر (شامل التوصيل)</label>
-          <div class="input-voice-row">
-            <input type="number" class="form-input" id="inp-total" placeholder="500" inputmode="numeric">
-            <button class="voice-btn" onclick="startVoice('inp-total', this)">🎙️</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">🛵 رسوم التوصيل (أرباحك)</label>
-          <div class="input-voice-row">
-            <input type="number" class="form-input" id="inp-delivery" placeholder="100" inputmode="numeric">
-            <button class="voice-btn" onclick="startVoice('inp-delivery', this)">🎙️</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">💳 طريقة الدفع</label>
-          <div class="select-row">
-            <button class="select-opt active cash" id="opt-cash" onclick="selectPayment('cash')">💵 كاش</button>
-            <button class="select-opt" id="opt-visa" onclick="selectPayment('visa')">💳 فيزا مسبق</button>
-          </div>
-        </div>
-
-        <div id="paymentNote" style="display:none;margin-bottom:14px;"></div>
+    <!-- Page 1: Records -->
+    <div class="page" id="recordsPage">
+      <div class="filter-row" id="filterRow">
+        <button class="filter-chip active" data-filter="all" onclick="setFilter(this,'all')">الكل</button>
+        <button class="filter-chip" data-filter="today" onclick="setFilter(this,'today')">اليوم</button>
+        <button class="filter-chip" data-filter="week" onclick="setFilter(this,'week')">الأسبوع</button>
+        <button class="filter-chip" data-filter="cash" onclick="setFilter(this,'cash')">كاش</button>
+        <button class="filter-chip" data-filter="visa" onclick="setFilter(this,'visa')">فيزا</button>
       </div>
-
-      <button class="btn btn-primary" id="saveOrderBtn" onclick="saveOrder()" style="margin-bottom:10px">
-        💾 حفظ الأوردر
-      </button>
-      <button class="btn btn-whatsapp" onclick="sendWhatsapp()" style="margin-bottom:10px">
-        📲 إرسال واتساب
-      </button>
-      <button class="btn btn-outline" onclick="clearForm()">
-        🗑️ مسح الفورم
-      </button>
+      <div id="ordersList"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد أوردرات</div></div></div>
     </div>
 
-    <!-- PAGE 2: RECORDS -->
-    <div class="page" id="page-records">
-      <div class="section-title">📋 السجلات</div>
-      <div class="filter-row">
-        <button class="filter-chip active" onclick="filterOrders('all', this)">الكل</button>
-        <button class="filter-chip" onclick="filterOrders('today', this)">اليوم</button>
-        <button class="filter-chip" onclick="filterOrders('week', this)">الأسبوع</button>
-        <button class="filter-chip" onclick="filterOrders('cash', this)">كاش</button>
-        <button class="filter-chip" onclick="filterOrders('visa', this)">فيزا</button>
+    <!-- Page 2: Add Order -->
+    <div class="page" id="addPage">
+      <div class="form-section">
+        <div class="form-label">🏪 المطعم</div>
+        <div class="rest-chips" id="restChips"></div>
       </div>
-      <div id="ordersList"></div>
+      <div class="form-section">
+        <div class="form-label">📍 العنوان</div>
+        <div class="input-with-voice">
+          <input class="form-input" id="addressInput" placeholder="العنوان كاملاً..." style="padding-left:52px;">
+          <button class="voice-btn" id="voiceAddress" onclick="startVoice('addressInput','voiceAddress')">🎤</button>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-label">📞 رقم العميل (اختياري)</div>
+        <input class="form-input" id="phoneOrderInput" placeholder="01xxxxxxxxx" type="tel" inputmode="numeric">
+      </div>
+      <div class="form-section">
+        <div class="form-label">💰 قيمة الأوردر (للمطعم)</div>
+        <div class="input-with-voice">
+          <input class="form-input" id="restAmountInput" type="number" placeholder="0" style="padding-left:52px;" inputmode="decimal">
+          <button class="voice-btn" id="voiceAmount" onclick="startVoice('restAmountInput','voiceAmount')">🎤</button>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-label">🛵 توصيل</div>
+        <input class="form-input" id="deliveryInput" type="number" placeholder="0" inputmode="decimal">
+      </div>
+      <div class="form-section">
+        <div class="form-label">💳 طريقة الدفع</div>
+        <div class="payment-row">
+          <div class="pay-opt" id="payCash" onclick="selectPayment('cash')">
+            <div class="pay-opt-icon">💵</div>
+            <div class="pay-opt-label">كاش</div>
+            <div class="pay-opt-note">من العميل</div>
+          </div>
+          <div class="pay-opt" id="payVisa" onclick="selectPayment('visa')">
+            <div class="pay-opt-icon">💳</div>
+            <div class="pay-opt-label">فيزا</div>
+            <div class="pay-opt-note">أنت بتكسب</div>
+          </div>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="addOrder()">✅ حفظ الأوردر</button>
     </div>
 
-    <!-- PAGE 3: SETTINGS -->
-    <div class="page" id="page-settings">
+    <!-- Page 3: Settings -->
+    <div class="page" id="settingsPage">
       <div class="section-title">⚙️ الإعدادات</div>
-
-      <!-- Driver Info -->
-      <div class="driver-chip card" id="driverChip" style="margin-bottom:12px;">
-        <div class="driver-avatar">🛵</div>
-        <div class="driver-info">
-          <div class="driver-name" id="settingsDriverName">—</div>
-          <div class="driver-sub">مندوب دليفري نشط</div>
+      <div class="settings-card">
+        <div class="settings-row" onclick="editDriverName()">
+          <span class="settings-icon">👤</span>
+          <span class="settings-label">اسم السائق</span>
+          <span class="settings-val" id="settingsNameVal">—</span>
+        </div>
+        <div class="settings-row" onclick="cycleTheme()">
+          <span class="settings-icon">🎨</span>
+          <span class="settings-label">المظهر</span>
+          <span class="settings-val" id="themeVal">داكن</span>
         </div>
       </div>
 
-      <!-- Restaurants -->
-      <div class="card">
-        <div class="section-title">🏪 إدارة المطاعم</div>
-        <div class="add-rest-form">
-          <input type="text" class="form-input" id="newRestName" placeholder="اسم المطعم الجديد">
-          <button class="add-btn" onclick="addRestaurant()">+ إضافة</button>
+      <div class="section-title">🏪 المطاعم</div>
+      <div id="restSettingsList"></div>
+      <button class="add-btn" onclick="addRestaurant()">➕ إضافة مطعم</button>
+
+      <div class="section-title">📱 معلومات</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <span class="settings-icon">📞</span>
+          <span class="settings-label">رقم الهاتف</span>
+          <span class="settings-val" id="settingsPhone" dir="ltr">—</span>
         </div>
-        <div id="restList"></div>
-      </div>
-
-      <!-- Theme -->
-      <div class="card">
-        <div class="section-title">🎨 المظهر</div>
-        <div class="select-row">
-          <button class="select-opt" id="theme-auto" onclick="setThemeMode('auto')">تلقائي</button>
-          <button class="select-opt active orange" id="theme-dark" onclick="setThemeMode('dark')">داكن</button>
-          <button class="select-opt" id="theme-light" onclick="setThemeMode('light')">فاتح</button>
+        <div class="settings-row" onclick="confirmLogout()">
+          <span class="settings-icon">🚪</span>
+          <span class="settings-label" style="color:var(--danger)">تسجيل الخروج</span>
         </div>
-      </div>
-
-      <!-- Firebase Info -->
-      <div class="card">
-        <div class="section-title">🔥 Firebase</div>
-        <div id="fbInfo" style="font-size:13px;color:var(--text2);line-height:2;"></div>
-      </div>
-
-      <!-- Data Management -->
-      <div class="card">
-        <div class="section-title">🗑️ إدارة البيانات</div>
-        <button class="btn btn-danger" onclick="clearTodayOrders()" style="margin-bottom:10px">
-          حذف أوردرات اليوم
-        </button>
-        <button class="btn btn-outline" onclick="clearAllOrders()">
-          حذف كل الأوردرات
-        </button>
       </div>
     </div>
 
-  </div><!-- /pages-wrapper -->
-</div><!-- /swipe-container -->
+  </div><!-- end pages-wrapper -->
 
-<!-- ========================= TOAST ========================= -->
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav0" onclick="goPage(0)">
+      <span class="nav-icon">🏠</span>
+      <span>الرئيسية</span>
+    </button>
+    <button class="nav-item" id="nav1" onclick="goPage(1)">
+      <span class="nav-icon">📋</span>
+      <span>السجلات</span>
+    </button>
+    <button class="nav-item" id="nav2" onclick="goPage(2)">
+      <div class="nav-plus">＋</div>
+    </button>
+    <button class="nav-item" id="nav3" onclick="goPage(3)">
+      <span class="nav-icon">⚙️</span>
+      <span>الإعدادات</span>
+    </button>
+  </div>
+</div><!-- end driverApp -->
+
+<!-- ============================================================
+     MANAGER APP
+     ============================================================ -->
+<div class="screen" id="managerApp">
+  <div class="mgr-header">
+    <span style="font-size:24px;">📊</span>
+    <span class="mgr-header-title">لوحة الإدارة</span>
+    <span class="mgr-badge" id="managerBadge">مدير</span>
+    <button class="icon-btn" onclick="toggleTheme()">🌙</button>
+    <button class="icon-btn" onclick="confirmLogout()">🚪</button>
+  </div>
+
+  <div class="mgr-tabs">
+    <button class="mgr-tab active" onclick="mgrTab(0,this)">📊 نظرة عامة</button>
+    <button class="mgr-tab" onclick="mgrTab(1,this)">👥 المناديب</button>
+    <button class="mgr-tab" onclick="mgrTab(2,this)">🏪 المطاعم</button>
+    <button class="mgr-tab" onclick="mgrTab(3,this)">📈 تقارير</button>
+  </div>
+
+  <div class="mgr-content">
+
+    <!-- Overview Tab -->
+    <div class="mgr-tab-panel active" id="mgrPanel0">
+      <div class="mgr-stats">
+        <div class="mgr-stat">
+          <div class="mgr-stat-icon">👥</div>
+          <div class="mgr-stat-label">المناديب النشطين اليوم</div>
+          <div class="mgr-stat-val" id="mgrStatDrivers">0</div>
+        </div>
+        <div class="mgr-stat">
+          <div class="mgr-stat-icon">📦</div>
+          <div class="mgr-stat-label">أوردرات اليوم</div>
+          <div class="mgr-stat-val" id="mgrStatOrders">0</div>
+        </div>
+        <div class="mgr-stat">
+          <div class="mgr-stat-icon">💰</div>
+          <div class="mgr-stat-label">دخل التوصيل اليوم</div>
+          <div class="mgr-stat-val" id="mgrStatDelivery">0</div>
+        </div>
+        <div class="mgr-stat">
+          <div class="mgr-stat-icon">💳</div>
+          <div class="mgr-stat-label">إجمالي كاش اليوم</div>
+          <div class="mgr-stat-val" id="mgrStatCash">0</div>
+        </div>
+      </div>
+      <div class="section-title">🔴 آخر الأوردرات</div>
+      <div id="mgrRecentOrders"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا أوردرات بعد</div></div></div>
+    </div>
+
+    <!-- Drivers Tab -->
+    <div class="mgr-tab-panel" id="mgrPanel1">
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" placeholder="بحث باسم أو رقم..." id="driverSearch" oninput="filterDrivers()">
+      </div>
+      <button class="add-btn" onclick="showAddDriverModal()">➕ إضافة مندوب جديد</button>
+      <div id="driversList"></div>
+    </div>
+
+    <!-- Restaurants Tab -->
+    <div class="mgr-tab-panel" id="mgrPanel2">
+      <button class="add-btn" onclick="showAddRestModal()">➕ إضافة مطعم</button>
+      <div id="mgrRestsList"></div>
+    </div>
+
+    <!-- Reports Tab -->
+    <div class="mgr-tab-panel" id="mgrPanel3">
+      <div class="date-filter">
+        <button class="date-btn active" onclick="setReportPeriod('today',this)">اليوم</button>
+        <button class="date-btn" onclick="setReportPeriod('week',this)">هذا الأسبوع</button>
+        <button class="date-btn" onclick="setReportPeriod('month',this)">هذا الشهر</button>
+      </div>
+      <div id="reportsContent"></div>
+    </div>
+
+  </div>
+</div><!-- end managerApp -->
+
+<!-- Driver Detail (Manager view) -->
+<div class="driver-detail-overlay" id="driverDetailOverlay">
+  <div class="driver-detail-header">
+    <button class="back-btn" onclick="closeDriverDetail()">←</button>
+    <div>
+      <div style="font-size:17px;font-weight:900;" id="detailDriverName">—</div>
+      <div style="font-size:12px;color:var(--text2);" id="detailDriverPhone" dir="ltr">—</div>
+    </div>
+    <div style="flex:1;"></div>
+    <button class="icon-btn" style="background:var(--danger-bg);color:var(--danger);" onclick="removeDriver()">🗑</button>
+  </div>
+  <div class="driver-detail-content">
+    <div class="driver-detail-stats">
+      <div class="driver-detail-stat">
+        <div class="dds-val" id="detailOrders">0</div>
+        <div class="dds-label">أوردرات اليوم</div>
+      </div>
+      <div class="driver-detail-stat">
+        <div class="dds-val" id="detailDelivery">0</div>
+        <div class="dds-label">دخل التوصيل</div>
+      </div>
+      <div class="driver-detail-stat">
+        <div class="dds-val" id="detailTotal">0</div>
+        <div class="dds-label">إجمالي الكاش</div>
+      </div>
+    </div>
+    <div class="section-title">📋 أوردرات اليوم</div>
+    <div id="detailOrdersList"></div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox">
+    <div class="modal-title" id="modalTitle">تأكيد</div>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
-
-<!-- ========================= BOTTOM NAV ========================= -->
-<nav class="bottom-nav">
-  <div class="nav-item active" id="nav-0" onclick="goPage(0)">
-    <div class="nav-pip"></div>
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6"/>
-    </svg>
-    الرئيسية
-  </div>
-  <div class="nav-item" id="nav-1" onclick="goPage(1)">
-    <div class="nav-pip"></div>
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path d="M12 4v16m8-8H4"/>
-    </svg>
-    أوردر
-  </div>
-  <div class="nav-item" id="nav-2" onclick="goPage(2)">
-    <div class="nav-pip"></div>
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-    </svg>
-    السجلات
-  </div>
-  <div class="nav-item" id="nav-3" onclick="goPage(3)">
-    <div class="nav-pip"></div>
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-      <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-    </svg>
-    الإعدادات
-  </div>
-</nav>
-
-<!-- ========================= EDIT MODAL ========================= -->
-<div class="modal-overlay" id="editModal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">✏️ تعديل الأوردر</div>
-    <input type="hidden" id="edit-id">
-    <div class="form-group">
-      <label class="form-label">📍 العنوان</label>
-      <input type="text" class="form-input" id="edit-address" placeholder="العنوان">
-    </div>
-    <div class="form-group">
-      <label class="form-label">📱 الموبايل</label>
-      <input type="tel" class="form-input" id="edit-phone" placeholder="الموبايل">
-    </div>
-    <div class="form-group">
-      <label class="form-label">💰 ثمن الأوردر الكلي</label>
-      <input type="number" class="form-input" id="edit-total" inputmode="numeric">
-    </div>
-    <div class="form-group">
-      <label class="form-label">🛵 رسوم التوصيل</label>
-      <input type="number" class="form-input" id="edit-delivery" inputmode="numeric">
-    </div>
-    <div class="form-group">
-      <label class="form-label">💳 طريقة الدفع</label>
-      <div class="select-row">
-        <button class="select-opt active cash" id="edit-opt-cash" onclick="selectEditPayment('cash')">💵 كاش</button>
-        <button class="select-opt" id="edit-opt-visa" onclick="selectEditPayment('visa')">💳 فيزا</button>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveEdit()">💾 حفظ</button>
-      <button class="btn btn-outline" onclick="closeModal('editModal')">❌ إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- ========================= CONFIRM MODAL ========================= -->
-<div class="modal-overlay" id="confirmModal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div style="text-align:center;padding:10px 0 20px;">
-      <div style="font-size:52px;margin-bottom:12px;" id="confirmIcon">⚠️</div>
-      <div class="modal-title" id="confirmTitle" style="text-align:center;"></div>
-      <div style="font-size:13px;color:var(--text2);margin-top:4px;" id="confirmMsg"></div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-danger" id="confirmOkBtn">تأكيد</button>
-      <button class="btn btn-outline" onclick="closeModal('confirmModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- ========================= INSTALL MODAL ========================= -->
-<div class="modal-overlay" id="installModal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">📲 تثبيت Nabil Pro</div>
-    <div id="installContent"></div>
-    <div style="margin-top:14px;">
-      <button class="btn btn-outline" onclick="closeModal('installModal')">إغلاق</button>
-    </div>
-  </div>
-</div>
 
 <script>
 // ============================================================
-// ⚠️  FIREBASE CONFIG - ضع بياناتك هنا
+// FIREBASE CONFIG
 // ============================================================
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
@@ -1044,744 +1210,916 @@ const FIREBASE_CONFIG = {
   appId:             "1:82099030853:web:89de9eabad2cc53817cc2c"
 };
 
-// Check if Firebase is configured
-const FB_CONFIGURED = !Object.values(FIREBASE_CONFIG).some(v => v.includes('YOUR_'));
+firebase.initializeApp(FIREBASE_CONFIG);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // ============================================================
-// DEVICE ID - هوية الجهاز (مؤقتة حتى إضافة Auth)
+// STATE
 // ============================================================
-// نستخدم sessionStorage فقط لـ device ID مش للبيانات
-let DRIVER_ID = sessionStorage.getItem('nabil_driver_id');
-if (!DRIVER_ID) {
-  DRIVER_ID = 'driver_' + Math.random().toString(36).substr(2, 9);
-  sessionStorage.setItem('nabil_driver_id', DRIVER_ID);
-}
-
-// ============================================================
-// FIREBASE INIT
-// ============================================================
-let db = null;
-let appState = { online: false, driverName: 'مندوب دليفري', themeMode: 'dark' };
-let ordersCache = [];
+let currentUser   = null;
+let userProfile   = null;
+let ordersCache   = [];
 let restaurantsCache = [];
-
-// Firestore references
-let ordersRef, restaurantsRef, settingsRef;
-
-function initFirebase() {
-  if (!FB_CONFIGURED) return false;
-  try {
-    firebase.initializeApp(FIREBASE_CONFIG);
-    db = firebase.firestore();
-    // Enable offline persistence
-    db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-      console.log('Persistence error:', err.code);
-    });
-    ordersRef = db.collection('orders').where('driverId', '==', DRIVER_ID);
-    restaurantsRef = db.collection('restaurants').where('driverId', '==', DRIVER_ID);
-    settingsRef = db.collection('settings').doc(DRIVER_ID);
-    return true;
-  } catch (e) {
-    console.error('Firebase init error:', e);
-    return false;
-  }
-}
-
-// ============================================================
-// SETTINGS - Firestore
-// ============================================================
-async function loadSettings() {
-  if (!db) return;
-  try {
-    const doc = await settingsRef.get();
-    if (doc.exists) {
-      const data = doc.data();
-      appState.driverName = data.driverName || 'مندوب دليفري';
-      appState.themeMode = data.themeMode || 'dark';
-    }
-    updateDriverUI();
-    applyTheme(appState.themeMode);
-  } catch (e) { console.log('Settings load error:', e); }
-}
-
-async function saveSettings(updates) {
-  if (!db) return;
-  Object.assign(appState, updates);
-  try {
-    await settingsRef.set(appState, { merge: true });
-  } catch (e) { console.log('Settings save error:', e); }
-}
-
-function updateDriverUI() {
-  const name = appState.driverName;
-  const el1 = document.getElementById('driverNameDisplay');
-  const el2 = document.getElementById('settingsDriverName');
-  if (el1) el1.textContent = name;
-  if (el2) el2.textContent = name;
-}
-
-// ============================================================
-// RESTAURANTS - Firestore
-// ============================================================
-const DEFAULT_RESTAURANTS = [
-  { name: 'ماكدونالدز', active: true },
-  { name: 'KFC', active: true },
-  { name: 'بيتزا هت', active: true },
-  { name: 'سوشي سوشي', active: true },
-];
-
-async function loadRestaurants() {
-  if (!db) return;
-  try {
-    setFbStatus('syncing', '🔄 تحميل المطاعم...');
-    const snap = await restaurantsRef.get();
-    if (snap.empty) {
-      // First time: seed defaults
-      await seedDefaultRestaurants();
-    } else {
-      restaurantsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    }
-    renderRestChips();
-    renderSettings();
-  } catch (e) {
-    console.log('Restaurants load error:', e);
-    setFbStatus('offline', '📴 خطأ في تحميل المطاعم');
-  }
-}
-
-async function seedDefaultRestaurants() {
-  const batch = db.batch();
-  DEFAULT_RESTAURANTS.forEach(r => {
-    const ref = db.collection('restaurants').doc();
-    batch.set(ref, { ...r, driverId: DRIVER_ID, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  });
-  await batch.commit();
-  // Reload
-  const snap = await restaurantsRef.get();
-  restaurantsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-async function addRestaurant() {
-  const name = document.getElementById('newRestName').value.trim();
-  if (!name) { showToast('اكتب اسم المطعم!'); return; }
-  if (!db) { showToast('⚠️ Firebase غير متصل'); return; }
-  try {
-    const docRef = await db.collection('restaurants').add({
-      name, active: true, driverId: DRIVER_ID,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    restaurantsCache.push({ id: docRef.id, name, active: true, driverId: DRIVER_ID });
-    document.getElementById('newRestName').value = '';
-    renderRestChips();
-    renderSettings();
-    showToast('✅ تم إضافة ' + name);
-  } catch (e) {
-    showToast('❌ خطأ في الإضافة');
-    console.log(e);
-  }
-}
-
-async function toggleRest(id) {
-  const r = restaurantsCache.find(x => x.id === id);
-  if (!r) return;
-  r.active = !r.active;
-  try {
-    await db.collection('restaurants').doc(id).update({ active: r.active });
-    renderSettings();
-    renderRestChips();
-  } catch (e) { showToast('❌ خطأ'); }
-}
-
-async function deleteRest(id) {
-  customConfirm('🏪', 'حذف المطعم', 'هيتحذف المطعم من القائمة، متأكد؟', async () => {
-    try {
-      await db.collection('restaurants').doc(id).delete();
-      restaurantsCache = restaurantsCache.filter(r => r.id !== id);
-      renderSettings();
-      renderRestChips();
-      showToast('🗑️ تم حذف المطعم');
-    } catch (e) { showToast('❌ خطأ في الحذف'); }
-  });
-}
-
-function getActiveRestaurants() {
-  return restaurantsCache.filter(r => r.active);
-}
-
-// ============================================================
-// ORDERS - Firestore
-// ============================================================
-function listenToOrders() {
-  if (!db) return;
-  setFbStatus('syncing', '🔄 جاري المزامنة...');
-  // Listen to all orders for this driver, ordered by timestamp
-  db.collection('orders')
-    .where('driverId', '==', DRIVER_ID)
-    .orderBy('timestamp', 'desc')
-    .onSnapshot(snap => {
-      ordersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setFbStatus('online', '🔥 Firebase متصل • ' + ordersCache.length + ' أوردر');
-      renderDashboard();
-      if (currentPage === 2) renderOrders(currentFilter);
-    }, err => {
-      console.log('Orders listener error:', err);
-      setFbStatus('offline', '📴 خطأ في المزامنة');
-    });
-}
-
-async function saveOrder() {
-  const address = document.getElementById('inp-address').value.trim();
-  const phone = document.getElementById('inp-phone').value.trim();
-  const total = parseFloat(document.getElementById('inp-total').value);
-  const delivery = parseFloat(document.getElementById('inp-delivery').value);
-
-  if (!selectedRest) { showToast('اختار مطعم أول!'); return; }
-  if (!address) { showToast('اكتب العنوان!'); return; }
-  if (!phone) { showToast('اكتب الموبايل!'); return; }
-  if (!total || total <= 0) { showToast('اكتب ثمن الأوردر!'); return; }
-  if (!delivery || delivery < 0) { showToast('اكتب رسوم التوصيل!'); return; }
-  if (delivery > total) { showToast('التوصيل أكبر من الأوردر!'); return; }
-  if (!db) { showToast('⚠️ Firebase غير متصل'); return; }
-
-  const rest = restaurantsCache.find(r => r.id === selectedRest);
-  const btn = document.getElementById('saveOrderBtn');
-  btn.textContent = '⏳ جاري الحفظ...';
-  btn.disabled = true;
-
-  try {
-    await db.collection('orders').add({
-      restId: selectedRest,
-      restName: rest ? rest.name : 'غير معروف',
-      address, phone, total, delivery,
-      restAmount: total - delivery,
-      payment: selectedPayment,
-      driverId: DRIVER_ID,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast('✅ تم حفظ الأوردر في Firebase!');
-    clearForm();
-    // Go to home to see update
-    goPage(0);
-  } catch (e) {
-    showToast('❌ خطأ في الحفظ: ' + e.message);
-    console.log(e);
-  } finally {
-    btn.textContent = '💾 حفظ الأوردر';
-    btn.disabled = false;
-  }
-}
-
-async function saveEdit() {
-  const id = document.getElementById('edit-id').value;
-  const address = document.getElementById('edit-address').value.trim();
-  const phone = document.getElementById('edit-phone').value.trim();
-  const total = parseFloat(document.getElementById('edit-total').value);
-  const delivery = parseFloat(document.getElementById('edit-delivery').value);
-
-  if (!address || !phone || !total || !delivery) { showToast('اكمل البيانات!'); return; }
-  if (!db) return;
-
-  try {
-    await db.collection('orders').doc(id).update({
-      address, phone, total, delivery,
-      restAmount: total - delivery,
-      payment: editPayment
-    });
-    closeModal('editModal');
-    showToast('✅ تم التعديل!');
-  } catch (e) {
-    showToast('❌ خطأ في التعديل');
-  }
-}
-
-async function deleteOrder(id) {
-  customConfirm('🗑️', 'حذف الأوردر', 'مش هترجع تاني، متأكد؟', async () => {
-    try {
-      await db.collection('orders').doc(id).delete();
-      showToast('🗑️ تم الحذف');
-    } catch (e) { showToast('❌ خطأ في الحذف'); }
-  });
-}
-
-async function clearTodayOrders() {
-  const today = new Date().toDateString();
-  const todayOrders = ordersCache.filter(o => {
-    const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
-    return ts.toDateString() === today;
-  });
-  customConfirm('⚠️', 'حذف أوردرات اليوم', `هتتحذف ${todayOrders.length} أوردر، متأكد؟`, async () => {
-    try {
-      const batch = db.batch();
-      todayOrders.forEach(o => batch.delete(db.collection('orders').doc(o.id)));
-      await batch.commit();
-      showToast('✅ تم حذف أوردرات اليوم');
-    } catch (e) { showToast('❌ خطأ في الحذف'); }
-  });
-}
-
-async function clearAllOrders() {
-  customConfirm('🚨', 'حذف كل الأوردرات', 'هتتمسح كل البيانات من Firebase نهائياً!', async () => {
-    try {
-      const batch = db.batch();
-      ordersCache.forEach(o => batch.delete(db.collection('orders').doc(o.id)));
-      await batch.commit();
-      showToast('🗑️ تم حذف كل الأوردرات');
-    } catch (e) { showToast('❌ خطأ في الحذف'); }
-  });
-}
-
-// ============================================================
-// FIREBASE STATUS UI
-// ============================================================
-function setFbStatus(type, text) {
-  const el = document.getElementById('fbStatus');
-  const dot = document.getElementById('onlineDot');
-  if (!el) return;
-  el.className = 'firebase-status ' + type;
-  el.querySelector('.status-dot').className = 'status-dot' + (type === 'syncing' ? ' pulse' : '');
-  document.getElementById('fbStatusText').textContent = text;
-  if (dot) {
-    dot.className = type === 'online' ? 'online-dot' : type === 'offline' ? 'online-dot offline-dot' : 'online-dot';
-  }
-  appState.online = type === 'online';
-}
-
-// ============================================================
-// DASHBOARD RENDER
-// ============================================================
-function renderDashboard() {
-  const today = new Date().toDateString();
-  const todayOrders = ordersCache.filter(o => {
-    const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp || Date.now());
-    return ts.toDateString() === today;
-  });
-
-  const cashOrders = todayOrders.filter(o => o.payment === 'cash');
-  const visaOrders = todayOrders.filter(o => o.payment === 'visa');
-
-  const totalProfit = todayOrders.reduce((s, o) => s + (o.delivery || 0), 0);
-  const totalCashCollected = cashOrders.reduce((s, o) => s + (o.total || 0), 0);
-  const visaEarnings = visaOrders.reduce((s, o) => s + (o.delivery || 0), 0);
-
-  animateNumber('stat-orders', todayOrders.length, '', 500);
-  animateNumber('stat-profit', totalProfit, ' ج', 600);
-  animateNumber('stat-cash', totalCashCollected, ' ج', 700);
-  animateNumber('stat-visa-earn', visaEarnings, ' ج', 800);
-
-  // Shift report
-  const rests = {};
-  todayOrders.forEach(o => {
-    if (!rests[o.restName]) rests[o.restName] = { cash: 0, visa: 0, delivery: 0, orders: 0 };
-    rests[o.restName].orders++;
-    rests[o.restName].delivery += (o.delivery || 0);
-    if (o.payment === 'cash') rests[o.restName].cash += (o.restAmount || 0);
-    else rests[o.restName].visa += (o.delivery || 0);
-  });
-
-  const cashToRestaurant = cashOrders.reduce((s, o) => s + (o.restAmount || 0), 0);
-
-  let report = '';
-  Object.entries(rests).forEach(([name, data]) => {
-    const netToRest = data.cash - data.visa;
-    report += `
-      <div class="report-row">
-        <span class="report-key">🏪 ${name} <span style="color:var(--primary);font-size:11px;">(${data.orders} أوردر)</span></span>
-        <span class="report-val ${netToRest >= 0 ? 'orange' : 'green'}">
-          ${netToRest >= 0 ? 'توريد ' + netToRest : 'يكسب ' + Math.abs(netToRest)} ج
-        </span>
-      </div>`;
-  });
-
-  if (!report) {
-    document.getElementById('shiftReport').innerHTML =
-      '<div style="color:var(--text2);font-size:13px;text-align:center;padding:10px;">لا أوردرات اليوم بعد 🕐</div>';
-  } else {
-    report += `
-      <div class="report-row" style="margin-top:8px;border-top:2px solid var(--primary);padding-top:8px;">
-        <span class="report-key" style="font-weight:800;color:var(--text)">💰 إجمالي أرباحك</span>
-        <span class="report-val green" style="font-size:18px;">${totalProfit} ج</span>
-      </div>
-      <div class="report-row">
-        <span class="report-key" style="font-weight:800;color:var(--text)">🏪 توريد صافي للمطاعم</span>
-        <span class="report-val orange">${Math.max(0, cashToRestaurant - visaEarnings)} ج</span>
-      </div>`;
-    document.getElementById('shiftReport').innerHTML = report;
-  }
-
-  // Recent orders (last 3 today)
-  const recent = todayOrders.slice(0, 3);
-  document.getElementById('recentOrders').innerHTML = recent.length
-    ? recent.map(o => renderOrderCard(o, true)).join('')
-    : '<div class="empty" style="padding:20px"><div class="empty-icon">🛵</div><div class="empty-text">استنى الأوردر الأول</div></div>';
-}
-
-// Animate number change
-function animateNumber(id, target, suffix, delay) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  setTimeout(() => {
-    el.textContent = target + suffix;
-  }, delay);
-}
-
-// ============================================================
-// ORDERS LIST
-// ============================================================
+let allDrivers    = [];
+let allOrders     = [];
 let currentFilter = 'all';
+let selectedRest  = null;
+let selectedPayment = null;
+let currentPage   = 0;
+let themeMode     = 'dark';
+let confirmResult = null;
+let otpTimer      = null;
+let recognizer    = null;
+let editingOrderId = null;
+let selectedDriverUid = null;
+let reportPeriod  = 'today';
+let ordersUnsubscribe = null;
+let allOrdersUnsubscribe = null;
 
-function filterOrders(type, el) {
-  currentFilter = type;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  renderOrders(type);
-}
+// Firestore refs (set after auth)
+let ordersRef, restaurantsRef, usersRef, settingsRef;
 
-function renderOrders(filter) {
-  let orders = [...ordersCache];
-  const today = new Date().toDateString();
-  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
-
-  if (filter === 'today') orders = orders.filter(o => {
-    const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp || 0);
-    return ts.toDateString() === today;
-  });
-  else if (filter === 'week') orders = orders.filter(o => {
-    const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp || 0);
-    return ts >= weekAgo;
-  });
-  else if (filter === 'cash') orders = orders.filter(o => o.payment === 'cash');
-  else if (filter === 'visa') orders = orders.filter(o => o.payment === 'visa');
-
-  const container = document.getElementById('ordersList');
-  if (!container) return;
-  if (!orders.length) {
-    container.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">لا أوردرات هنا</div><div class="empty-sub">جرب فلتر تاني</div></div>`;
-    return;
+// ============================================================
+// NETWORK
+// ============================================================
+function checkOnline() {
+  if (navigator.onLine) {
+    showScreen('loadingScreen');
+    initApp();
+  } else {
+    showScreen('offlineScreen');
   }
-  container.innerHTML = orders.map(o => renderOrderCard(o, false)).join('');
 }
+window.addEventListener('online', () => { if (!currentUser) checkOnline(); });
+window.addEventListener('offline', () => {
+  if (!currentUser) showScreen('offlineScreen');
+});
 
-function renderOrderCard(o, mini) {
-  const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp || Date.now());
-  const timeStr = ts.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-  const dateStr = ts.toLocaleDateString('ar-EG');
-  const isVisa = o.payment === 'visa';
-
-  return `<div class="order-card ${isVisa ? 'visa-card' : ''}">
-    <div class="order-header">
-      <span class="order-rest">🏪 ${o.restName}</span>
-      <span class="order-time">${dateStr} ${timeStr}</span>
-    </div>
-    <div class="order-address">📍 ${o.address}</div>
-    <div class="order-phone">📱 ${o.phone}</div>
-    <div class="order-amounts">
-      <span class="amount-tag tag-total">إجمالي: ${o.total} ج</span>
-      <span class="amount-tag tag-delivery">توصيل: ${o.delivery} ج</span>
-      <span class="amount-tag tag-rest">مطعم: ${o.restAmount} ج</span>
-      <span class="amount-tag ${isVisa ? 'tag-visa' : 'tag-cash'}">${isVisa ? '💳 فيزا' : '💵 كاش'}</span>
-    </div>
-    ${!mini ? `<div class="order-actions">
-      <button class="small-btn wa" onclick="sendWhatsappForOrder(${JSON.stringify(o).replace(/"/g,'&quot;')})">📲 واتساب</button>
-      <button class="small-btn edit" onclick="openEdit('${o.id}')">✏️ تعديل</button>
-      <button class="small-btn del" onclick="deleteOrder('${o.id}')">🗑️ حذف</button>
-    </div>` : ''}
-  </div>`;
+// ============================================================
+// SCREEN
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
 // ============================================================
-// EDIT ORDER
+// INIT
 // ============================================================
-function openEdit(id) {
-  const o = ordersCache.find(x => x.id === id);
-  if (!o) return;
-  document.getElementById('edit-id').value = id;
-  document.getElementById('edit-address').value = o.address || '';
-  document.getElementById('edit-phone').value = o.phone || '';
-  document.getElementById('edit-total').value = o.total || '';
-  document.getElementById('edit-delivery').value = o.delivery || '';
-  editPayment = o.payment || 'cash';
-  selectEditPayment(editPayment);
-  document.getElementById('editModal').classList.add('open');
-}
+async function initApp() {
+  if (!navigator.onLine) { showScreen('offlineScreen'); return; }
+  showScreen('loadingScreen');
 
-// ============================================================
-// SETTINGS RENDER
-// ============================================================
-function renderSettings() {
-  // Restaurants
-  const restListEl = document.getElementById('restList');
-  if (restListEl) {
-    restListEl.innerHTML = restaurantsCache.map(r => `
-      <div class="rest-item">
-        <span class="rest-name">${r.name}</span>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button class="rest-toggle ${r.active ? 'on' : ''}" onclick="toggleRest('${r.id}')"></button>
-          <button class="trash-btn" onclick="deleteRest('${r.id}')">🗑️</button>
-        </div>
-      </div>
-    `).join('') || '<p style="color:var(--text2);font-size:13px;text-align:center;padding:10px;">لا مطاعم. أضف من الأعلى.</p>';
-  }
-
-  // Firebase info
-  const fbInfoEl = document.getElementById('fbInfo');
-  if (fbInfoEl) {
-    const today = new Date().toDateString();
-    const todayCount = ordersCache.filter(o => {
-      const ts = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp || 0);
-      return ts.toDateString() === today;
-    }).length;
-    fbInfoEl.innerHTML = `
-      🔥 حالة: <strong style="color:${appState.online ? 'var(--success)' : 'var(--danger)'}">
-        ${appState.online ? 'متصل ✅' : 'غير متصل ❌'}
-      </strong><br>
-      📦 إجمالي الأوردرات: <strong style="color:var(--text)">${ordersCache.length}</strong><br>
-      📅 أوردرات النهارده: <strong style="color:var(--primary)">${todayCount}</strong><br>
-      🗄️ التخزين: <strong style="color:var(--text)">Firebase Firestore</strong><br>
-      👤 Driver ID: <strong style="color:var(--text2);font-size:11px;">${DRIVER_ID}</strong>
-    `;
-  }
-
-  // Theme buttons
-  ['auto','dark','light'].forEach(m => {
-    const el = document.getElementById('theme-' + m);
-    if (el) el.className = 'select-opt' + (m === appState.themeMode ? ' active orange' : '');
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      currentUser = user;
+      await loadUserProfile(user.uid);
+    } else {
+      showScreen('authScreen');
+    }
   });
 }
 
+async function loadUserProfile(uid) {
+  try {
+    usersRef = db.collection('users');
+    const doc = await usersRef.doc(uid).get();
+    if (doc.exists) {
+      userProfile = doc.data();
+    } else {
+      // New user - create as driver
+      const phone = currentUser.phoneNumber || '';
+      userProfile = {
+        uid, phone, role: 'driver',
+        name: 'مندوب دليفري',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await usersRef.doc(uid).set(userProfile);
+    }
+
+    if (userProfile.role === 'manager') {
+      initManagerApp();
+    } else {
+      initDriverApp();
+    }
+  } catch(e) {
+    showToast('خطأ في تحميل البيانات');
+    showScreen('authScreen');
+  }
+}
+
 // ============================================================
-// RESTAURANT CHIPS
+// PHONE AUTH
 // ============================================================
-let selectedRest = null;
+function sendOTP() {
+  const raw = document.getElementById('phoneInput').value.trim();
+  if (raw.length < 10) { showToast('ادخل رقم صحيح'); return; }
+
+  // Format: remove leading 0 and add +20
+  let num = raw.startsWith('0') ? raw.slice(1) : raw;
+  const phoneNumber = '+20' + num;
+
+  const btn = document.getElementById('sendOtpBtn');
+  btn.disabled = true;
+  btn.textContent = 'جاري الإرسال...';
+
+  if (!window.recaptchaVerifier) {
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      size: 'invisible',
+      callback: () => {}
+    });
+  }
+
+  auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
+    .then(result => {
+      confirmResult = result;
+      document.getElementById('authStep1').classList.remove('active');
+      document.getElementById('authStep2').classList.add('active');
+      startOtpTimer();
+      btn.disabled = false;
+      btn.innerHTML = '📱 إرسال كود التحقق';
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '📱 إرسال كود التحقق';
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+      showToast('خطأ: ' + (err.code === 'auth/too-many-requests' ? 'طلبات كثيرة، انتظر' : err.message));
+    });
+}
+
+function verifyOTP() {
+  const code = document.getElementById('otpInput').value.trim();
+  if (code.length !== 6) { showToast('ادخل الكود المكون من 6 أرقام'); return; }
+  if (!confirmResult) { showToast('أعد إرسال الكود'); return; }
+
+  const btn = document.getElementById('verifyOtpBtn');
+  btn.disabled = true;
+  btn.textContent = 'جاري التحقق...';
+
+  confirmResult.confirm(code)
+    .then(result => {
+      currentUser = result.user;
+      clearOtpTimer();
+      showScreen('loadingScreen');
+      loadUserProfile(currentUser.uid);
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.innerHTML = '✅ تأكيد الدخول';
+      showToast('الكود غير صحيح');
+    });
+}
+
+function backToPhone() {
+  clearOtpTimer();
+  document.getElementById('authStep2').classList.remove('active');
+  document.getElementById('authStep1').classList.add('active');
+  document.getElementById('otpInput').value = '';
+  confirmResult = null;
+}
+
+function startOtpTimer() {
+  let secs = 60;
+  document.getElementById('timerVal').textContent = secs;
+  otpTimer = setInterval(() => {
+    secs--;
+    document.getElementById('timerVal').textContent = secs;
+    if (secs <= 0) clearOtpTimer();
+  }, 1000);
+}
+function clearOtpTimer() { if (otpTimer) { clearInterval(otpTimer); otpTimer = null; } }
+
+function confirmLogout() {
+  showModal('تسجيل الخروج', '<p style="color:var(--text2);font-size:14px;">هل تريد تسجيل الخروج؟</p>',
+    [{ label: 'خروج', cls: 'danger', action: doLogout },
+     { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+}
+
+async function doLogout() {
+  closeModal();
+  if (ordersUnsubscribe) ordersUnsubscribe();
+  if (allOrdersUnsubscribe) allOrdersUnsubscribe();
+  await auth.signOut();
+  currentUser = null;
+  userProfile = null;
+  ordersCache = [];
+  showScreen('authScreen');
+}
+
+// ============================================================
+// DRIVER APP INIT
+// ============================================================
+function initDriverApp() {
+  const uid = currentUser.uid;
+  ordersRef = db.collection('orders');
+  restaurantsRef = db.collection('restaurants');
+  settingsRef = db.collection('users').doc(uid);
+
+  // Update last seen
+  db.collection('users').doc(uid).update({
+    lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+    online: true
+  }).catch(() => {});
+
+  // Apply saved theme
+  themeMode = userProfile.themeMode || 'dark';
+  applyTheme(themeMode);
+
+  // Set name in UI
+  const name = userProfile.name || 'مندوب دليفري';
+  document.getElementById('driverNameDisplay').textContent = name;
+  document.getElementById('settingsNameVal').textContent = name;
+  document.getElementById('settingsPhone').textContent = currentUser.phoneNumber || '—';
+
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  loadRestaurantsDriver();
+  listenToDriverOrders();
+  showScreen('driverApp');
+}
+
+// ============================================================
+// DRIVER: RESTAURANTS
+// ============================================================
+async function loadRestaurantsDriver() {
+  const snap = await restaurantsRef.orderBy('name').get();
+  restaurantsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderRestChips();
+  renderRestSettings();
+}
 
 function renderRestChips() {
-  const active = getActiveRestaurants();
-  const container = document.getElementById('restChips');
-  if (!container) return;
-  if (!active.length) {
-    container.innerHTML = '<p style="color:var(--text2);font-size:13px;">لا مطاعم نشطة. أضف من الإعدادات.</p>';
-    return;
-  }
-  if (!selectedRest || !active.find(r => r.id === selectedRest)) {
-    selectedRest = active[0].id;
-  }
-  container.innerHTML = active.map(r => `
-    <button class="rest-chip ${r.id === selectedRest ? 'active' : ''}" onclick="selectRest('${r.id}')">${r.name}</button>
-  `).join('');
+  const active = restaurantsCache.filter(r => r.active !== false);
+  const html = active.map(r =>
+    `<button class="rest-chip ${selectedRest === r.id ? 'active' : ''}" onclick="selectRest('${r.id}')">${r.name}</button>`
+  ).join('');
+  document.getElementById('restChips').innerHTML = html + `<button class="rest-chip add-chip" onclick="addRestaurantFromOrder()">＋ جديد</button>`;
 }
 
 function selectRest(id) {
-  selectedRest = id;
+  selectedRest = selectedRest === id ? null : id;
   renderRestChips();
 }
 
-// ============================================================
-// PAYMENT
-// ============================================================
-let selectedPayment = 'cash';
+function renderRestSettings() {
+  const el = document.getElementById('restSettingsList');
+  if (!restaurantsCache.length) { el.innerHTML = '<div class="empty-state"><div class="empty-text">لا مطاعم بعد</div></div>'; return; }
+  el.innerHTML = restaurantsCache.map(r => `
+    <div class="rest-card">
+      <span style="font-size:20px;">🏪</span>
+      <span class="rest-name-big">${r.name}</span>
+      <button class="rest-delete-btn" onclick="deleteRestaurant('${r.id}','${r.name}')">حذف</button>
+    </div>`).join('');
+}
 
+async function addRestaurant() {
+  const name = prompt('اسم المطعم الجديد:');
+  if (!name) return;
+  await restaurantsRef.add({ name: name.trim(), active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  showToast('✅ تم إضافة ' + name);
+  loadRestaurantsDriver();
+}
+
+async function addRestaurantFromOrder() {
+  const name = prompt('اسم المطعم:');
+  if (!name) return;
+  const docRef = await restaurantsRef.add({ name: name.trim(), active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  await loadRestaurantsDriver();
+  selectedRest = docRef.id;
+  renderRestChips();
+}
+
+async function deleteRestaurant(id, name) {
+  if (!confirm('حذف ' + name + '؟')) return;
+  await restaurantsRef.doc(id).delete();
+  if (selectedRest === id) selectedRest = null;
+  loadRestaurantsDriver();
+}
+
+// ============================================================
+// DRIVER: ORDERS
+// ============================================================
+function listenToDriverOrders() {
+  if (ordersUnsubscribe) ordersUnsubscribe();
+  ordersUnsubscribe = ordersRef
+    .where('driverId', '==', currentUser.uid)
+    .orderBy('timestamp', 'desc')
+    .onSnapshot(snap => {
+      ordersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      updateDriverStats();
+      renderShiftReport();
+      renderOrdersList();
+      updateStatusBar();
+    }, err => {
+      document.getElementById('driverStatus').className = 'status-bar err';
+      document.getElementById('statusDot').className = 'status-dot error';
+      document.getElementById('statusText').textContent = 'خطأ في المزامنة';
+    });
+}
+
+function getTodayOrders() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return ordersCache.filter(o => {
+    if (!o.timestamp) return false;
+    const t = o.timestamp.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
+    return t >= start;
+  });
+}
+
+function updateDriverStats() {
+  const today = getTodayOrders();
+  const totalDelivery = today.reduce((s,o) => s + (o.delivery || 0), 0);
+  const visaOrders = today.filter(o => o.payment === 'visa');
+  const totalVisa = visaOrders.reduce((s,o) => s + (o.total || 0), 0);
+  const cashOrders = today.filter(o => o.payment === 'cash');
+  const totalCash = cashOrders.reduce((s,o) => s + (o.total || 0), 0);
+
+  document.getElementById('statOrders').textContent = today.length;
+  document.getElementById('statDelivery').textContent = 'ج ' + totalDelivery;
+  document.getElementById('statVisa').textContent = 'ج ' + totalVisa;
+  document.getElementById('statCash').textContent = 'ج ' + totalCash;
+}
+
+function updateStatusBar() {
+  const today = getTodayOrders();
+  document.getElementById('driverStatus').className = 'status-bar ok';
+  document.getElementById('statusDot').className = 'status-dot';
+  document.getElementById('statusText').textContent = `Firebase 🔥 متصل • ${today.length} أوردر اليوم`;
+}
+
+function renderShiftReport() {
+  const today = getTodayOrders();
+  if (!today.length) {
+    document.getElementById('shiftReport').innerHTML = '<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">لا أوردرات اليوم بعد</div></div>';
+    return;
+  }
+  const byRest = {};
+  today.forEach(o => {
+    if (!byRest[o.restName]) byRest[o.restName] = { orders:0, delivery:0, cash:0, visa:0 };
+    byRest[o.restName].orders++;
+    byRest[o.restName].delivery += o.delivery || 0;
+    if (o.payment === 'cash') byRest[o.restName].cash += o.total || 0;
+    if (o.payment === 'visa') byRest[o.restName].visa += o.total || 0;
+  });
+  document.getElementById('shiftReport').innerHTML = Object.entries(byRest).map(([name, d]) => `
+    <div class="report-card">
+      <div class="report-header" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div>
+          <div class="report-rest">${name}</div>
+          <div class="report-count">${d.orders} أوردر</div>
+        </div>
+        <div class="report-delivery">ج ${d.delivery}</div>
+      </div>
+      <div class="report-body">
+        <div class="report-detail"><span>كاش</span><span>ج ${d.cash}</span></div>
+        <div class="report-detail"><span>فيزا</span><span>ج ${d.visa}</span></div>
+        <div class="report-detail"><span>توصيل</span><span>ج ${d.delivery}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderOrdersList() {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(now); weekStart.setDate(now.getDate() - 7);
+
+  let list = [...ordersCache];
+  if (currentFilter === 'today') list = list.filter(o => {
+    const t = o.timestamp?.toDate?.() || new Date(o.timestamp);
+    return t >= todayStart;
+  });
+  else if (currentFilter === 'week') list = list.filter(o => {
+    const t = o.timestamp?.toDate?.() || new Date(o.timestamp);
+    return t >= weekStart;
+  });
+  else if (currentFilter === 'cash') list = list.filter(o => o.payment === 'cash');
+  else if (currentFilter === 'visa') list = list.filter(o => o.payment === 'visa');
+
+  if (!list.length) {
+    document.getElementById('ordersList').innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد أوردرات</div></div>';
+    return;
+  }
+  document.getElementById('ordersList').innerHTML = list.map(o => {
+    const t = o.timestamp?.toDate?.() || (o.timestamp ? new Date(o.timestamp) : new Date());
+    const timeStr = t.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+    const dateStr = t.toLocaleDateString('ar-EG', {day:'2-digit', month:'2-digit'});
+    return `<div class="order-card ${o.payment || 'cash'}">
+      <div class="order-head">
+        <span class="order-rest">${o.restName || '—'}</span>
+        <span class="order-time">${dateStr} ${timeStr}</span>
+      </div>
+      <div class="order-body">
+        <div class="order-details">
+          ${o.address ? '📍 ' + o.address + '<br>' : ''}
+          ${o.phone ? '📞 ' + o.phone + '<br>' : ''}
+          💳 ${o.payment === 'visa' ? 'فيزا' : 'كاش'}
+        </div>
+        <div class="order-amount">
+          <div class="order-delivery">ج ${o.delivery || 0}</div>
+          <div class="order-total">إجمالي ج ${o.total || 0}</div>
+        </div>
+      </div>
+      <div class="order-actions">
+        <button class="action-btn edit" onclick="editOrder('${o.id}')">✏️ تعديل</button>
+        <button class="action-btn delete" onclick="deleteOrder('${o.id}')">🗑 حذف</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(el, filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderOrdersList();
+}
+
+// ============================================================
+// ADD ORDER
+// ============================================================
 function selectPayment(type) {
   selectedPayment = type;
-  document.getElementById('opt-cash').className = 'select-opt' + (type === 'cash' ? ' active cash' : '');
-  document.getElementById('opt-visa').className = 'select-opt' + (type === 'visa' ? ' active visa' : '');
-  const note = document.getElementById('paymentNote');
-  if (type === 'visa') {
-    note.style.display = 'block';
-    note.innerHTML = `<div class="payment-note">💳 <strong>دفع مسبق:</strong> العميل دفع للمطعم مباشرة. التوصيل عند المطعم ويخصمه من الكاش.</div>`;
-  } else {
-    note.style.display = 'none';
-  }
+  document.getElementById('payCash').className = 'pay-opt' + (type === 'cash' ? ' active-cash' : '');
+  document.getElementById('payVisa').className = 'pay-opt' + (type === 'visa' ? ' active-visa' : '');
 }
 
-let editPayment = 'cash';
-function selectEditPayment(type) {
-  editPayment = type;
-  document.getElementById('edit-opt-cash').className = 'select-opt' + (type === 'cash' ? ' active cash' : '');
-  document.getElementById('edit-opt-visa').className = 'select-opt' + (type === 'visa' ? ' active visa' : '');
-}
+async function addOrder() {
+  if (!selectedRest) { showToast('اختر المطعم أولاً'); return; }
+  const address  = document.getElementById('addressInput').value.trim();
+  const phone    = document.getElementById('phoneOrderInput').value.trim();
+  const restAmt  = parseFloat(document.getElementById('restAmountInput').value) || 0;
+  const delivery = parseFloat(document.getElementById('deliveryInput').value) || 0;
+  if (!address)   { showToast('ادخل العنوان'); return; }
+  if (!selectedPayment) { showToast('اختر طريقة الدفع'); return; }
 
-// ============================================================
-// WHATSAPP
-// ============================================================
-function getGreeting() {
-  const h = new Date().getHours();
-  return h >= 5 && h < 12 ? 'صباح الخير' : 'مساء الخير';
-}
-
-function sendWhatsapp() {
-  const phone = document.getElementById('inp-phone').value.trim();
-  if (!phone) { showToast('اكتب الموبايل الأول!'); return; }
   const rest = restaurantsCache.find(r => r.id === selectedRest);
-  const restName = rest ? rest.name : 'المطعم';
-  sendWaMessage(phone, restName);
-}
+  const total = restAmt + delivery;
 
-function sendWhatsappForOrder(o) {
-  sendWaMessage(o.phone, o.restName);
-}
+  const orderData = {
+    driverId: currentUser.uid,
+    driverName: userProfile.name || 'مندوب',
+    restId: selectedRest,
+    restName: rest?.name || '—',
+    restAmount: restAmt,
+    delivery,
+    total,
+    payment: selectedPayment,
+    address,
+    phone,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  };
 
-function sendWaMessage(phone, restName) {
-  const greeting = getGreeting();
-  const msg = `${greeting} يا فندم 🙏\nأنا مندوب ${restName} 🛵\nممكن بس لوكيشن وأنا في الطريق إن شاء الله ✨`;
-  let cleanPhone = phone.replace(/[^0-9]/g, '');
-  if (cleanPhone.startsWith('0')) cleanPhone = '20' + cleanPhone.substring(1);
-  window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-}
-
-function clearForm() {
-  ['inp-address', 'inp-phone', 'inp-total', 'inp-delivery'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  selectPayment('cash');
-}
-
-// ============================================================
-// SETUP FIRST TIME
-// ============================================================
-function saveSetup() {
-  const name = document.getElementById('setupDriverName').value.trim() || 'مندوب دليفري';
-  appState.driverName = name;
-  if (db) saveSettings({ driverName: name, themeMode: 'dark' });
-  document.getElementById('setupModal').classList.remove('show');
-  updateDriverUI();
-  showToast('🎉 أهلاً ' + name + '!');
-  loadRestaurants();
-  listenToOrders();
-}
-
-// ============================================================
-// THEME
-// ============================================================
-function applyTheme(mode) {
-  appState.themeMode = mode;
-  let theme = mode;
-  if (mode === 'auto') {
-    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  document.body.dataset.theme = theme;
-  const btn = document.getElementById('themeBtn');
-  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = theme === 'dark' ? '#0a0f1e' : '#f0f4f8';
-}
-
-function toggleTheme() {
-  const newMode = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
-  setThemeMode(newMode);
-}
-
-function setThemeMode(mode) {
-  applyTheme(mode);
-  saveSettings({ themeMode: mode });
-  ['auto','dark','light'].forEach(m => {
-    const el = document.getElementById('theme-' + m);
-    if (el) el.className = 'select-opt' + (m === mode ? ' active orange' : '');
-  });
-}
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-  if (appState.themeMode === 'auto') applyTheme('auto');
-});
-
-// ============================================================
-// SWIPE NAVIGATION
-// ============================================================
-let currentPage = 0;
-const totalPages = 4;
-let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
-let isDragging = false, dragDeltaX = 0;
-
-const wrapper = document.getElementById('pagesWrapper');
-
-function goPage(page) {
-  currentPage = Math.max(0, Math.min(totalPages - 1, page));
-  wrapper.style.transform = `translateX(${currentPage * 25}%)`;
-
-  // Update nav
-  document.querySelectorAll('.nav-item').forEach((n, i) => {
-    n.classList.toggle('active', i === currentPage);
-  });
-
-  // Update dots
-  document.querySelectorAll('.dot').forEach((d, i) => {
-    d.classList.toggle('active', i === currentPage);
-  });
-
-  // Refresh content on visit
-  if (currentPage === 0) renderDashboard();
-  if (currentPage === 2) renderOrders(currentFilter);
-  if (currentPage === 3) { renderSettings(); }
-  if (currentPage === 1) renderRestChips();
-}
-
-// Touch swipe
-const swipeContainer = document.getElementById('swipeContainer');
-swipeContainer.addEventListener('touchstart', e => {
-  const touch = e.touches[0];
-  touchStartX = touch.clientX;
-  touchStartY = touch.clientY;
-  touchStartTime = Date.now();
-  isDragging = false;
-  dragDeltaX = 0;
-}, { passive: true });
-
-swipeContainer.addEventListener('touchmove', e => {
-  if (!e.touches[0]) return;
-  const dx = e.touches[0].clientX - touchStartX;
-  const dy = e.touches[0].clientY - touchStartY;
-
-  // Only start dragging if horizontal
-  if (!isDragging && Math.abs(dx) < Math.abs(dy) * 1.2) return;
-  isDragging = true;
-
-  // Prevent vertical scroll during horizontal swipe
-  e.preventDefault();
-
-  dragDeltaX = dx;
-  const basePct = currentPage * 25;
-  const offsetPct = (dx / window.innerWidth) * 25;
-  wrapper.classList.add('no-transition');
-  wrapper.style.transform = `translateX(${basePct - offsetPct}%)`;
-}, { passive: false });
-
-swipeContainer.addEventListener('touchend', e => {
-  if (!isDragging) return;
-  wrapper.classList.remove('no-transition');
-
-  const elapsed = Date.now() - touchStartTime;
-  const velocity = Math.abs(dragDeltaX) / elapsed;
-  const threshold = window.innerWidth * 0.25;
-
-  if (dragDeltaX < -threshold || velocity > 0.4 && dragDeltaX < 0) {
-    goPage(currentPage + 1);
-  } else if (dragDeltaX > threshold || velocity > 0.4 && dragDeltaX > 0) {
-    goPage(currentPage - 1);
+  if (editingOrderId) {
+    await ordersRef.doc(editingOrderId).update(orderData);
+    editingOrderId = null;
+    showToast('✅ تم تعديل الأوردر');
   } else {
-    goPage(currentPage); // snap back
+    await ordersRef.add(orderData);
+    showToast('✅ تم حفظ الأوردر');
   }
-  isDragging = false;
-  dragDeltaX = 0;
-});
 
-// ============================================================
-// CUSTOM CONFIRM
-// ============================================================
-function customConfirm(icon, title, msg, onOk) {
-  document.getElementById('confirmIcon').textContent = icon;
-  document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmMsg').textContent = msg;
-  document.getElementById('confirmOkBtn').onclick = () => { closeModal('confirmModal'); onOk(); };
-  document.getElementById('confirmModal').classList.add('open');
+  // Reset form
+  document.getElementById('addressInput').value = '';
+  document.getElementById('phoneOrderInput').value = '';
+  document.getElementById('restAmountInput').value = '';
+  document.getElementById('deliveryInput').value = '';
+  selectedRest = null;
+  selectedPayment = null;
+  renderRestChips();
+  document.getElementById('payCash').className = 'pay-opt';
+  document.getElementById('payVisa').className = 'pay-opt';
+  goPage(0);
 }
 
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
+async function editOrder(id) {
+  const o = ordersCache.find(x => x.id === id);
+  if (!o) return;
+  editingOrderId = id;
+  selectedRest = o.restId;
+  selectedPayment = o.payment;
+  document.getElementById('addressInput').value = o.address || '';
+  document.getElementById('phoneOrderInput').value = o.phone || '';
+  document.getElementById('restAmountInput').value = o.restAmount || '';
+  document.getElementById('deliveryInput').value = o.delivery || '';
+  renderRestChips();
+  selectPayment(o.payment);
+  goPage(2);
+  showToast('📝 جاري التعديل...');
 }
 
-document.getElementById('editModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal('editModal');
-});
-document.getElementById('confirmModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal('confirmModal');
+async function deleteOrder(id) {
+  showModal('حذف الأوردر', '<p style="color:var(--text2);font-size:14px;">هل تريد حذف هذا الأوردر نهائياً؟</p>',
+    [{ label: 'حذف', cls: 'danger', action: async () => {
+        await ordersRef.doc(id).delete();
+        closeModal(); showToast('🗑 تم الحذف');
+    }},
+    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function goPage(n) {
+  currentPage = n;
+  document.getElementById('pagesWrapper').style.transform = `translateX(${n * 25}%)`;
+  document.querySelectorAll('.nav-item').forEach((el, i) => el.classList.toggle('active', i === n));
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function editDriverName() {
+  showModal('تغيير الاسم', `<input class="form-input" id="newNameInput" value="${userProfile.name || ''}" placeholder="اسمك...">`,
+    [{ label: 'حفظ', cls: 'confirm', action: async () => {
+        const name = document.getElementById('newNameInput').value.trim() || 'مندوب دليفري';
+        userProfile.name = name;
+        await db.collection('users').doc(currentUser.uid).update({ name });
+        document.getElementById('driverNameDisplay').textContent = name;
+        document.getElementById('settingsNameVal').textContent = name;
+        closeModal(); showToast('✅ تم تغيير الاسم');
+    }},
+    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+}
+
+function cycleTheme() {
+  themeMode = themeMode === 'dark' ? 'light' : 'dark';
+  applyTheme(themeMode);
+  db.collection('users').doc(currentUser.uid).update({ themeMode });
+}
+
+function toggleTheme() { cycleTheme(); }
+
+function applyTheme(mode) {
+  document.body.dataset.theme = mode === 'light' ? 'light' : '';
+  document.getElementById('themeVal') && (document.getElementById('themeVal').textContent = mode === 'light' ? 'فاتح' : 'داكن');
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = mode === 'light' ? '🌙' : '☀️';
+}
+
+// ============================================================
+// CLOCK
+// ============================================================
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours(), m = now.getMinutes();
+  const isAM = h < 12;
+  const h12 = h % 12 || 12;
+  const mStr = String(m).padStart(2, '0');
+  document.getElementById('clockDisplay').textContent = `${h12}:${mStr} ${isAM ? 'ص' : 'م'}`;
+  const g = document.getElementById('greeting');
+  if (h < 12) g.textContent = 'صباح الخير 👋';
+  else if (h < 17) g.textContent = 'مساء النور 💪';
+  else g.textContent = 'النهارده شغال 🔥';
+}
+
+// ============================================================
+// VOICE INPUT
+// ============================================================
+function startVoice(inputId, btnId) {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showToast('المتصفح لا يدعم الصوت'); return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (recognizer) { recognizer.stop(); recognizer = null; document.getElementById(btnId).classList.remove('active'); return; }
+  recognizer = new SR();
+  recognizer.lang = 'ar-EG';
+  recognizer.interimResults = false;
+  document.getElementById(btnId).classList.add('active');
+  recognizer.onresult = e => { document.getElementById(inputId).value = e.results[0][0].transcript; };
+  recognizer.onend = () => { document.getElementById(btnId).classList.remove('active'); recognizer = null; };
+  recognizer.start();
+}
+
+// ============================================================
+// MANAGER APP
+// ============================================================
+function initManagerApp() {
+  themeMode = userProfile.themeMode || 'dark';
+  applyTheme(themeMode);
+  document.getElementById('managerBadge').textContent = userProfile.name || 'مدير';
+  showScreen('managerApp');
+  listenAllOrders();
+  loadAllDrivers();
+  loadMgrRestaurants();
+}
+
+function listenAllOrders() {
+  if (allOrdersUnsubscribe) allOrdersUnsubscribe();
+  const todayStart = new Date();
+  todayStart.setHours(0,0,0,0);
+
+  allOrdersUnsubscribe = db.collection('orders')
+    .orderBy('timestamp', 'desc')
+    .onSnapshot(snap => {
+      allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      updateMgrOverview();
+      renderMgrRecentOrders();
+      renderMgrReports();
+    }, () => {});
+}
+
+function updateMgrOverview() {
+  const todayStart = new Date();
+  todayStart.setHours(0,0,0,0);
+  const today = allOrders.filter(o => {
+    if (!o.timestamp) return false;
+    const t = o.timestamp.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
+    return t >= todayStart;
+  });
+  const driverIds = [...new Set(today.map(o => o.driverId))];
+  const totalDelivery = today.reduce((s,o) => s + (o.delivery||0), 0);
+  const totalCash = today.filter(o => o.payment === 'cash').reduce((s,o) => s + (o.total||0), 0);
+
+  document.getElementById('mgrStatDrivers').textContent = driverIds.length;
+  document.getElementById('mgrStatOrders').textContent = today.length;
+  document.getElementById('mgrStatDelivery').textContent = 'ج ' + totalDelivery;
+  document.getElementById('mgrStatCash').textContent = 'ج ' + totalCash;
+}
+
+function renderMgrRecentOrders() {
+  const recent = allOrders.slice(0, 20);
+  if (!recent.length) {
+    document.getElementById('mgrRecentOrders').innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا أوردرات بعد</div></div>';
+    return;
+  }
+  document.getElementById('mgrRecentOrders').innerHTML = recent.map(o => {
+    const t = o.timestamp?.toDate?.() || new Date();
+    const timeStr = t.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+    return `<div class="mgr-order-card">
+      <span style="font-size:20px;">${o.payment === 'visa' ? '💳' : '💵'}</span>
+      <div class="mgr-order-body">
+        <div class="mgr-order-rest">${o.restName || '—'}</div>
+        <div class="mgr-order-driver">👤 ${o.driverName || '—'} • ${o.address || ''}</div>
+        <div class="mgr-order-time">⏰ ${timeStr}</div>
+      </div>
+      <div class="mgr-order-amount">ج ${o.delivery || 0}</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// MANAGER: DRIVERS
+// ============================================================
+async function loadAllDrivers() {
+  const snap = await db.collection('users').where('role','==','driver').get();
+  allDrivers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+  renderDriversList();
+}
+
+function renderDriversList(filter = '') {
+  let list = allDrivers;
+  if (filter) {
+    const q = filter.toLowerCase();
+    list = list.filter(d => (d.name||'').includes(q) || (d.phone||'').includes(q));
+  }
+  if (!list.length) {
+    document.getElementById('driversList').innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا مناديب بعد</div></div>';
+    return;
+  }
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+
+  document.getElementById('driversList').innerHTML = list.map(d => {
+    const driverOrders = allOrders.filter(o => o.driverId === d.uid);
+    const todayOrders = driverOrders.filter(o => {
+      if (!o.timestamp) return false;
+      const t = o.timestamp.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
+      return t >= todayStart;
+    });
+    const todayDelivery = todayOrders.reduce((s,o) => s + (o.delivery||0), 0);
+    const initials = (d.name||'م').charAt(0);
+    const isOnline = d.lastSeen && ((new Date() - (d.lastSeen.toDate ? d.lastSeen.toDate() : new Date(d.lastSeen))) < 300000);
+    return `<div class="driver-card" onclick="showDriverDetail('${d.uid}')">
+      <div class="driver-avatar">${initials}</div>
+      <div class="driver-info">
+        <div class="driver-name">${d.name || 'بدون اسم'}</div>
+        <div class="driver-phone">${d.phone || '—'}</div>
+        <div class="driver-stats-row">
+          <span class="driver-mini-stat">اليوم: <span>${todayOrders.length} أوردر • ج ${todayDelivery}</span></span>
+        </div>
+      </div>
+      <div class="driver-online-dot ${isOnline ? 'online' : ''}"></div>
+    </div>`;
+  }).join('');
+}
+
+function filterDrivers() {
+  const q = document.getElementById('driverSearch').value.trim();
+  renderDriversList(q);
+}
+
+function showAddDriverModal() {
+  showModal('إضافة مندوب', `
+    <div class="input-group" style="margin-bottom:12px;">
+      <div class="input-label">الاسم</div>
+      <input class="form-input" id="newDriverName" placeholder="اسم المندوب">
+    </div>
+    <div class="input-group">
+      <div class="input-label">رقم الموبايل</div>
+      <div class="input-row">
+        <div class="input-prefix">+20</div>
+        <input type="tel" id="newDriverPhone" placeholder="1xxxxxxxxx" style="background:transparent;border:none;outline:none;padding:14px 16px;font-size:15px;color:var(--text);flex:1;font-family:Cairo,sans-serif;" inputmode="numeric">
+      </div>
+    </div>`,
+    [{ label: 'إضافة', cls: 'confirm', action: addDriver },
+     { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+}
+
+async function addDriver() {
+  const name = document.getElementById('newDriverName').value.trim();
+  const phone = document.getElementById('newDriverPhone').value.trim();
+  if (!name || !phone) { showToast('ادخل الاسم والرقم'); return; }
+
+  const fullPhone = '+20' + (phone.startsWith('0') ? phone.slice(1) : phone);
+  // Create pending driver profile (will be linked when they log in)
+  const newDoc = await db.collection('users').add({
+    name, phone: fullPhone, role: 'driver',
+    pending: true,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  allDrivers.push({ uid: newDoc.id, name, phone: fullPhone, role: 'driver' });
+  renderDriversList();
+  closeModal();
+  showToast('✅ تم إضافة ' + name);
+}
+
+function showDriverDetail(uid) {
+  selectedDriverUid = uid;
+  const driver = allDrivers.find(d => d.uid === uid);
+  if (!driver) return;
+
+  document.getElementById('detailDriverName').textContent = driver.name || '—';
+  document.getElementById('detailDriverPhone').textContent = driver.phone || '—';
+
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const dOrders = allOrders.filter(o => o.driverId === uid);
+  const todayOrders = dOrders.filter(o => {
+    const t = o.timestamp?.toDate?.() || new Date(o.timestamp);
+    return t >= todayStart;
+  });
+  const todayDelivery = todayOrders.reduce((s,o) => s + (o.delivery||0), 0);
+  const todayCash = todayOrders.filter(o => o.payment==='cash').reduce((s,o) => s + (o.total||0), 0);
+
+  document.getElementById('detailOrders').textContent = todayOrders.length;
+  document.getElementById('detailDelivery').textContent = 'ج ' + todayDelivery;
+  document.getElementById('detailTotal').textContent = 'ج ' + todayCash;
+
+  document.getElementById('detailOrdersList').innerHTML = todayOrders.length
+    ? todayOrders.map(o => {
+        const t = o.timestamp?.toDate?.() || new Date();
+        const timeStr = t.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+        return `<div class="mgr-order-card">
+          <span style="font-size:20px;">${o.payment==='visa'?'💳':'💵'}</span>
+          <div class="mgr-order-body">
+            <div class="mgr-order-rest">${o.restName||'—'}</div>
+            <div class="mgr-order-driver">📍 ${o.address||'—'}</div>
+            <div class="mgr-order-time">⏰ ${timeStr}</div>
+          </div>
+          <div class="mgr-order-amount">ج ${o.delivery||0}</div>
+        </div>`;
+      }).join('')
+    : '<div class="empty-state"><div class="empty-text">لا أوردرات اليوم</div></div>';
+
+  document.getElementById('driverDetailOverlay').classList.add('show');
+}
+
+function closeDriverDetail() {
+  document.getElementById('driverDetailOverlay').classList.remove('show');
+  selectedDriverUid = null;
+}
+
+async function removeDriver() {
+  if (!selectedDriverUid) return;
+  const driver = allDrivers.find(d => d.uid === selectedDriverUid);
+  showModal('حذف المندوب', `<p style="color:var(--text2);font-size:14px;">حذف ${driver?.name || 'المندوب'} من النظام؟</p>`,
+    [{ label: 'حذف', cls: 'danger', action: async () => {
+        await db.collection('users').doc(selectedDriverUid).delete();
+        allDrivers = allDrivers.filter(d => d.uid !== selectedDriverUid);
+        renderDriversList();
+        closeModal();
+        closeDriverDetail();
+        showToast('تم الحذف');
+    }},
+    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+}
+
+// ============================================================
+// MANAGER: RESTAURANTS
+// ============================================================
+async function loadMgrRestaurants() {
+  const snap = await db.collection('restaurants').orderBy('name').get();
+  const rests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  document.getElementById('mgrRestsList').innerHTML = rests.length
+    ? rests.map(r => `<div class="rest-card">
+        <span style="font-size:22px;">🏪</span>
+        <span class="rest-name-big">${r.name}</span>
+        <button class="rest-delete-btn" onclick="deleteMgrRest('${r.id}','${r.name}')">حذف</button>
+      </div>`).join('')
+    : '<div class="empty-state"><div class="empty-text">لا مطاعم بعد</div></div>';
+}
+
+function showAddRestModal() {
+  showModal('إضافة مطعم', `<input class="form-input" id="newRestName" placeholder="اسم المطعم">`,
+    [{ label: 'إضافة', cls: 'confirm', action: async () => {
+        const name = document.getElementById('newRestName').value.trim();
+        if (!name) return;
+        await db.collection('restaurants').add({ name, active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        closeModal(); showToast('✅ تم إضافة ' + name);
+        loadMgrRestaurants();
+    }},
+    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+}
+
+async function deleteMgrRest(id, name) {
+  showModal('حذف المطعم', `<p style="color:var(--text2);">حذف ${name}؟</p>`,
+    [{ label: 'حذف', cls: 'danger', action: async () => {
+        await db.collection('restaurants').doc(id).delete();
+        closeModal(); showToast('تم الحذف');
+        loadMgrRestaurants();
+    }},
+    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+}
+
+// ============================================================
+// MANAGER: REPORTS
+// ============================================================
+function mgrTab(n, el) {
+  document.querySelectorAll('.mgr-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.mgr-tab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('mgrPanel' + n).classList.add('active');
+  if (n === 1) renderDriversList();
+  if (n === 2) loadMgrRestaurants();
+  if (n === 3) renderMgrReports();
+}
+
+function setReportPeriod(p, el) {
+  reportPeriod = p;
+  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderMgrReports();
+}
+
+function renderMgrReports() {
+  const now = new Date();
+  let startDate;
+  if (reportPeriod === 'today') { startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+  else if (reportPeriod === 'week') { startDate = new Date(now); startDate.setDate(now.getDate() - 7); }
+  else { startDate = new Date(now.getFullYear(), now.getMonth(), 1); }
+
+  const filtered = allOrders.filter(o => {
+    const t = o.timestamp?.toDate?.() || new Date(o.timestamp);
+    return t >= startDate;
+  });
+
+  // Group by driver
+  const byDriver = {};
+  filtered.forEach(o => {
+    if (!byDriver[o.driverId]) byDriver[o.driverId] = { name: o.driverName || '—', orders:0, delivery:0, cash:0 };
+    byDriver[o.driverId].orders++;
+    byDriver[o.driverId].delivery += o.delivery || 0;
+    if (o.payment === 'cash') byDriver[o.driverId].cash += o.total || 0;
+  });
+
+  const entries = Object.entries(byDriver).sort((a,b) => b[1].delivery - a[1].delivery);
+  const totalDelivery = filtered.reduce((s,o) => s + (o.delivery||0), 0);
+
+  document.getElementById('reportsContent').innerHTML = `
+    <div class="mgr-stat" style="margin-bottom:14px;">
+      <div class="mgr-stat-icon">📊</div>
+      <div class="mgr-stat-label">إجمالي التوصيل</div>
+      <div class="mgr-stat-val">ج ${totalDelivery}</div>
+    </div>
+    ${entries.map(([uid, d]) => `
+      <div class="report-row">
+        <div>
+          <div class="report-driver-name">${d.name}</div>
+          <div class="report-driver-orders">${d.orders} أوردر</div>
+        </div>
+        <div class="report-driver-income">ج ${d.delivery}</div>
+      </div>`).join('') || '<div class="empty-state"><div class="empty-text">لا بيانات</div></div>'}`;
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function showModal(title, bodyHTML, buttons) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = bodyHTML;
+  document.getElementById('modalActions').innerHTML = buttons.map((b,i) =>
+    `<button class="modal-btn ${b.cls}" id="mBtn${i}">${b.label}</button>`).join('');
+  buttons.forEach((b,i) => document.getElementById('mBtn'+i).onclick = b.action);
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
 });
 
 // ============================================================
@@ -1790,179 +2128,15 @@ document.getElementById('confirmModal').addEventListener('click', function(e) {
 let toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 // ============================================================
-// CLOCK
+// START
 // ============================================================
-function updateClock() {
-  const now = new Date();
-  const h = now.getHours();
-  const greeting = h >= 5 && h < 12 ? 'صباح الخير 👋' : h < 17 ? 'النهارده شغال 💪' : 'مساء الخير 👋';
-  const el = document.getElementById('welcomeGreet');
-  if (el) el.textContent = greeting;
-  const timeEl = document.getElementById('welcomeTime');
-  if (timeEl) timeEl.textContent = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// ============================================================
-// VOICE INPUT
-// ============================================================
-let recognition = null, activeVoiceBtn = null;
-
-function startVoice(inputId, btn) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) { showToast('⚠️ الإدخال الصوتي مش متاح'); return; }
-  if (recognition) {
-    recognition.stop();
-    if (activeVoiceBtn) { activeVoiceBtn.classList.remove('recording'); activeVoiceBtn.textContent = '🎙️'; }
-    if (activeVoiceBtn === btn) { recognition = null; activeVoiceBtn = null; return; }
-  }
-  recognition = new SpeechRecognition();
-  recognition.lang = 'ar-EG';
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  btn.classList.add('recording'); btn.textContent = '🔴';
-  activeVoiceBtn = btn;
-  recognition.onresult = (e) => {
-    document.getElementById(inputId).value = e.results[0][0].transcript;
-    btn.classList.remove('recording'); btn.textContent = '🎙️';
-    activeVoiceBtn = null; recognition = null;
-  };
-  recognition.onerror = () => {
-    btn.classList.remove('recording'); btn.textContent = '🎙️';
-    activeVoiceBtn = null; recognition = null;
-    showToast('❌ خطأ في الصوت');
-  };
-  recognition.onend = () => {
-    btn.classList.remove('recording'); btn.textContent = '🎙️';
-    activeVoiceBtn = null; recognition = null;
-  };
-  recognition.start();
-}
-
-// ============================================================
-// PWA INSTALL
-// ============================================================
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault(); deferredPrompt = e;
-  document.getElementById('installBtn').style.display = 'flex';
-});
-window.addEventListener('appinstalled', () => {
-  deferredPrompt = null;
-  document.getElementById('installBtn').style.display = 'none';
-  showToast('✅ تم تثبيت التطبيق!');
-});
-
-function showInstallGuide() {
-  const content = document.getElementById('installContent');
-  if (deferredPrompt) {
-    content.innerHTML = `<p style="font-size:14px;color:var(--text2);margin-bottom:14px;">اضغط تثبيت وهيتضاف لشاشتك الرئيسية 🎉</p>
-      <button class="btn btn-primary" onclick="triggerInstall()">📲 تثبيت الآن</button>`;
-  } else {
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    content.innerHTML = isIOS ? `
-      <div style="font-size:13px;color:var(--text2);line-height:2;">
-        <div style="background:var(--bg3);border-radius:12px;padding:12px;margin-bottom:10px;">
-          <strong style="color:var(--text)">تثبيت على iPhone:</strong><br>
-          1️⃣ اضغط على زر المشاركة 📤 في Safari<br>
-          2️⃣ اختر "Add to Home Screen"<br>
-          3️⃣ اضغط Add ✅
-        </div>
-      </div>` : `
-      <div style="font-size:13px;color:var(--text2);line-height:2;">
-        <div style="background:var(--bg3);border-radius:12px;padding:12px;">
-          <strong style="color:var(--text)">تثبيت على Android:</strong><br>
-          1️⃣ النقاط الثلاث ⋮ في Chrome<br>
-          2️⃣ "إضافة إلى الشاشة الرئيسية"<br>
-          3️⃣ اضغط إضافة ✅
-        </div>
-      </div>`;
-  }
-  document.getElementById('installModal').classList.add('open');
-}
-
-async function triggerInstall() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') showToast('✅ تم التثبيت!');
-  deferredPrompt = null;
-  document.getElementById('installBtn').style.display = 'none';
-  closeModal('installModal');
-}
-
-// ============================================================
-// ONLINE / OFFLINE DETECTION
-// ============================================================
-window.addEventListener('online', () => {
-  if (appState.online) return;
-  showToast('✅ رجع الإنترنت!');
-});
-window.addEventListener('offline', () => {
-  setFbStatus('offline', '📴 لا يوجد إنترنت - Firebase Offline Mode');
-  showToast('📴 لا إنترنت - Firebase هيشتغل Offline');
-});
-
-// ============================================================
-// APP INIT
-// ============================================================
-async function initApp() {
-  applyTheme('dark');
-
-  const fbOk = initFirebase();
-
-  if (!fbOk) {
-    // Show setup
-    document.getElementById('loadingScreen').style.display = 'none';
-    document.getElementById('setupModal').classList.add('show');
-    return;
-  }
-
-  // Load settings first
-  await loadSettings();
-
-  // Check if driver has a name
-  if (!appState.driverName || appState.driverName === 'مندوب دليفري') {
-    // Check Firestore for existing settings
-    const docExists = await settingsRef.get().then(d => d.exists).catch(() => false);
-    if (!docExists) {
-      document.getElementById('loadingScreen').style.display = 'none';
-      document.getElementById('setupModal').classList.add('show');
-      return;
-    }
-  }
-
-  // Load data
-  await loadRestaurants();
-  listenToOrders();
-
-  // Hide loading
-  setTimeout(() => {
-    document.getElementById('loadingScreen').style.display = 'none';
-  }, 800);
-
-  // Initial render
-  goPage(0);
-  updateDriverUI();
-}
-
-// ============================================================
-// SERVICE WORKER
-// ============================================================
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(e => console.log('SW error:', e));
-}
-
-// Start!
-initApp();
+window.addEventListener("load", initApp);
 </script>
 </body>
 </html>

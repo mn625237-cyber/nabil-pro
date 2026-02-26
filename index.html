@@ -876,35 +876,26 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
     <div class="auth-title">Nabil Pro</div>
     <div class="auth-sub">تطبيق إدارة التوصيل</div>
 
-    <!-- Step 1: Phone -->
+    <!-- Login -->
     <div class="auth-step active" id="authStep1">
       <div class="input-group">
-        <div class="input-label">رقم الموبايل</div>
+        <div class="input-label">📱 رقم الموبايل</div>
         <div class="input-row">
-          <div class="input-prefix">🇪🇬 +20</div>
-          <input type="tel" id="phoneInput" placeholder="10xxxxxxxx" maxlength="11"
+          <div class="input-prefix">🇪🇬</div>
+          <input type="tel" id="phoneInput" placeholder="01xxxxxxxxx" maxlength="11"
             oninput="this.value=this.value.replace(/\D/g,'')" inputmode="numeric">
         </div>
       </div>
-      <div id="recaptcha-container"></div>
-      <button class="auth-btn" id="sendOtpBtn" onclick="sendOTP()">
-        📱 إرسال كود التحقق
-      </button>
-    </div>
-
-    <!-- Step 2: OTP -->
-    <div class="auth-step" id="authStep2">
       <div class="input-group">
-        <div class="input-label">كود التحقق (6 أرقام)</div>
-        <input type="tel" class="otp-input" id="otpInput" placeholder="• • • • • •"
+        <div class="input-label">🔑 كود الدخول (6 أرقام)</div>
+        <input type="tel" class="otp-input" id="pinInput" placeholder="• • • • • •"
           maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
       </div>
-      <div class="otp-timer">الكود سينتهي خلال <span id="timerVal">60</span> ثانية</div>
-      <button class="auth-btn" id="verifyOtpBtn" onclick="verifyOTP()">
-        ✅ تأكيد الدخول
-      </button>
-      <button class="auth-btn secondary" onclick="backToPhone()">
-        ← تغيير الرقم
+      <div style="font-size:12px;color:var(--text3);text-align:center;padding:4px 0;">
+        كود الدخول بيجيلك من المدير
+      </div>
+      <button class="auth-btn" id="loginBtn" onclick="doLogin()">
+        🚀 دخول
       </button>
     </div>
   </div>
@@ -1164,6 +1155,7 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
       <div style="font-size:12px;color:var(--text2);" id="detailDriverPhone" dir="ltr">—</div>
     </div>
     <div style="flex:1;"></div>
+    <button class="icon-btn" style="background:rgba(129,140,248,0.1);color:var(--visa);margin-left:6px;" onclick="toggleDriverRole()" id="roleBtn">👑</button>
     <button class="icon-btn" style="background:var(--danger-bg);color:var(--danger);" onclick="removeDriver()">🗑</button>
   </div>
   <div class="driver-detail-content">
@@ -1229,8 +1221,6 @@ let selectedRest  = null;
 let selectedPayment = null;
 let currentPage   = 0;
 let themeMode     = 'dark';
-let confirmResult = null;
-let otpTimer      = null;
 let recognizer    = null;
 let editingOrderId = null;
 let selectedDriverUid = null;
@@ -1290,9 +1280,11 @@ async function loadUserProfile(uid) {
       userProfile = doc.data();
     } else {
       // New user - create as driver
-      const phone = currentUser.phoneNumber || '';
+      const email = currentUser.email || '';
+      // Extract phone from email (format: 01xxx@nabilpro.app)
+      const phone = email.replace('@nabilpro.app','');
       userProfile = {
-        uid, phone, role: 'driver',
+        uid, phone, email, role: 'driver',
         name: 'مندوب دليفري',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       };
@@ -1311,88 +1303,44 @@ async function loadUserProfile(uid) {
 }
 
 // ============================================================
-// PHONE AUTH
+// EMAIL/PIN AUTH
+// phone number → email: 01012345678@nabilpro.app
+// PIN (6 digits) → password
 // ============================================================
-function sendOTP() {
-  const raw = document.getElementById('phoneInput').value.trim();
-  if (raw.length < 10) { showToast('ادخل رقم صحيح'); return; }
+function phoneToEmail(phone) {
+  // Normalize: always store with leading 0
+  let p = phone.replace(/\D/g,'');
+  if (!p.startsWith('0')) p = '0' + p;
+  return p + '@nabilpro.app';
+}
 
-  // Format: remove leading 0 and add +20
-  let num = raw.startsWith('0') ? raw.slice(1) : raw;
-  const phoneNumber = '+20' + num;
+async function doLogin() {
+  const phone = document.getElementById('phoneInput').value.trim();
+  const pin   = document.getElementById('pinInput').value.trim();
+  if (phone.length < 10) { showToast('ادخل رقم الموبايل'); return; }
+  if (pin.length !== 6)  { showToast('كود الدخول 6 أرقام'); return; }
 
-  const btn = document.getElementById('sendOtpBtn');
+  const btn = document.getElementById('loginBtn');
   btn.disabled = true;
-  btn.textContent = 'جاري الإرسال...';
+  btn.textContent = 'جاري الدخول...';
 
-  if (!window.recaptchaVerifier) {
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-      size: 'invisible',
-      callback: () => {}
-    });
+  const email = phoneToEmail(phone);
+
+  try {
+    const result = await auth.signInWithEmailAndPassword(email, pin);
+    currentUser = result.user;
+    showScreen('loadingScreen');
+    loadUserProfile(currentUser.uid);
+  } catch(err) {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 دخول';
+    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+      showToast('❌ رقم الموبايل أو الكود غير صحيح');
+    } else {
+      showToast('خطأ: تحقق من الاتصال');
+    }
   }
-
-  auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
-    .then(result => {
-      confirmResult = result;
-      document.getElementById('authStep1').classList.remove('active');
-      document.getElementById('authStep2').classList.add('active');
-      startOtpTimer();
-      btn.disabled = false;
-      btn.innerHTML = '📱 إرسال كود التحقق';
-    })
-    .catch(err => {
-      btn.disabled = false;
-      btn.innerHTML = '📱 إرسال كود التحقق';
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
-      showToast('خطأ: ' + (err.code === 'auth/too-many-requests' ? 'طلبات كثيرة، انتظر' : err.message));
-    });
 }
-
-function verifyOTP() {
-  const code = document.getElementById('otpInput').value.trim();
-  if (code.length !== 6) { showToast('ادخل الكود المكون من 6 أرقام'); return; }
-  if (!confirmResult) { showToast('أعد إرسال الكود'); return; }
-
-  const btn = document.getElementById('verifyOtpBtn');
-  btn.disabled = true;
-  btn.textContent = 'جاري التحقق...';
-
-  confirmResult.confirm(code)
-    .then(result => {
-      currentUser = result.user;
-      clearOtpTimer();
-      showScreen('loadingScreen');
-      loadUserProfile(currentUser.uid);
-    })
-    .catch(() => {
-      btn.disabled = false;
-      btn.innerHTML = '✅ تأكيد الدخول';
-      showToast('الكود غير صحيح');
-    });
-}
-
-function backToPhone() {
-  clearOtpTimer();
-  document.getElementById('authStep2').classList.remove('active');
-  document.getElementById('authStep1').classList.add('active');
-  document.getElementById('otpInput').value = '';
-  confirmResult = null;
-}
-
-function startOtpTimer() {
-  let secs = 60;
-  document.getElementById('timerVal').textContent = secs;
-  otpTimer = setInterval(() => {
-    secs--;
-    document.getElementById('timerVal').textContent = secs;
-    if (secs <= 0) clearOtpTimer();
-  }, 1000);
-}
-function clearOtpTimer() { if (otpTimer) { clearInterval(otpTimer); otpTimer = null; } }
 
 function confirmLogout() {
   showModal('تسجيل الخروج', '<p style="color:var(--text2);font-size:14px;">هل تريد تسجيل الخروج؟</p>',
@@ -1434,7 +1382,7 @@ function initDriverApp() {
   const name = userProfile.name || 'مندوب دليفري';
   document.getElementById('driverNameDisplay').textContent = name;
   document.getElementById('settingsNameVal').textContent = name;
-  document.getElementById('settingsPhone').textContent = currentUser.phoneNumber || '—';
+  document.getElementById('settingsPhone').textContent = userProfile.phone || '—';
 
   updateClock();
   setInterval(updateClock, 30000);
@@ -1915,38 +1863,74 @@ function filterDrivers() {
 }
 
 function showAddDriverModal() {
-  showModal('إضافة مندوب', `
+  showModal('إضافة مندوب جديد', `
     <div class="input-group" style="margin-bottom:12px;">
-      <div class="input-label">الاسم</div>
+      <div class="input-label">👤 الاسم</div>
       <input class="form-input" id="newDriverName" placeholder="اسم المندوب">
     </div>
-    <div class="input-group">
-      <div class="input-label">رقم الموبايل</div>
-      <div class="input-row">
-        <div class="input-prefix">+20</div>
-        <input type="tel" id="newDriverPhone" placeholder="1xxxxxxxxx" style="background:transparent;border:none;outline:none;padding:14px 16px;font-size:15px;color:var(--text);flex:1;font-family:Cairo,sans-serif;" inputmode="numeric">
-      </div>
-    </div>`,
-    [{ label: 'إضافة', cls: 'confirm', action: addDriver },
+    <div class="input-group" style="margin-bottom:12px;">
+      <div class="input-label">📱 رقم الموبايل</div>
+      <input class="form-input" type="tel" id="newDriverPhone" placeholder="01xxxxxxxxx" inputmode="numeric">
+    </div>
+    <div class="input-group" style="margin-bottom:8px;">
+      <div class="input-label">🔑 كود الدخول (6 أرقام)</div>
+      <input class="form-input" type="tel" id="newDriverPin" placeholder="مثال: 123456" maxlength="6" inputmode="numeric">
+    </div>
+    <div style="font-size:11px;color:var(--text3);padding:4px 0;">ابعت الرقم والكود للمندوب عشان يدخل التطبيق</div>`,
+    [{ label: 'إضافة وإنشاء حساب', cls: 'confirm', action: addDriver },
      { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
 }
 
 async function addDriver() {
-  const name = document.getElementById('newDriverName').value.trim();
+  const name  = document.getElementById('newDriverName').value.trim();
   const phone = document.getElementById('newDriverPhone').value.trim();
-  if (!name || !phone) { showToast('ادخل الاسم والرقم'); return; }
+  const pin   = document.getElementById('newDriverPin').value.trim();
+  if (!name)          { showToast('ادخل الاسم'); return; }
+  if (phone.length < 10) { showToast('ادخل رقم صحيح'); return; }
+  if (pin.length !== 6)  { showToast('الكود لازم 6 أرقام'); return; }
 
-  const fullPhone = '+20' + (phone.startsWith('0') ? phone.slice(1) : phone);
-  // Create pending driver profile (will be linked when they log in)
-  const newDoc = await db.collection('users').add({
-    name, phone: fullPhone, role: 'driver',
-    pending: true,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  allDrivers.push({ uid: newDoc.id, name, phone: fullPhone, role: 'driver' });
-  renderDriversList();
-  closeModal();
-  showToast('✅ تم إضافة ' + name);
+  const btn = document.getElementById('mBtn0');
+  btn.disabled = true;
+  btn.textContent = 'جاري الإنشاء...';
+
+  // Normalize phone
+  let p = phone.replace(/\D/g,'');
+  if (!p.startsWith('0')) p = '0' + p;
+  const email = p + '@nabilpro.app';
+
+  try {
+    // Create Firebase Auth account using secondary app (so manager stays logged in)
+    let secondaryApp;
+    try {
+      secondaryApp = firebase.app('secondary');
+    } catch(e) {
+      secondaryApp = firebase.initializeApp(FIREBASE_CONFIG, 'secondary');
+    }
+    const secondaryAuth = secondaryApp.auth();
+    const result = await secondaryAuth.createUserWithEmailAndPassword(email, pin);
+    const uid = result.user.uid;
+    await secondaryAuth.signOut();
+
+    // Save to Firestore
+    await db.collection('users').doc(uid).set({
+      uid, name, phone: p, email, role: 'driver',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: currentUser.uid
+    });
+
+    allDrivers.push({ uid, name, phone: p, role: 'driver' });
+    renderDriversList();
+    closeModal();
+    showToast(`✅ تم إنشاء حساب ${name} - كود: ${pin}`);
+  } catch(err) {
+    btn.disabled = false;
+    btn.textContent = 'إضافة وإنشاء حساب';
+    if (err.code === 'auth/email-already-in-use') {
+      showToast('❌ الرقم ده موجود بالفعل');
+    } else {
+      showToast('خطأ: ' + err.message);
+    }
+  }
 }
 
 function showDriverDetail(uid) {
@@ -1992,6 +1976,44 @@ function showDriverDetail(uid) {
 function closeDriverDetail() {
   document.getElementById('driverDetailOverlay').classList.remove('show');
   selectedDriverUid = null;
+}
+
+async function toggleDriverRole() {
+  if (!selectedDriverUid) return;
+  const driver = allDrivers.find(d => d.uid === selectedDriverUid);
+  if (!driver) return;
+  const newRole = driver.role === 'manager' ? 'driver' : 'manager';
+  const label = newRole === 'manager' ? 'ترقية لمدير' : 'تحويل لمندوب';
+  showModal(label, `<p style="color:var(--text2);font-size:14px;">${label} "${driver.name}"؟</p>`,
+    [{ label: label, cls: 'confirm', action: async () => {
+        await db.collection('users').doc(selectedDriverUid).update({ role: newRole });
+        driver.role = newRole;
+        renderDriversList();
+        closeModal();
+        showToast('✅ تم ' + label);
+        document.getElementById('roleBtn').textContent = newRole === 'manager' ? '👤' : '👑';
+    }},
+    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+}
+
+async function changeDriverPin() {
+  if (!selectedDriverUid) return;
+  const driver = allDrivers.find(d => d.uid === selectedDriverUid);
+  showModal('تغيير كود الدخول', `
+    <div class="input-group">
+      <div class="input-label">كود جديد (6 أرقام)</div>
+      <input class="form-input" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric">
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;">ابعت الكود الجديد للمندوب</div>`,
+    [{ label: 'حفظ', cls: 'confirm', action: async () => {
+        const newPin = document.getElementById('newPinInput').value.trim();
+        if (newPin.length !== 6) { showToast('الكود لازم 6 أرقام'); return; }
+        // Update via Firestore (driver must re-login with new pin)
+        await db.collection('users').doc(selectedDriverUid).update({ pinChanged: true, newPin });
+        closeModal();
+        showToast('✅ سيطلب من المندوب الدخول بالكود الجديد');
+    }},
+    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
 }
 
 async function removeDriver() {

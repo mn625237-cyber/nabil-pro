@@ -975,7 +975,7 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
       <div class="form-section">
         <div class="form-label">📍 العنوان</div>
         <div class="input-with-voice">
-          <input class="form-input" id="addressInput" placeholder="العنوان كاملاً..." style="padding-left:52px;">
+          <input class="form-input" id="addressInput" placeholder="العنوان كاملاً..." style="padding-left:52px;" maxlength="200">
           <button class="voice-btn" id="voiceAddress" onclick="startVoice('addressInput','voiceAddress')">🎤</button>
         </div>
       </div>
@@ -1191,6 +1191,19 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 
 <script>
 // ============================================================
+// SECURITY: Sanitize user input to prevent XSS
+// ============================================================
+function sanitize(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ============================================================
 // FIREBASE CONFIG
 // ============================================================
 const FIREBASE_CONFIG = {
@@ -1267,14 +1280,17 @@ async function initApp() {
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
   }
 
-  auth.onAuthStateChanged(async user => {
-    if (user) {
-      currentUser = user;
-      await loadUserProfile(user.uid);
-    } else {
-      showScreen('authScreen');
-    }
-  });
+  if (!window.authListenerSet) {
+    auth.onAuthStateChanged(async user => {
+      if (user) {
+        currentUser = user;
+        await loadUserProfile(user.uid);
+      } else {
+        showScreen('authScreen');
+      }
+    });
+    window.authListenerSet = true;
+  }
 }
 
 async function loadUserProfile(uid) {
@@ -1355,12 +1371,30 @@ function confirmLogout() {
 
 async function doLogout() {
   closeModal();
-  if (ordersUnsubscribe) ordersUnsubscribe();
-  if (allOrdersUnsubscribe) allOrdersUnsubscribe();
-  await auth.signOut();
+
+  if (ordersUnsubscribe) { ordersUnsubscribe(); ordersUnsubscribe = null; }
+  if (allOrdersUnsubscribe) { allOrdersUnsubscribe(); allOrdersUnsubscribe = null; }
+
+  try { await auth.signOut(); } catch(e) {}
+
+  // تنظيف كامل للحالة
   currentUser = null;
   userProfile = null;
   ordersCache = [];
+  restaurantsCache = [];
+  allDrivers = [];
+  allOrders = [];
+  selectedRest = null;
+  selectedPayment = null;
+  editingOrderId = null;
+  selectedDriverUid = null;
+
+  // تنظيف شاشة الدخول
+  const ph = document.getElementById('phoneInput');
+  const pin = document.getElementById('pinInput');
+  if (ph) ph.value = '';
+  if (pin) pin.value = '';
+
   showScreen('authScreen');
 }
 
@@ -1410,7 +1444,7 @@ async function loadRestaurantsDriver() {
 function renderRestChips() {
   const active = restaurantsCache.filter(r => r.active !== false);
   const html = active.map(r =>
-    `<button class="rest-chip ${selectedRest === r.id ? 'active' : ''}" onclick="selectRest('${r.id}')">${r.name}</button>`
+    `<button class="rest-chip ${selectedRest === r.id ? 'active' : ''}" onclick="selectRest('${r.id}')">${sanitize(r.name)}</button>`
   ).join('');
   document.getElementById('restChips').innerHTML = html + `<button class="rest-chip add-chip" onclick="addRestaurantFromOrder()">＋ جديد</button>`;
 }
@@ -1426,8 +1460,8 @@ function renderRestSettings() {
   el.innerHTML = restaurantsCache.map(r => `
     <div class="rest-card">
       <span style="font-size:20px;">🏪</span>
-      <span class="rest-name-big">${r.name}</span>
-      <button class="rest-delete-btn" onclick="deleteRestaurant('${r.id}','${r.name}')">حذف</button>
+      <span class="rest-name-big">${sanitize(r.name)}</span>
+      <button class="rest-delete-btn" onclick="deleteRestaurant('${sanitize(r.id)}','${sanitize(r.name)}')">حذف</button>
     </div>`).join('');
 }
 
@@ -1449,10 +1483,22 @@ async function addRestaurantFromOrder() {
 }
 
 async function deleteRestaurant(id, name) {
-  if (!confirm('حذف ' + name + '؟')) return;
-  await restaurantsRef.doc(id).delete();
-  if (selectedRest === id) selectedRest = null;
-  loadRestaurantsDriver();
+  // تحقق من وجود أوردرات للمطعم
+  const ordersSnap = await ordersRef.where('restId','==',id).limit(1).get();
+  if (!ordersSnap.empty) {
+    showModal('تنبيه', `<p style="color:var(--text2);font-size:14px;">لا يمكن حذف "${sanitize(name)}" لأن لديه أوردرات محفوظة.</p>`,
+      [{ label: 'حسناً', cls: 'cancel', action: closeModal }]);
+    return;
+  }
+  showModal('حذف المطعم', `<p style="color:var(--text2);font-size:14px;">هل تريد حذف "${sanitize(name)}"؟</p>`,
+    [{ label: 'حذف', cls: 'danger', action: async () => {
+        await restaurantsRef.doc(id).delete();
+        if (selectedRest === id) selectedRest = null;
+        closeModal();
+        showToast('تم الحذف');
+        loadRestaurantsDriver();
+    }},
+    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
 }
 
 // ============================================================
@@ -1565,12 +1611,12 @@ function renderOrdersList() {
     const dateStr = t.toLocaleDateString('ar-EG', {day:'2-digit', month:'2-digit'});
     return `<div class="order-card ${o.payment || 'cash'}">
       <div class="order-head">
-        <span class="order-rest">${o.restName || '—'}</span>
+        <span class="order-rest">${sanitize(o.restName || '—')}</span>
         <span class="order-time">${dateStr} ${timeStr}</span>
       </div>
       <div class="order-body">
         <div class="order-details">
-          ${o.address ? '📍 ' + o.address + '<br>' : ''}
+          ${o.address ? '📍 ' + sanitize(o.address) + '<br>' : ''}
           ${o.phone ? '📞 ' + o.phone + '<br>' : ''}
           💳 ${o.payment === 'visa' ? 'فيزا' : 'كاش'}
         </div>
@@ -1605,12 +1651,16 @@ function selectPayment(type) {
 
 async function addOrder() {
   if (!selectedRest) { showToast('اختر المطعم أولاً'); return; }
+  const submitBtn = document.querySelector('.submit-btn');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '⏳ جاري الحفظ...'; }
   const address  = document.getElementById('addressInput').value.trim();
   const phone    = document.getElementById('phoneOrderInput').value.trim();
   const restAmt  = parseFloat(document.getElementById('restAmountInput').value) || 0;
   const delivery = parseFloat(document.getElementById('deliveryInput').value) || 0;
   if (!address)   { showToast('ادخل العنوان'); return; }
   if (!selectedPayment) { showToast('اختر طريقة الدفع'); return; }
+  if (restAmt < 0) { showToast('قيمة الأوردر غير صحيحة'); return; }
+  if (delivery < 0) { showToast('قيمة التوصيل غير صحيحة'); return; }
 
   const rest = restaurantsCache.find(r => r.id === selectedRest);
   const total = restAmt + delivery;
@@ -1638,6 +1688,7 @@ async function addOrder() {
     showToast('✅ تم حفظ الأوردر');
   }
 
+  if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '✅ حفظ الأوردر'; }
   // Reset form
   document.getElementById('addressInput').value = '';
   document.getElementById('phoneOrderInput').value = '';
@@ -1851,8 +1902,8 @@ function renderDriversList(filter = '') {
     return `<div class="driver-card" onclick="showDriverDetail('${d.uid}')">
       <div class="driver-avatar">${initials}</div>
       <div class="driver-info">
-        <div class="driver-name">${d.name || 'بدون اسم'}</div>
-        <div class="driver-phone">${d.phone || '—'}</div>
+        <div class="driver-name">${sanitize(d.name || 'بدون اسم')}</div>
+        <div class="driver-phone">${sanitize(d.phone || '—')}</div>
         <div class="driver-stats-row">
           <span class="driver-mini-stat">اليوم: <span>${todayOrders.length} أوردر • ج ${todayDelivery}</span></span>
         </div>
@@ -2045,8 +2096,8 @@ async function loadMgrRestaurants() {
   document.getElementById('mgrRestsList').innerHTML = rests.length
     ? rests.map(r => `<div class="rest-card">
         <span style="font-size:22px;">🏪</span>
-        <span class="rest-name-big">${r.name}</span>
-        <button class="rest-delete-btn" onclick="deleteMgrRest('${r.id}','${r.name}')">حذف</button>
+        <span class="rest-name-big">${sanitize(r.name)}</span>
+        <button class="rest-delete-btn" onclick="deleteMgrRest('${sanitize(r.id)}','${sanitize(r.name)}')">حذف</button>
       </div>`).join('')
     : '<div class="empty-state"><div class="empty-text">لا مطاعم بعد</div></div>';
 }
@@ -2064,7 +2115,14 @@ function showAddRestModal() {
 }
 
 async function deleteMgrRest(id, name) {
-  showModal('حذف المطعم', `<p style="color:var(--text2);">حذف ${name}؟</p>`,
+  // تحقق من وجود أوردرات للمطعم
+  const snap = await db.collection('orders').where('restId','==',id).limit(1).get();
+  if (!snap.empty) {
+    showModal('تنبيه', `<p style="color:var(--text2);font-size:14px;">لا يمكن حذف "${sanitize(name)}" لأن لديه أوردرات.</p>`,
+      [{ label: 'حسناً', cls: 'cancel', action: closeModal }]);
+    return;
+  }
+  showModal('حذف المطعم', `<p style="color:var(--text2);">حذف ${sanitize(name)}؟</p>`,
     [{ label: 'حذف', cls: 'danger', action: async () => {
         await db.collection('restaurants').doc(id).delete();
         closeModal(); showToast('تم الحذف');

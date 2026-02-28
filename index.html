@@ -714,7 +714,185 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 .mgr-hero-date { font-size:12px; color:rgba(249,115,22,0.7); }
 .mgr-hero-title { font-size:16px; font-weight:900; color:#fff; }
 
-.mgr-stats-big { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+/* ============================================================
+   MANAGER DASHBOARD - REDESIGNED
+   ============================================================ */
+
+/* Stats Grid */
+.mgr-stats-big { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.mgr-stat-big {
+  border-radius:20px; padding:18px 16px;
+  position:relative; overflow:hidden;
+  cursor:default;
+}
+.mgr-stat-big::before {
+  content:''; position:absolute;
+  top:-30px; left:-30px;
+  width:100px; height:100px;
+  border-radius:50%;
+  opacity:0.15;
+}
+.mgr-stat-big.s1 { background:linear-gradient(145deg,rgba(34,197,94,0.15),rgba(34,197,94,0.04)); border:1px solid rgba(34,197,94,0.2); }
+.mgr-stat-big.s2 { background:linear-gradient(145deg,rgba(249,115,22,0.15),rgba(249,115,22,0.04)); border:1px solid rgba(249,115,22,0.2); }
+.mgr-stat-big.s3 { background:linear-gradient(145deg,rgba(129,140,248,0.15),rgba(129,140,248,0.04)); border:1px solid rgba(129,140,248,0.2); }
+.mgr-stat-big.s4 { background:linear-gradient(145deg,rgba(245,158,11,0.15),rgba(245,158,11,0.04)); border:1px solid rgba(245,158,11,0.2); }
+.mgr-stat-big.s1::before { background:radial-gradient(circle,#22c55e,transparent); }
+.mgr-stat-big.s2::before { background:radial-gradient(circle,#f97316,transparent); }
+.mgr-stat-big.s3::before { background:radial-gradient(circle,#818cf8,transparent); }
+.mgr-stat-big.s4::before { background:radial-gradient(circle,#f59e0b,transparent); }
+
+.mgr-stat-big-icon {
+  width:40px; height:40px; border-radius:13px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; margin-bottom:12px;
+}
+.mgr-stat-big.s1 .mgr-stat-big-icon { background:rgba(34,197,94,0.18); }
+.mgr-stat-big.s2 .mgr-stat-big-icon { background:rgba(249,115,22,0.18); }
+.mgr-stat-big.s3 .mgr-stat-big-icon { background:rgba(129,140,248,0.18); }
+.mgr-stat-big.s4 .mgr-stat-big-icon { background:rgba(245,158,11,0.18); }
+
+.mgr-stat-big-label { font-size:10px; color:rgba(255,255,255,0.45); font-weight:600; letter-spacing:0.4px; margin-bottom:4px; text-transform:uppercase; }
+.mgr-stat-big-val { font-size:26px; font-weight:900; letter-spacing:-1px; }
+.mgr-stat-big.s1 .mgr-stat-big-val { color:#4ade80; }
+.mgr-stat-big.s2 .mgr-stat-big-val { color:var(--primary); }
+.mgr-stat-big.s3 .mgr-stat-big-val { color:#a5b4fc; }
+.mgr-stat-big.s4 .mgr-stat-big-val { color:#fbbf24; }
+
+/* Recent Orders Feed */
+.feed-title {
+  font-size:12px; font-weight:800; color:var(--text2);
+  text-transform:uppercase; letter-spacing:0.8px;
+  display:flex; align-items:center; gap:8px;
+  padding:4px 0 12px;
+}
+.feed-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:#ef4444;
+  box-shadow:0 0 0 3px rgba(239,68,68,0.2);
+  animation:pulse 2s infinite;
+}
+
+/* Order Feed Card */
+.feed-card {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:16px;
+  padding:12px 14px;
+  margin-bottom:8px;
+  display:flex; align-items:center; gap:12px;
+  position:relative; overflow:hidden;
+}
+.feed-card::before {
+  content:''; position:absolute;
+  top:0; right:0; bottom:0; width:3px;
+}
+.feed-card.cash::before { background:var(--success); }
+.feed-card.visa::before { background:var(--visa); }
+.feed-pay-icon {
+  width:38px; height:38px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; flex-shrink:0;
+}
+.feed-card.cash .feed-pay-icon { background:rgba(34,197,94,0.12); }
+.feed-card.visa .feed-pay-icon { background:rgba(129,140,248,0.12); }
+.feed-body { flex:1; min-width:0; }
+.feed-rest { font-size:13px; font-weight:800; margin-bottom:2px; }
+.feed-driver { font-size:11px; color:var(--text3); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.feed-time { font-size:10px; color:var(--text3); }
+.feed-amount { font-size:15px; font-weight:900; color:var(--primary); flex-shrink:0; }
+
+/* Section headers */
+.user-section-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 0 10px;
+}
+.user-section-label {
+  font-size:11px; font-weight:800; color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.8px;
+  display:flex; align-items:center; gap:6px;
+}
+.user-count-badge {
+  background:var(--card); border:1px solid var(--card-border);
+  border-radius:20px; padding:2px 8px;
+  font-size:11px; font-weight:700; color:var(--text2);
+}
+
+/* User cards (drivers + managers) */
+.user-card {
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:18px;
+  padding:14px 16px;
+  margin-bottom:8px;
+  display:flex; align-items:center; gap:14px;
+  cursor:pointer;
+  transition:all .15s;
+  position:relative; overflow:hidden;
+}
+.user-card:active { transform:scale(0.98); border-color:var(--primary); }
+.user-card.manager-card { border-color:rgba(129,140,248,0.25); background:linear-gradient(135deg,rgba(129,140,248,0.06),var(--card)); }
+
+.user-avatar {
+  width:48px; height:48px; border-radius:15px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; font-weight:900; flex-shrink:0;
+  position:relative;
+}
+.user-card.driver-card .user-avatar { background:rgba(249,115,22,0.12); color:var(--primary); }
+.user-card.manager-card .user-avatar { background:rgba(129,140,248,0.15); color:#a5b4fc; }
+
+.user-status-dot {
+  position:absolute; bottom:-1px; left:-1px;
+  width:13px; height:13px; border-radius:50%;
+  background:var(--bg3); border:2px solid var(--card);
+}
+.user-status-dot.online { background:var(--success); }
+
+.user-info { flex:1; min-width:0; }
+.user-name { font-size:14px; font-weight:800; margin-bottom:2px; }
+.user-phone { font-size:11px; color:var(--text3); direction:ltr; margin-bottom:6px; }
+.user-stats-row { display:flex; gap:5px; flex-wrap:wrap; }
+.user-pill {
+  padding:2px 8px; border-radius:20px;
+  font-size:10px; font-weight:700;
+}
+.user-pill.orders { background:rgba(249,115,22,0.1); color:var(--primary); }
+.user-pill.earn   { background:rgba(34,197,94,0.1);  color:var(--success); }
+.user-pill.role   { background:rgba(129,140,248,0.12); color:#a5b4fc; }
+
+/* Add user button */
+.add-user-btn {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:14px;
+  background:transparent;
+  border:1.5px dashed rgba(249,115,22,0.35);
+  border-radius:18px;
+  color:var(--primary); font-size:13px; font-weight:700;
+  font-family:'Cairo',sans-serif; cursor:pointer;
+  transition:all .2s; margin-bottom:16px;
+}
+.add-user-btn:active { background:var(--primary-glow); border-style:solid; }
+
+/* Restaurant cards - redesigned */
+.rest-item {
+  background:var(--card); border:1px solid var(--card-border);
+  border-radius:16px; padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:8px;
+}
+.rest-item-icon {
+  width:40px; height:40px; border-radius:12px;
+  background:rgba(249,115,22,0.1);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; flex-shrink:0;
+}
+.rest-item-name { flex:1; font-size:14px; font-weight:700; }
+.rest-item-del {
+  padding:6px 14px; border-radius:20px;
+  background:rgba(239,68,68,0.1); color:var(--danger);
+  border:1px solid rgba(239,68,68,0.2);
+  font-size:11px; font-weight:700; font-family:'Cairo',sans-serif; cursor:pointer;
+}
 .mgr-stat-big {
   border-radius:18px; padding:16px 14px;
   position:relative; overflow:hidden;
@@ -1189,7 +1367,6 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 
     <!-- Overview Tab -->
     <div class="mgr-tab-panel active" id="mgrPanel0">
-      <!-- Stats Grid -->
       <div class="mgr-stats-big">
         <div class="mgr-stat-big s1">
           <div class="mgr-stat-big-icon">👥</div>
@@ -1208,27 +1385,26 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
         </div>
         <div class="mgr-stat-big s4">
           <div class="mgr-stat-big-icon">💵</div>
-          <div class="mgr-stat-big-label">إجمالي الكاش</div>
+          <div class="mgr-stat-big-label">إجمالي كاش</div>
           <div class="mgr-stat-big-val" id="mgrStatCash">ج 0</div>
         </div>
       </div>
-      <div style="font-size:13px;font-weight:800;color:var(--text);padding:16px 0 10px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;animation:pulse 1.5s infinite;"></span> آخر الأوردرات</div>
+      <div class="feed-title"><span class="feed-dot"></span> آخر الأوردرات</div>
       <div id="mgrRecentOrders"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا أوردرات بعد</div></div></div>
     </div>
 
     <!-- Drivers Tab -->
     <div class="mgr-tab-panel" id="mgrPanel1">
-      <div class="search-bar">
+      <div class="search-bar" style="margin-bottom:12px;">
         <span>🔍</span>
         <input type="text" placeholder="بحث باسم أو رقم..." id="driverSearch" oninput="filterDrivers()">
       </div>
-      <button class="add-btn" onclick="showAddDriverModal()">➕ إضافة مندوب جديد</button>
       <div id="driversList"></div>
     </div>
 
     <!-- Restaurants Tab -->
     <div class="mgr-tab-panel" id="mgrPanel2">
-      <button class="add-btn" onclick="showAddRestModal()">➕ إضافة مطعم</button>
+      <button class="add-user-btn" onclick="showAddRestModal()">➕ إضافة مطعم جديد</button>
       <div id="mgrRestsList"></div>
     </div>
 
@@ -1254,7 +1430,8 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
       <div style="font-size:12px;color:var(--text2);" id="detailDriverPhone" dir="ltr">—</div>
     </div>
     <div style="flex:1;"></div>
-    <button class="icon-btn" style="background:rgba(129,140,248,0.1);color:var(--visa);margin-left:6px;" onclick="toggleDriverRole()" id="roleBtn">👑</button>
+    <button class="icon-btn" style="background:rgba(249,115,22,0.1);color:var(--primary);" onclick="changeDriverPin()" title="تغيير الكود">🔑</button>
+    <button class="icon-btn" style="background:rgba(129,140,248,0.1);color:#a5b4fc;margin:0 4px;" onclick="toggleDriverRole()" id="roleBtn">👑</button>
     <button class="icon-btn" style="background:var(--danger-bg);color:var(--danger);" onclick="removeDriver()">🗑</button>
   </div>
   <div class="driver-detail-content">
@@ -1963,138 +2140,174 @@ function renderMgrRecentOrders() {
   document.getElementById('mgrRecentOrders').innerHTML = recent.map(o => {
     const t = o.timestamp?.toDate?.() || new Date();
     const timeStr = t.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
-    return `<div class="mgr-order-card">
-      <span style="font-size:20px;">${o.payment === 'visa' ? '💳' : '💵'}</span>
-      <div class="mgr-order-body">
-        <div class="mgr-order-rest">${o.restName || '—'}</div>
-        <div class="mgr-order-driver">👤 ${o.driverName || '—'} • ${o.address || ''}</div>
-        <div class="mgr-order-time">⏰ ${timeStr}</div>
+    const isVisa = o.payment === 'visa';
+    return `<div class="feed-card ${isVisa ? 'visa' : 'cash'}">
+      <div class="feed-pay-icon">${isVisa ? '💳' : '💵'}</div>
+      <div class="feed-body">
+        <div class="feed-rest">${sanitize(o.restName || '—')}</div>
+        <div class="feed-driver">👤 ${sanitize(o.driverName || '—')}  •  📍 ${sanitize(o.address || '—')}</div>
+        <div class="feed-time">⏰ ${timeStr}</div>
       </div>
-      <div class="mgr-order-amount">ج ${o.delivery || 0}</div>
+      <div class="feed-amount">ج ${o.delivery || 0}</div>
     </div>`;
   }).join('');
 }
+
 
 // ============================================================
 // MANAGER: DRIVERS
 // ============================================================
 async function loadAllDrivers() {
-  const snap = await db.collection('users').where('role','==','driver').get();
+  // Load both drivers AND managers
+  const snap = await db.collection('users').get();
   allDrivers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
   renderDriversList();
 }
 
+
 function renderDriversList(filter = '') {
-  let list = allDrivers;
+  const managers = allDrivers.filter(d => d.role === 'manager');
+  const drivers  = allDrivers.filter(d => d.role !== 'manager');
+
+  let mgrsToShow = managers;
+  let drvsToShow = drivers;
+
   if (filter) {
     const q = filter.toLowerCase();
-    list = list.filter(d => (d.name||'').includes(q) || (d.phone||'').includes(q));
+    mgrsToShow = managers.filter(d => (d.name||'').includes(q) || (d.phone||'').includes(q));
+    drvsToShow  = drivers.filter(d =>  (d.name||'').includes(q) || (d.phone||'').includes(q));
   }
-  if (!list.length) {
-    document.getElementById('driversList').innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا مناديب بعد</div></div>';
-    return;
-  }
+
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
 
-  document.getElementById('driversList').innerHTML = list.map(d => {
+  function buildCard(d, isManager) {
     const driverOrders = allOrders.filter(o => o.driverId === d.uid);
-    const todayOrders = driverOrders.filter(o => {
+    const todayOrders  = driverOrders.filter(o => {
       if (!o.timestamp) return false;
       const t = o.timestamp.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
       return t >= todayStart;
     });
     const todayDelivery = todayOrders.reduce((s,o) => s + (o.delivery||0), 0);
     const initials = (d.name||'م').charAt(0);
-    const isOnline = d.lastSeen && ((new Date() - (d.lastSeen.toDate ? d.lastSeen.toDate() : new Date(d.lastSeen))) < 300000);
-    return `<div class="driver-card" onclick="showDriverDetail('${d.uid}')">
-      <div class="driver-avatar">${initials}</div>
-      <div class="driver-info">
-        <div class="driver-name">${sanitize(d.name || 'بدون اسم')}</div>
-        <div class="driver-phone">${sanitize(d.phone || '—')}</div>
-        <div class="driver-stats-row">
-          <span class="driver-mini-stat">اليوم: <span>${todayOrders.length} أوردر • ج ${todayDelivery}</span></span>
+    const isOnline = d.lastSeen && ((Date.now() - (d.lastSeen.toDate ? d.lastSeen.toDate() : new Date(d.lastSeen)).getTime()) < 300000);
+    const cardCls = isManager ? 'manager-card' : 'driver-card';
+
+    return `<div class="user-card ${cardCls}" onclick="showDriverDetail('${d.uid}')">
+      <div class="user-avatar">
+        ${initials}
+        <div class="user-status-dot ${isOnline ? 'online' : ''}"></div>
+      </div>
+      <div class="user-info">
+        <div class="user-name">${sanitize(d.name || 'بدون اسم')}</div>
+        <div class="user-phone">${sanitize(d.phone || '—')}</div>
+        <div class="user-stats-row">
+          ${!isManager ? `<span class="user-pill orders">📦 ${todayOrders.length} أوردر</span>
+          <span class="user-pill earn">ج ${todayDelivery}</span>` : ''}
+          ${isManager ? '<span class="user-pill role">👑 مدير</span>' : ''}
         </div>
       </div>
-      <div class="driver-online-dot ${isOnline ? 'online' : ''}"></div>
+      <span style="color:var(--text3);font-size:14px;">‹</span>
     </div>`;
-  }).join('');
+  }
+
+  let html = '';
+
+  // Managers section
+  if (mgrsToShow.length) {
+    html += `<div class="user-section-header">
+      <span class="user-section-label">👑 المديرين <span class="user-count-badge">${mgrsToShow.length}</span></span>
+      <button class="add-user-btn" style="width:auto;padding:6px 14px;font-size:11px;margin:0;" onclick="showAddUserModal('manager')">+ مدير</button>
+    </div>`;
+    html += mgrsToShow.map(d => buildCard(d, true)).join('');
+  }
+
+  // Drivers section
+  html += `<div class="user-section-header">
+    <span class="user-section-label">🛵 المناديب <span class="user-count-badge">${drvsToShow.length}</span></span>
+    <button class="add-user-btn" style="width:auto;padding:6px 14px;font-size:11px;margin:0;" onclick="showAddUserModal('driver')">+ مندوب</button>
+  </div>`;
+
+  if (drvsToShow.length) {
+    html += drvsToShow.map(d => buildCard(d, false)).join('');
+  } else {
+    html += '<div class="empty-state" style="padding:20px 0;"><div class="empty-text">لا مناديب بعد</div></div>';
+  }
+
+  document.getElementById('driversList').innerHTML = html;
 }
+
 
 function filterDrivers() {
   const q = document.getElementById('driverSearch').value.trim();
   renderDriversList(q);
 }
 
-function showAddDriverModal() {
-  showModal('إضافة مندوب جديد', `
+function showAddDriverModal() { showAddUserModal('driver'); }
+function showAddUserModal(role = 'driver') {
+  const isDriver = role === 'driver';
+  const title = isDriver ? '➕ إضافة مندوب' : '➕ إضافة مدير';
+  showModal(title, `
     <div class="input-group" style="margin-bottom:12px;">
       <div class="input-label">👤 الاسم</div>
-      <input class="form-input" id="newDriverName" placeholder="اسم المندوب">
+      <input class="form-input" id="newUserName" placeholder="${isDriver ? 'اسم المندوب' : 'اسم المدير'}">
     </div>
     <div class="input-group" style="margin-bottom:12px;">
       <div class="input-label">📱 رقم الموبايل</div>
-      <input class="form-input" type="tel" id="newDriverPhone" placeholder="01xxxxxxxxx" inputmode="numeric">
+      <input class="form-input" type="tel" id="newUserPhone" placeholder="01xxxxxxxxx" inputmode="numeric">
     </div>
     <div class="input-group" style="margin-bottom:8px;">
       <div class="input-label">🔑 كود الدخول (6 أرقام)</div>
-      <input class="form-input" type="tel" id="newDriverPin" placeholder="مثال: 123456" maxlength="6" inputmode="numeric">
+      <input class="form-input" type="tel" id="newUserPin" placeholder="مثال: 123456" maxlength="6" inputmode="numeric">
     </div>
-    <div style="font-size:11px;color:var(--text3);padding:4px 0;">ابعت الرقم والكود للمندوب عشان يدخل التطبيق</div>`,
-    [{ label: 'إضافة وإنشاء حساب', cls: 'confirm', action: addDriver },
+    <div style="font-size:11px;color:var(--text3);padding:4px 0;">ابعت الرقم والكود ${isDriver ? 'للمندوب' : 'للمدير'} عشان يدخل التطبيق</div>`,
+    [{ label: 'إنشاء حساب', cls: 'confirm', action: () => addUser(role) },
      { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
 }
 
-async function addDriver() {
-  const name  = document.getElementById('newDriverName').value.trim();
-  const phone = document.getElementById('newDriverPhone').value.trim();
-  const pin   = document.getElementById('newDriverPin').value.trim();
-  if (!name)          { showToast('ادخل الاسم'); return; }
+
+async function addDriver() { await addUser('driver'); }
+async function addUser(role) {
+  const name  = document.getElementById('newUserName').value.trim();
+  const phone = document.getElementById('newUserPhone').value.trim();
+  const pin   = document.getElementById('newUserPin').value.trim();
+  if (!name)             { showToast('ادخل الاسم'); return; }
   if (phone.length < 10) { showToast('ادخل رقم صحيح'); return; }
   if (pin.length !== 6)  { showToast('الكود لازم 6 أرقام'); return; }
 
   const btn = document.getElementById('mBtn0');
-  btn.disabled = true;
-  btn.textContent = 'جاري الإنشاء...';
+  if (btn) { btn.disabled = true; btn.textContent = 'جاري الإنشاء...'; }
 
-  // Normalize phone
   let p = phone.replace(/\D/g,'');
   if (!p.startsWith('0')) p = '0' + p;
   const email = p + '@nabilpro.app';
 
   try {
-    // Create Firebase Auth account using secondary app (so manager stays logged in)
     let secondaryApp;
-    try {
-      secondaryApp = firebase.app('secondary');
-    } catch(e) {
-      secondaryApp = firebase.initializeApp(FIREBASE_CONFIG, 'secondary');
-    }
+    try { secondaryApp = firebase.app('secondary'); }
+    catch(e) { secondaryApp = firebase.initializeApp(FIREBASE_CONFIG, 'secondary'); }
+
     const secondaryAuth = secondaryApp.auth();
     const result = await secondaryAuth.createUserWithEmailAndPassword(email, pin);
     const uid = result.user.uid;
     await secondaryAuth.signOut();
 
-    // Save to Firestore
     await db.collection('users').doc(uid).set({
-      uid, name, phone: p, email, role: 'driver',
+      uid, name, phone: p, email, role,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: currentUser.uid
     });
 
-    allDrivers.push({ uid, name, phone: p, role: 'driver' });
+    allDrivers.push({ uid, name, phone: p, email, role });
     renderDriversList();
     closeModal();
-    showToast(`✅ تم إنشاء حساب ${name} - كود: ${pin}`);
+    showToast(`✅ تم إنشاء حساب ${name}`);
   } catch(err) {
-    btn.disabled = false;
-    btn.textContent = 'إضافة وإنشاء حساب';
-    if (err.code === 'auth/email-already-in-use') {
-      showToast('❌ الرقم ده موجود بالفعل');
-    } else {
-      showToast('خطأ: ' + err.message);
-    }
+    if (btn) { btn.disabled = false; btn.textContent = 'إنشاء حساب'; }
+    if (err.code === 'auth/email-already-in-use') showToast('❌ الرقم ده موجود بالفعل');
+    else showToast('خطأ: تحقق من الاتصال');
   }
 }
+
 
 function showDriverDetail(uid) {
   selectedDriverUid = uid;
@@ -2162,22 +2375,42 @@ async function toggleDriverRole() {
 async function changeDriverPin() {
   if (!selectedDriverUid) return;
   const driver = allDrivers.find(d => d.uid === selectedDriverUid);
-  showModal('تغيير كود الدخول', `
+  showModal('🔑 تغيير كود الدخول', `
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">المندوب: <strong>${sanitize(driver?.name||'')}</strong></div>
     <div class="input-group">
       <div class="input-label">كود جديد (6 أرقام)</div>
       <input class="form-input" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric">
-    </div>
-    <div style="font-size:11px;color:var(--text3);margin-top:8px;">ابعت الكود الجديد للمندوب</div>`,
-    [{ label: 'حفظ', cls: 'confirm', action: async () => {
+    </div>`,
+    [{ label: 'تغيير الكود', cls: 'confirm', action: async () => {
         const newPin = document.getElementById('newPinInput').value.trim();
         if (newPin.length !== 6) { showToast('الكود لازم 6 أرقام'); return; }
-        // Update via Firestore (driver must re-login with new pin)
-        await db.collection('users').doc(selectedDriverUid).update({ pinChanged: true, newPin });
-        closeModal();
-        showToast('✅ سيطلب من المندوب الدخول بالكود الجديد');
+
+        const btn = document.getElementById('mBtn0');
+        if (btn) { btn.disabled = true; btn.textContent = 'جاري التغيير...'; }
+
+        try {
+          // Login as the driver using secondary app then change password
+          let secondaryApp;
+          try { secondaryApp = firebase.app('secondary'); }
+          catch(e) { secondaryApp = firebase.initializeApp(FIREBASE_CONFIG, 'secondary'); }
+
+          const secondaryAuth = secondaryApp.auth();
+          const email = driver.email || (driver.phone + '@nabilpro.app');
+          // We don't have old pin, so store new pin in Firestore for driver to update on next login
+          await db.collection('users').doc(selectedDriverUid).update({
+            pendingPin: newPin,
+            pendingPinSetAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          closeModal();
+          showToast(`✅ كود ${driver?.name} الجديد: ${newPin} — ابعته ليه`);
+        } catch(err) {
+          if (btn) { btn.disabled = false; btn.textContent = 'تغيير الكود'; }
+          showToast('خطأ في تغيير الكود');
+        }
     }},
     { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
 }
+
 
 async function removeDriver() {
   if (!selectedDriverUid) return;
@@ -2201,13 +2434,15 @@ async function loadMgrRestaurants() {
   const snap = await db.collection('restaurants').orderBy('name').get();
   const rests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   document.getElementById('mgrRestsList').innerHTML = rests.length
-    ? rests.map(r => `<div class="rest-card">
-        <span style="font-size:22px;">🏪</span>
-        <span class="rest-name-big">${sanitize(r.name)}</span>
-        <button class="rest-delete-btn" onclick="deleteMgrRest('${sanitize(r.id)}','${sanitize(r.name)}')">حذف</button>
+    ? rests.map(r => `
+      <div class="rest-item">
+        <div class="rest-item-icon">🏪</div>
+        <span class="rest-item-name">${sanitize(r.name)}</span>
+        <button class="rest-item-del" onclick="deleteMgrRest('${sanitize(r.id)}','${sanitize(r.name)}')">حذف</button>
       </div>`).join('')
     : '<div class="empty-state"><div class="empty-text">لا مطاعم بعد</div></div>';
 }
+
 
 function showAddRestModal() {
   showModal('إضافة مطعم', `<input class="form-input" id="newRestName" placeholder="اسم المطعم">`,

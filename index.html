@@ -643,7 +643,7 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 .modal-btn.danger { background:var(--danger); color:#fff; }
 
 /* ============================================================
-   MANAGER APP
+   MANAGER APP - REDESIGNED
    ============================================================ */
 #managerApp {
   flex-direction:column;
@@ -651,73 +651,112 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
   overflow:hidden;
 }
 
+/* Header */
 .mgr-header {
-  background:var(--card);
+  background:var(--bg2);
   border-bottom:1px solid var(--card-border);
   padding:0 16px;
   height:var(--header-h);
-  display:flex; align-items:center; gap:12px;
-  flex-shrink:0;
-  z-index:100;
+  display:flex; align-items:center; gap:10px;
+  flex-shrink:0; z-index:100;
 }
-.mgr-header-title { font-size:17px; font-weight:900; flex:1; }
+.mgr-header-title { font-size:18px; font-weight:900; flex:1; }
 .mgr-badge {
-  background:var(--primary-glow);
-  color:var(--primary);
-  padding:4px 10px;
+  background:linear-gradient(135deg, var(--primary), #e55a00);
+  color:#fff;
+  padding:5px 12px;
   border-radius:50px;
   font-size:11px; font-weight:700;
+  box-shadow:0 2px 8px var(--primary-glow);
 }
 
+/* Tabs - bottom style for manager */
 .mgr-tabs {
   display:flex;
-  background:var(--card);
+  background:var(--bg2);
   border-bottom:1px solid var(--card-border);
   flex-shrink:0;
   overflow-x:auto;
+  scrollbar-width:none;
 }
+.mgr-tabs::-webkit-scrollbar { display:none; }
 .mgr-tab {
-  flex:1; padding:12px 8px;
+  flex:1; padding:14px 6px 10px;
   border:none; background:transparent;
   font-family:'Cairo',sans-serif;
-  font-size:12px; font-weight:700;
+  font-size:11px; font-weight:700;
   color:var(--text3); cursor:pointer;
-  border-bottom:2px solid transparent;
-  white-space:nowrap;
+  border-bottom:3px solid transparent;
+  white-space:nowrap; min-width:72px;
   transition:all .2s;
-  min-width:70px;
+  display:flex; flex-direction:column;
+  align-items:center; gap:3px;
 }
+.mgr-tab .tab-icon { font-size:18px; }
 .mgr-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
 
 .mgr-content {
   flex:1; overflow-y:auto;
-  padding:16px;
+  padding:0;
   padding-bottom:24px;
 }
-
-.mgr-tab-panel { display:none; }
+.mgr-tab-panel { display:none; padding:16px; }
 .mgr-tab-panel.active { display:block; }
 
-/* Manager Stats */
-.mgr-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
-.mgr-stat {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius-sm);
-  padding:16px;
+/* ---- OVERVIEW: Hero stats ---- */
+.mgr-hero {
+  background:linear-gradient(135deg,#1a0a00 0%,#2d1500 100%);
+  border-bottom:1px solid rgba(249,115,22,0.15);
+  padding:20px 16px 16px;
+  margin:-16px -16px 16px;
 }
-.mgr-stat-icon { font-size:24px; margin-bottom:8px; }
-.mgr-stat-label { font-size:11px; color:var(--text2); margin-bottom:4px; }
-.mgr-stat-val { font-size:22px; font-weight:900; color:var(--primary); }
+.mgr-hero-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.mgr-hero-date { font-size:12px; color:rgba(249,115,22,0.7); }
+.mgr-hero-title { font-size:16px; font-weight:900; color:#fff; }
 
-/* Driver list */
+.mgr-stats-big { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.mgr-stat-big {
+  border-radius:18px; padding:16px 14px;
+  position:relative; overflow:hidden;
+  display:flex; flex-direction:column; gap:4px;
+}
+.mgr-stat-big.s1 { background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(34,197,94,0.06)); border:1.5px solid rgba(34,197,94,0.25); }
+.mgr-stat-big.s2 { background:linear-gradient(135deg,rgba(249,115,22,0.18),rgba(249,115,22,0.06)); border:1.5px solid rgba(249,115,22,0.25); }
+.mgr-stat-big.s3 { background:linear-gradient(135deg,rgba(129,140,248,0.18),rgba(129,140,248,0.06)); border:1.5px solid rgba(129,140,248,0.25); }
+.mgr-stat-big.s4 { background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(245,158,11,0.06)); border:1.5px solid rgba(245,158,11,0.25); }
+.mgr-stat-big-icon {
+  width:38px; height:38px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; margin-bottom:8px;
+}
+.mgr-stat-big.s1 .mgr-stat-big-icon { background:rgba(34,197,94,0.15); }
+.mgr-stat-big.s2 .mgr-stat-big-icon { background:rgba(249,115,22,0.15); }
+.mgr-stat-big.s3 .mgr-stat-big-icon { background:rgba(129,140,248,0.15); }
+.mgr-stat-big.s4 .mgr-stat-big-icon { background:rgba(245,158,11,0.15); }
+.mgr-stat-big-label { font-size:10px; color:rgba(255,255,255,0.5); font-weight:600; letter-spacing:0.3px; }
+.mgr-stat-big-val { font-size:24px; font-weight:900; letter-spacing:-0.5px; }
+.mgr-stat-big.s1 .mgr-stat-big-val { color:var(--success); }
+.mgr-stat-big.s2 .mgr-stat-big-val { color:var(--primary); }
+.mgr-stat-big.s3 .mgr-stat-big-val { color:var(--visa); }
+.mgr-stat-big.s4 .mgr-stat-big-val { color:#f59e0b; }
+
+/* Manager stats (kept for compatibility) */
+.mgr-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.mgr-stat {
+  background:var(--card); border:1px solid var(--card-border);
+  border-radius:var(--radius-sm); padding:14px;
+}
+.mgr-stat-icon { font-size:22px; margin-bottom:6px; }
+.mgr-stat-label { font-size:10px; color:var(--text2); margin-bottom:2px; }
+.mgr-stat-val { font-size:20px; font-weight:900; color:var(--primary); }
+
+/* ---- DRIVERS TAB ---- */
 .search-bar {
   display:flex;
   background:var(--card);
   border:1px solid var(--card-border);
   border-radius:var(--radius-sm);
-  overflow:hidden;
-  margin-bottom:14px;
+  overflow:hidden; margin-bottom:12px;
 }
 .search-bar input {
   flex:1; background:transparent; border:none; outline:none;
@@ -726,41 +765,65 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 }
 .search-bar span { padding:0 14px; display:flex; align-items:center; font-size:18px; color:var(--text3); }
 
+/* Driver card - premium redesign */
 .driver-card {
   background:var(--card);
   border:1px solid var(--card-border);
-  border-radius:var(--radius-sm);
-  padding:14px;
+  border-radius:18px;
+  padding:14px 16px;
   margin-bottom:10px;
-  display:flex; align-items:center; gap:12px;
+  display:flex; align-items:center; gap:14px;
   cursor:pointer;
-  transition:border-color .2s;
+  transition:all .2s;
+  position:relative; overflow:hidden;
 }
-.driver-card:active { border-color:var(--primary); }
-.driver-avatar {
-  width:46px; height:46px;
-  background:var(--primary-glow);
-  border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:20px; font-weight:900;
-  color:var(--primary);
-  flex-shrink:0;
-}
-.driver-info { flex:1; }
-.driver-name { font-size:15px; font-weight:700; margin-bottom:2px; }
-.driver-phone { font-size:12px; color:var(--text2); direction:ltr; text-align:right; }
-.driver-stats-row { display:flex; gap:10px; margin-top:6px; }
-.driver-mini-stat { font-size:11px; color:var(--text3); }
-.driver-mini-stat span { color:var(--success); font-weight:700; }
-.driver-online-dot {
-  width:10px; height:10px;
-  border-radius:50%;
+.driver-card::before {
+  content:'';
+  position:absolute; top:0; bottom:0; right:0; width:4px;
+  border-radius:0 18px 18px 0;
   background:var(--bg3);
-  flex-shrink:0;
+  transition:background .2s;
 }
-.driver-online-dot.online { background:var(--success); box-shadow:0 0 6px rgba(34,197,94,0.5); }
+.driver-card.online-card { border-color:rgba(34,197,94,0.2); }
+.driver-card.online-card::before { background:linear-gradient(180deg,var(--success),rgba(34,197,94,0.4)); }
+.driver-card:active { transform:scale(0.98); border-color:var(--primary); }
 
-/* Add driver btn */
+.driver-avatar {
+  width:52px; height:52px;
+  border-radius:16px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; font-weight:900;
+  flex-shrink:0; position:relative;
+}
+.driver-avatar.av-orange { background:rgba(249,115,22,0.12); color:var(--primary); }
+.driver-avatar.av-green  { background:rgba(34,197,94,0.12);  color:var(--success); }
+.driver-avatar.av-purple { background:rgba(129,140,248,0.12); color:var(--visa); }
+.driver-avatar.av-amber  { background:rgba(245,158,11,0.12);  color:#f59e0b; }
+
+.driver-online-badge {
+  position:absolute; bottom:-1px; left:-1px;
+  width:14px; height:14px; border-radius:50%;
+  background:var(--bg3); border:2px solid var(--card);
+  transition:background .2s;
+}
+.driver-online-badge.online { background:var(--success); }
+
+.driver-info { flex:1; min-width:0; }
+.driver-name { font-size:15px; font-weight:800; margin-bottom:1px; }
+.driver-phone { font-size:11px; color:var(--text3); direction:ltr; margin-bottom:7px; }
+
+.driver-stats-row { display:flex; gap:5px; flex-wrap:wrap; }
+.driver-pill {
+  padding:3px 9px; border-radius:20px;
+  font-size:10px; font-weight:700; line-height:1.5;
+}
+.driver-pill.orders   { background:rgba(249,115,22,0.12); color:var(--primary); }
+.driver-pill.delivery { background:rgba(34,197,94,0.12);  color:var(--success); }
+.driver-pill.role-mgr { background:rgba(129,140,248,0.15); color:var(--visa); }
+
+.driver-arrow { color:var(--text3); font-size:14px; flex-shrink:0; }
+
+/* Add btn */
 .add-btn {
   width:100%; padding:14px;
   background:transparent;
@@ -769,34 +832,28 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
   color:var(--text2); font-size:14px; font-weight:600;
   font-family:'Cairo',sans-serif; cursor:pointer;
   display:flex; align-items:center; justify-content:center; gap:8px;
-  margin-bottom:16px;
-  transition:all .2s;
+  margin-bottom:12px; transition:all .2s;
 }
-.add-btn:hover { border-color:var(--primary); color:var(--primary); }
+.add-btn:active { border-color:var(--primary); color:var(--primary); }
 
-/* Manager order card */
+/* Recent orders - compact */
 .mgr-order-card {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius-sm);
-  padding:12px;
+  background:var(--card); border:1px solid var(--card-border);
+  border-radius:var(--radius-sm); padding:12px;
   margin-bottom:8px;
   display:flex; align-items:center; gap:10px;
 }
-.mgr-order-body { flex:1; }
+.mgr-order-body { flex:1; min-width:0; }
 .mgr-order-rest { font-size:14px; font-weight:700; }
-.mgr-order-driver { font-size:12px; color:var(--text2); }
-.mgr-order-time { font-size:11px; color:var(--text3); }
-.mgr-order-amount { font-size:16px; font-weight:900; color:var(--success); }
+.mgr-order-driver { font-size:11px; color:var(--text2); margin-top:2px; }
+.mgr-order-time { font-size:10px; color:var(--text3); margin-top:2px; }
+.mgr-order-amount { font-size:16px; font-weight:900; color:var(--success); flex-shrink:0; }
 
-/* Restaurant manager */
+/* Restaurant */
 .rest-card {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius-sm);
-  padding:14px;
-  margin-bottom:8px;
-  display:flex; align-items:center; gap:12px;
+  background:var(--card); border:1px solid var(--card-border);
+  border-radius:var(--radius-sm); padding:14px;
+  margin-bottom:8px; display:flex; align-items:center; gap:12px;
 }
 .rest-name-big { flex:1; font-size:15px; font-weight:700; }
 .rest-delete-btn {
@@ -806,61 +863,69 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
   font-family:'Cairo',sans-serif; cursor:pointer;
 }
 
-/* Driver detail modal */
+/* Driver detail */
 .driver-detail-overlay {
-  position:fixed; inset:0;
-  background:var(--bg);
-  z-index:200;
-  display:none;
-  flex-direction:column;
-  overflow:hidden;
+  position:fixed; inset:0; background:var(--bg);
+  z-index:200; display:none; flex-direction:column; overflow:hidden;
 }
 .driver-detail-overlay.show { display:flex; }
 .driver-detail-header {
-  padding:16px;
-  background:var(--card);
+  padding:16px; background:var(--card);
   border-bottom:1px solid var(--card-border);
-  display:flex; align-items:center; gap:12px;
+  display:flex; align-items:center; gap:10px;
 }
 .back-btn {
-  width:40px; height:40px;
-  background:var(--bg3); border:none; border-radius:12px;
-  font-size:20px; cursor:pointer; display:flex;
-  align-items:center; justify-content:center;
-  color:var(--text);
+  width:40px; height:40px; background:var(--bg3);
+  border:none; border-radius:12px; font-size:20px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text);
 }
 .driver-detail-content { flex:1; overflow-y:auto; padding:16px; }
-.driver-detail-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+
+/* Detail stats - redesigned */
+.driver-detail-stats {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:8px; margin-bottom:16px;
+}
 .driver-detail-stat {
   background:var(--card); border:1px solid var(--card-border);
-  border-radius:var(--radius-sm); padding:12px; text-align:center;
+  border-radius:var(--radius-sm); padding:14px; text-align:center;
 }
-.dds-val { font-size:18px; font-weight:900; color:var(--primary); }
-.dds-label { font-size:10px; color:var(--text2); margin-top:2px; }
+.dds-val { font-size:20px; font-weight:900; color:var(--primary); }
+.dds-label { font-size:10px; color:var(--text2); margin-top:3px; }
 
-/* Report page */
-.date-filter {
-  display:flex; gap:8px; margin-bottom:14px;
-  flex-wrap:wrap;
-}
+/* Reports */
+.date-filter { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
 .date-btn {
-  padding:6px 14px;
+  padding:7px 16px;
   background:var(--bg3); border:1px solid var(--card-border);
-  border-radius:50px; font-size:12px; font-weight:600;
+  border-radius:50px; font-size:12px; font-weight:700;
   font-family:'Cairo',sans-serif; cursor:pointer; color:var(--text2);
   transition:all .2s;
 }
-.date-btn.active { background:var(--primary-glow); border-color:var(--primary); color:var(--primary); }
+.date-btn.active { background:var(--primary); border-color:var(--primary); color:#fff; }
 
+/* Report leaderboard style */
 .report-row {
   background:var(--card); border:1px solid var(--card-border);
   border-radius:var(--radius-sm); padding:14px;
   margin-bottom:8px;
   display:flex; align-items:center; gap:12px;
+  position:relative;
 }
+.report-rank {
+  width:28px; height:28px;
+  border-radius:50%;
+  background:var(--bg3);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:900; color:var(--text2);
+  flex-shrink:0;
+}
+.report-rank.gold { background:rgba(245,158,11,0.2); color:#f59e0b; }
+.report-rank.silver { background:rgba(148,163,184,0.2); color:#94a3b8; }
+.report-rank.bronze { background:rgba(180,120,60,0.2); color:#b47c3c; }
 .report-driver-name { font-size:14px; font-weight:700; flex:1; }
-.report-driver-orders { font-size:12px; color:var(--text2); }
-.report-driver-income { font-size:16px; font-weight:900; color:var(--success); }
+.report-driver-orders { font-size:11px; color:var(--text3); margin-top:2px; }
+.report-driver-income { font-size:18px; font-weight:900; color:var(--success); }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width:4px; height:4px; }
@@ -1096,47 +1161,58 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
      ============================================================ -->
 <div class="screen" id="managerApp">
   <div class="mgr-header">
-    <span style="font-size:24px;">📊</span>
-    <span class="mgr-header-title">لوحة الإدارة</span>
+    <div style="flex:1;">
+      <div style="font-size:11px;color:var(--text3);font-weight:600;" id="mgrHeroDate">اليوم</div>
+      <div class="mgr-header-title">لوحة الإدارة 📊</div>
+    </div>
     <span class="mgr-badge" id="managerBadge">مدير</span>
-    <button class="icon-btn" onclick="toggleTheme()">🌙</button>
+    <button class="icon-btn" onclick="toggleTheme()" id="mgrThemeBtn">☀️</button>
     <button class="icon-btn" onclick="confirmLogout()">🚪</button>
   </div>
 
   <div class="mgr-tabs">
-    <button class="mgr-tab active" onclick="mgrTab(0,this)">📊 نظرة عامة</button>
-    <button class="mgr-tab" onclick="mgrTab(1,this)">👥 المناديب</button>
-    <button class="mgr-tab" onclick="mgrTab(2,this)">🏪 المطاعم</button>
-    <button class="mgr-tab" onclick="mgrTab(3,this)">📈 تقارير</button>
+    <button class="mgr-tab active" onclick="mgrTab(0,this)">
+      <span class="tab-icon">📊</span>نظرة عامة
+    </button>
+    <button class="mgr-tab" onclick="mgrTab(1,this)">
+      <span class="tab-icon">👥</span>المناديب
+    </button>
+    <button class="mgr-tab" onclick="mgrTab(2,this)">
+      <span class="tab-icon">🏪</span>المطاعم
+    </button>
+    <button class="mgr-tab" onclick="mgrTab(3,this)">
+      <span class="tab-icon">📈</span>تقارير
+    </button>
   </div>
 
   <div class="mgr-content">
 
     <!-- Overview Tab -->
     <div class="mgr-tab-panel active" id="mgrPanel0">
-      <div class="mgr-stats">
-        <div class="mgr-stat">
-          <div class="mgr-stat-icon">👥</div>
-          <div class="mgr-stat-label">المناديب النشطين اليوم</div>
-          <div class="mgr-stat-val" id="mgrStatDrivers">0</div>
+      <!-- Stats Grid -->
+      <div class="mgr-stats-big">
+        <div class="mgr-stat-big s1">
+          <div class="mgr-stat-big-icon">👥</div>
+          <div class="mgr-stat-big-label">مناديب نشطين</div>
+          <div class="mgr-stat-big-val" id="mgrStatDrivers">0</div>
         </div>
-        <div class="mgr-stat">
-          <div class="mgr-stat-icon">📦</div>
-          <div class="mgr-stat-label">أوردرات اليوم</div>
-          <div class="mgr-stat-val" id="mgrStatOrders">0</div>
+        <div class="mgr-stat-big s2">
+          <div class="mgr-stat-big-icon">📦</div>
+          <div class="mgr-stat-big-label">أوردرات اليوم</div>
+          <div class="mgr-stat-big-val" id="mgrStatOrders">0</div>
         </div>
-        <div class="mgr-stat">
-          <div class="mgr-stat-icon">💰</div>
-          <div class="mgr-stat-label">دخل التوصيل اليوم</div>
-          <div class="mgr-stat-val" id="mgrStatDelivery">0</div>
+        <div class="mgr-stat-big s3">
+          <div class="mgr-stat-big-icon">🛵</div>
+          <div class="mgr-stat-big-label">دخل التوصيل</div>
+          <div class="mgr-stat-big-val" id="mgrStatDelivery">ج 0</div>
         </div>
-        <div class="mgr-stat">
-          <div class="mgr-stat-icon">💳</div>
-          <div class="mgr-stat-label">إجمالي كاش اليوم</div>
-          <div class="mgr-stat-val" id="mgrStatCash">0</div>
+        <div class="mgr-stat-big s4">
+          <div class="mgr-stat-big-icon">💵</div>
+          <div class="mgr-stat-big-label">إجمالي الكاش</div>
+          <div class="mgr-stat-big-val" id="mgrStatCash">ج 0</div>
         </div>
       </div>
-      <div class="section-title">🔴 آخر الأوردرات</div>
+      <div style="font-size:13px;font-weight:800;color:var(--text);padding:16px 0 10px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;animation:pulse 1.5s infinite;"></span> آخر الأوردرات</div>
       <div id="mgrRecentOrders"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا أوردرات بعد</div></div></div>
     </div>
 
@@ -1160,8 +1236,8 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
     <div class="mgr-tab-panel" id="mgrPanel3">
       <div class="date-filter">
         <button class="date-btn active" onclick="setReportPeriod('today',this)">اليوم</button>
-        <button class="date-btn" onclick="setReportPeriod('week',this)">هذا الأسبوع</button>
-        <button class="date-btn" onclick="setReportPeriod('month',this)">هذا الشهر</button>
+        <button class="date-btn" onclick="setReportPeriod('week',this)">الأسبوع</button>
+        <button class="date-btn" onclick="setReportPeriod('month',this)">الشهر</button>
       </div>
       <div id="reportsContent"></div>
     </div>
@@ -1833,6 +1909,12 @@ function initManagerApp() {
   themeMode = userProfile.themeMode || 'dark';
   applyTheme(themeMode);
   document.getElementById('managerBadge').textContent = userProfile.name || 'مدير';
+  // Set date in header
+  const now = new Date();
+  const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const months = ['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  document.getElementById('mgrHeroDate').textContent =
+    days[now.getDay()] + '، ' + now.getDate() + ' ' + months[now.getMonth()];
   showScreen('managerApp');
   listenAllOrders();
   loadAllDrivers();

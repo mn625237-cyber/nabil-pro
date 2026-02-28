@@ -71,19 +71,32 @@ document.getElementById('manifest-link').href = manifestURL;
   --header-h: 62px;
 }
 [data-theme="light"] {
-  --bg: #f1f5f9;
+  --bg: #f8fafc;
   --bg2: #ffffff;
   --bg3: #e2e8f0;
   --card: #ffffff;
-  --card-border: rgba(0,0,0,0.06);
+  --card-border: rgba(0,0,0,0.08);
   --text: #0f172a;
-  --text2: #475569;
-  --text3: #94a3b8;
-  --shadow: 0 4px 20px rgba(0,0,0,0.1);
+  --text2: #334155;
+  --text3: #64748b;
+  --primary-glow: rgba(249,115,22,0.12);
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
+/* Light mode overrides for elements with hardcoded dark colors */
+[data-theme="light"] .auth-card { background:#ffffff; box-shadow:0 8px 40px rgba(0,0,0,0.1); }
+[data-theme="light"] .pin-dot { background:rgba(0,0,0,0.15); }
+[data-theme="light"] .pin-dot.filled { background:var(--primary); }
+[data-theme="light"] .mgr-stat-big.s1 { background:linear-gradient(145deg,rgba(34,197,94,0.12),rgba(34,197,94,0.03)); }
+[data-theme="light"] .mgr-stat-big.s2 { background:linear-gradient(145deg,rgba(249,115,22,0.12),rgba(249,115,22,0.03)); }
+[data-theme="light"] .mgr-stat-big.s3 { background:linear-gradient(145deg,rgba(129,140,248,0.12),rgba(129,140,248,0.03)); }
+[data-theme="light"] .mgr-stat-big.s4 { background:linear-gradient(145deg,rgba(245,158,11,0.12),rgba(245,158,11,0.03)); }
+[data-theme="light"] .mgr-stat-big-label { color:rgba(0,0,0,0.45); }
+[data-theme="light"] .feed-dot { background:#ef4444; }
+[data-theme="light"] .user-section-label { color:var(--text3); }
 
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
 body { font-family:'Cairo',sans-serif; background:var(--bg); color:var(--text); height:100dvh; overflow:hidden; }
+input, textarea { user-select:text; -webkit-user-select:text; }
 input,textarea,select { font-family:'Cairo',sans-serif; }
 
 /* ============================================================
@@ -651,57 +664,68 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
   overflow:hidden;
 }
 
-/* Header */
+/* ══════════════════════════════════════
+   MANAGER HEADER - Premium Redesign
+══════════════════════════════════════ */
 .mgr-header {
-  background:var(--bg2);
+  background:var(--bg);
   border-bottom:1px solid var(--card-border);
   padding:0 16px;
-  height:var(--header-h);
+  height:64px;
   display:flex; align-items:center; gap:10px;
   flex-shrink:0; z-index:100;
+  position:relative;
 }
-.mgr-header-title { font-size:18px; font-weight:900; flex:1; }
+.mgr-header::after {
+  content:''; position:absolute;
+  bottom:0; left:16px; right:16px; height:1px;
+  background:linear-gradient(90deg,transparent,var(--primary),transparent);
+  opacity:0.3;
+}
+.mgr-header-title {
+  font-size:16px; font-weight:900; flex:1;
+  background:linear-gradient(135deg,var(--text),var(--text2));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
 .mgr-badge {
-  background:linear-gradient(135deg, var(--primary), #e55a00);
-  color:#fff;
-  padding:5px 12px;
-  border-radius:50px;
-  font-size:11px; font-weight:700;
-  box-shadow:0 2px 8px var(--primary-glow);
+  background:linear-gradient(135deg, var(--primary), #ea6810);
+  color:#fff; padding:4px 12px; border-radius:50px;
+  font-size:10px; font-weight:800; letter-spacing:0.5px;
 }
 
-/* Tabs - bottom style for manager */
+/* ══════════════════════════════════════
+   TABS - Bottom Navigation Style
+══════════════════════════════════════ */
 .mgr-tabs {
-  display:flex;
-  background:var(--bg2);
-  border-bottom:1px solid var(--card-border);
-  flex-shrink:0;
-  overflow-x:auto;
-  scrollbar-width:none;
+  display:flex; background:var(--bg2);
+  border-top:1px solid var(--card-border);
+  flex-shrink:0; overflow-x:auto; scrollbar-width:none;
+  position:sticky; bottom:0; z-index:50;
+  order:999;
 }
 .mgr-tabs::-webkit-scrollbar { display:none; }
 .mgr-tab {
-  flex:1; padding:14px 6px 10px;
+  flex:1; padding:10px 4px 8px;
   border:none; background:transparent;
   font-family:'Cairo',sans-serif;
-  font-size:11px; font-weight:700;
+  font-size:10px; font-weight:700;
   color:var(--text3); cursor:pointer;
-  border-bottom:3px solid transparent;
-  white-space:nowrap; min-width:72px;
+  border-top:2px solid transparent;
+  white-space:nowrap; min-width:64px;
   transition:all .2s;
   display:flex; flex-direction:column;
-  align-items:center; gap:3px;
+  align-items:center; gap:2px;
 }
-.mgr-tab .tab-icon { font-size:18px; }
-.mgr-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+.mgr-tab .tab-icon { font-size:20px; }
+.mgr-tab.active { color:var(--primary); border-top-color:var(--primary); background:var(--primary-glow); }
 
 .mgr-content {
   flex:1; overflow-y:auto;
-  padding:0;
-  padding-bottom:24px;
+  padding:0; padding-bottom:0;
 }
-.mgr-tab-panel { display:none; padding:16px; }
+.mgr-tab-panel { display:none; padding:16px; animation:fadeUp .2s ease; }
 .mgr-tab-panel.active { display:block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 
 /* ---- OVERVIEW: Hero stats ---- */
 .mgr-hero {
@@ -1340,27 +1364,12 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 <div class="screen" id="managerApp">
   <div class="mgr-header">
     <div style="flex:1;">
-      <div style="font-size:11px;color:var(--text3);font-weight:600;" id="mgrHeroDate">اليوم</div>
-      <div class="mgr-header-title">لوحة الإدارة 📊</div>
+      <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.3px;" id="mgrHeroDate">اليوم</div>
+      <div class="mgr-header-title">لوحة الإدارة</div>
     </div>
     <span class="mgr-badge" id="managerBadge">مدير</span>
-    <button class="icon-btn" onclick="toggleTheme()" id="mgrThemeBtn">☀️</button>
-    <button class="icon-btn" onclick="confirmLogout()">🚪</button>
-  </div>
-
-  <div class="mgr-tabs">
-    <button class="mgr-tab active" onclick="mgrTab(0,this)">
-      <span class="tab-icon">📊</span>نظرة عامة
-    </button>
-    <button class="mgr-tab" onclick="mgrTab(1,this)">
-      <span class="tab-icon">👥</span>المناديب
-    </button>
-    <button class="mgr-tab" onclick="mgrTab(2,this)">
-      <span class="tab-icon">🏪</span>المطاعم
-    </button>
-    <button class="mgr-tab" onclick="mgrTab(3,this)">
-      <span class="tab-icon">📈</span>تقارير
-    </button>
+    <button class="icon-btn" onclick="toggleTheme()" id="mgrThemeBtn">🔆</button>
+    <button class="icon-btn" onclick="confirmLogout()" style="background:var(--danger-bg);color:var(--danger);">🚪</button>
   </div>
 
   <div class="mgr-content">
@@ -1418,6 +1427,21 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
       <div id="reportsContent"></div>
     </div>
 
+  </div>
+
+  <div class="mgr-tabs">
+    <button class="mgr-tab active" onclick="mgrTab(0,this)">
+      <span class="tab-icon">📊</span>عامة
+    </button>
+    <button class="mgr-tab" onclick="mgrTab(1,this)">
+      <span class="tab-icon">👥</span>الفريق
+    </button>
+    <button class="mgr-tab" onclick="mgrTab(2,this)">
+      <span class="tab-icon">🏪</span>مطاعم
+    </button>
+    <button class="mgr-tab" onclick="mgrTab(3,this)">
+      <span class="tab-icon">📈</span>تقارير
+    </button>
   </div>
 </div><!-- end managerApp -->
 
@@ -1692,7 +1716,7 @@ function initDriverApp() {
   }).catch(() => {});
 
   // Apply saved theme
-  themeMode = userProfile.themeMode || 'dark';
+  themeMode = userProfile.themeMode || 'auto';
   applyTheme(themeMode);
 
   // Set name in UI
@@ -2031,7 +2055,10 @@ function editDriverName() {
 }
 
 function cycleTheme() {
-  themeMode = themeMode === 'dark' ? 'light' : 'dark';
+  // دورة: dark → light → auto → dark
+  if (themeMode === 'dark') themeMode = 'light';
+  else if (themeMode === 'light') themeMode = 'auto';
+  else themeMode = 'dark';
   applyTheme(themeMode);
   db.collection('users').doc(currentUser.uid).update({ themeMode });
 }
@@ -2039,11 +2066,25 @@ function cycleTheme() {
 function toggleTheme() { cycleTheme(); }
 
 function applyTheme(mode) {
-  document.body.dataset.theme = mode === 'light' ? 'light' : '';
-  document.getElementById('themeVal') && (document.getElementById('themeVal').textContent = mode === 'light' ? 'فاتح' : 'داكن');
+  // 'auto' = حسب نظام الموبايل
+  let resolved = mode;
+  if (mode === 'auto' || !mode) {
+    resolved = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  document.body.dataset.theme = resolved === 'light' ? 'light' : '';
+  document.getElementById('themeVal') && (document.getElementById('themeVal').textContent =
+    mode === 'auto' ? 'تلقائي' : resolved === 'light' ? 'فاتح' : 'داكن');
   const btn = document.getElementById('themeBtn');
-  if (btn) btn.textContent = mode === 'light' ? '🌙' : '☀️';
+  const mgrBtn = document.getElementById('mgrThemeBtn');
+  const icon = mode === 'auto' ? '🔆' : resolved === 'light' ? '🌙' : '☀️';
+  if (btn) btn.textContent = icon;
+  if (mgrBtn) mgrBtn.textContent = icon;
 }
+
+// Listen for OS theme change
+window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+  if (themeMode === 'auto' || !themeMode) applyTheme('auto');
+});
 
 // ============================================================
 // CLOCK
@@ -2083,7 +2124,7 @@ function startVoice(inputId, btnId) {
 // MANAGER APP
 // ============================================================
 function initManagerApp() {
-  themeMode = userProfile.themeMode || 'dark';
+  themeMode = userProfile.themeMode || 'auto';
   applyTheme(themeMode);
   document.getElementById('managerBadge').textContent = userProfile.name || 'مدير';
   // Set date in header
@@ -2415,14 +2456,37 @@ async function changeDriverPin() {
 async function removeDriver() {
   if (!selectedDriverUid) return;
   const driver = allDrivers.find(d => d.uid === selectedDriverUid);
-  showModal('حذف المندوب', `<p style="color:var(--text2);font-size:14px;">حذف ${driver?.name || 'المندوب'} من النظام؟</p>`,
-    [{ label: 'حذف', cls: 'danger', action: async () => {
-        await db.collection('users').doc(selectedDriverUid).delete();
-        allDrivers = allDrivers.filter(d => d.uid !== selectedDriverUid);
-        renderDriversList();
-        closeModal();
-        closeDriverDetail();
-        showToast('تم الحذف');
+  const isManager = driver?.role === 'manager';
+  const label = isManager ? 'حذف المدير' : 'حذف المندوب';
+  const name = driver?.name || 'المستخدم';
+
+  // منع المدير من حذف نفسه
+  if (selectedDriverUid === currentUser.uid) {
+    showToast('❌ مش تقدر تحذف حسابك الخاص');
+    return;
+  }
+
+  showModal(label, `
+    <p style="color:var(--text2);font-size:14px;margin-bottom:8px;">هل تريد حذف <strong>${sanitize(name)}</strong> من النظام؟</p>
+    <p style="color:var(--danger);font-size:12px;">⚠️ الأوردرات القديمة هتفضل محفوظة</p>`,
+    [{ label: '🗑 حذف نهائي', cls: 'danger', action: async () => {
+        const btn = document.getElementById('mBtn0');
+        if (btn) { btn.disabled = true; btn.textContent = 'جاري الحذف...'; }
+        try {
+          // حذف من Firestore
+          await db.collection('users').doc(selectedDriverUid).delete();
+          // حذف من Firebase Auth عن طريق Cloud Function (لو متاحة) أو نسجل ملاحظة
+          // Note: حذف Auth account يحتاج Admin SDK - نحذف Firestore فقط
+          // ده كافي عشان المستخدم مش هيقدر يدخل لأن profile بتاعه اتحذف
+          allDrivers = allDrivers.filter(d => d.uid !== selectedDriverUid);
+          renderDriversList();
+          closeModal();
+          closeDriverDetail();
+          showToast(`✅ تم حذف ${name}`);
+        } catch(err) {
+          if (btn) { btn.disabled = false; btn.textContent = '🗑 حذف نهائي'; }
+          showToast('❌ خطأ في الحذف - تحقق من الصلاحيات');
+        }
     }},
     { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
 }

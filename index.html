@@ -1563,7 +1563,48 @@ window.addEventListener('offline', () => {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  // Push state عشان زر الرجوع على Android يشتغل
+  const skip = ['loadingScreen', 'offlineScreen'];
+  if (!skip.includes(id)) {
+    history.pushState({ screen: id }, '', '');
+  }
 }
+
+// ════════════════════════════════════════
+// زر الرجوع على Android
+// ════════════════════════════════════════
+window.addEventListener('popstate', function() {
+  // 1. Modal مفتوح؟
+  const modal = document.getElementById('modalOverlay');
+  if (modal && modal.classList.contains('show')) {
+    closeModal();
+    history.pushState({}, '', '');
+    return;
+  }
+  // 2. Driver Detail مفتوح؟
+  const detail = document.getElementById('driverDetailOverlay');
+  if (detail && detail.classList.contains('show')) {
+    closeDriverDetail();
+    history.pushState({}, '', '');
+    return;
+  }
+  // 3. داخل التطبيق الرئيسي؟ → اسأل عن الخروج
+  const inApp = ['driverApp','managerApp'].some(id => {
+    const el = document.getElementById(id);
+    return el && el.classList.contains('active');
+  });
+  if (inApp) {
+    history.pushState({}, '', '');
+    confirmLogout();
+    return;
+  }
+  // 4. أي مكان تاني → شاشة اللوجين
+  history.pushState({}, '', '');
+  showScreen('authScreen');
+});
+
+// State ابتدائي عشان popstate يشتغل من أول لحظة
+history.pushState({}, '', '');
 
 // ============================================================
 // INIT

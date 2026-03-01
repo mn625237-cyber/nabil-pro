@@ -32,6 +32,79 @@ const blob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'}
 const manifestURL = URL.createObjectURL(blob);
 document.getElementById('manifest-link').href = manifestURL;
 </script>
+
+<script>
+// ============================================================
+// PWA Push Notifications — ntfy.sh (مجاني 100%)
+// ============================================================
+
+// Topic فريد للمشروع — غيّره لأي اسم سري تحبه
+const NTFY_TOPIC = 'nabilpro-orders-x7k2m9';
+const NTFY_URL   = 'https://ntfy.sh/' + NTFY_TOPIC;
+
+let swRegistration = null;
+
+// تسجيل Service Worker
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    swRegistration = await navigator.serviceWorker.register('./sw.js');
+    console.log('✅ SW registered');
+    await subscribeToPush();
+  } catch(err) {
+    console.warn('SW registration failed:', err);
+  }
+}
+
+// الاشتراك في الإشعارات
+async function subscribeToPush() {
+  if (!swRegistration) return;
+  const permission = await Notification.requestPermission();
+  if (permission !== 'granted') {
+    console.log('🔕 Push permission denied');
+    return;
+  }
+  console.log('🔔 Push permission granted');
+}
+
+// بعت إشعار لكل الأجهزة عن طريق ntfy.sh
+async function sendPushNotification(title, body, tag = 'order') {
+  try {
+    await fetch(NTFY_URL, {
+      method: 'POST',
+      headers: {
+        'Title':    title,
+        'Priority': 'high',
+        'Tags':     tag,
+        'Content-Type': 'text/plain; charset=utf-8'
+      },
+      body: body
+    });
+  } catch(err) {
+    console.warn('ntfy send failed:', err);
+  }
+}
+
+// اشتراك في ntfy عن طريق SSE (Server-Sent Events)
+// ده بيخلي الإشعار يوصل حتى لو في الخلفية
+function subscribeToNtfy() {
+  if (!('serviceWorker' in navigator)) return;
+  if (Notification.permission !== 'granted') return;
+
+  // Service Worker يستمع لـ ntfy
+  if (swRegistration && swRegistration.active) {
+    swRegistration.active.postMessage({
+      type: 'SUBSCRIBE_NTFY',
+      topic: NTFY_TOPIC
+    });
+  }
+}
+
+// ابدأ تسجيل SW لما الصفحة تحمل
+window.addEventListener('load', () => {
+  registerSW();
+});
+</script>
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEqklEQVR4nO3VTapcZwxFUbdDwL00M5eMyTP0rNxzIFAxGPu9d/VzJJ0Nu13UlRb6Pv3x+W+ix32S/wNaHYAoFIAoFIDe6Os/f8r/w+R8Af0rIzf5F0lyAZTOBVL/dRmQBI0bpoOA5FasJN0BJJfhKWk9ILkDc0lbAcm3jqStgORrhtFWQPLVwmgrIPk6YbQVkHyFE5JvYSUg+dqmJd/IGkDyVU1Ovp3pgOQbmp98R0MByRezK/m+ZgGS7+NXffvyl/w/TDakB6TFkZUtIzGgvWJGeTIFdAyNFpMXIAc3EkkWgNzcNEs6DsicTg+js4Cg08boICDoNDO6Awg6hxmVA4KOnNFiQNAZwmglIPQ4GKoCBJ2BjBwByfc3ITtA0BnLaAEg9FgZSgaEHjdDmYCgs4jROEDo8TQ0BZB8Hxu7Awg9toYSAKHH2VAUEHomJDSkBCSf+6VWAkLPqCSGngNCz8D6DQkAyad8ux2AOD9jaz5CTwChZ3idhloBySfr01xA6NlSjyEAnW0iIPTsqsFQByD5HJ0bBIjzs7HqI1QOSD5BGgEIPaurMwQgi8SA0HOgIkMAckkGCD1nqjAEIKPWAJJPin5VNyDOz7HSj1A+IPmM6PcBiEL1AULP1RINAcixoYDkc6H3Vw6I83O7rCMEINPGAZJPhD5aISDOj0MpRwhAvg0CJJ8FPQtAFKoEEO+XT/FXDEDWjQAknwJFAhCFAhCFAhCFSgb00Z8D0PYebDwTkPz7KR6AKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKFQaIPTY9tgQF4h4wigWgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCiUEhCGtvdg478DxBFyK6IHQAQgigUgCqUHhKG9Pdg1gOj/SgDxivkU1AMg96YAwtDG4u8XgKwrBMQr5lBcTyYgDO0q5fwAyLdyQLxit0vRkwwIQ1vKOj8AMq0JEIZOlqgHQI5NB4ShyT1b6HNAHKFj5eqpAoShmaWfHwB5pQGEoRtV6AGQUUpAGNpekR4AuaQHhKG91enpAIShjXpKAHGENlaqpwkQhnbpKQSEoUU16AHQ5YYCwtCKevR0A8LQcD1NgDA0uU49zwHxkI2tU48GEIYG6hEAwtC0+vVEAWFoThI9YkAYmqBHDAhD8oR6cgBhyFZPGiAMeeoZBAhDzXrGAcKQoZ5kQCmGYFRNJ1FPPiAMWekpAYQhHz1VgLIMwSiRToWeBYAwlDjJTYByDXkyyh1g0ZYLAWHovJ5yQOmGHBilT6x0v+WAKgxdZVQxqOrldgCC0Uk63YCKDG1nVDSTtp22AqoztJFR3Sg6F9oNqNTQFkalE2jepgBQtaGxkhq+un+VGkBtjCZI6vlM1RKVgNoM9WNq/i7hBsWA+g0VeRJ+hXZ9ekByRm8ik/+HmXRmAZpsaGbyfY0DBKNddIYCwtAiPUMBwWgFnemAYDSczg5A5ozkkz8CyJCRfNoHAZkwkk/4OKDDjORTNQJ0SZJ8htaAXskdWLl5dQfQK7kMBzevDgJ6Jbdy2M2ry4B+DDRFuQD6Obik5AvondnKeGcAolAAolAAolDfAYOGVRpMJjD1AAAAAElFTkSuQmCC">
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEqklEQVR4nO3VTapcZwxFUbdDwL00M5eMyTP0rNxzIFAxGPu9d/VzJJ0Nu13UlRb6Pv3x+W+ix32S/wNaHYAoFIAoFIDe6Os/f8r/w+R8Af0rIzf5F0lyAZTOBVL/dRmQBI0bpoOA5FasJN0BJJfhKWk9ILkDc0lbAcm3jqStgORrhtFWQPLVwmgrIPk6YbQVkHyFE5JvYSUg+dqmJd/IGkDyVU1Ovp3pgOQbmp98R0MByRezK/m+ZgGS7+NXffvyl/w/TDakB6TFkZUtIzGgvWJGeTIFdAyNFpMXIAc3EkkWgNzcNEs6DsicTg+js4Cg08boICDoNDO6Awg6hxmVA4KOnNFiQNAZwmglIPQ4GKoCBJ2BjBwByfc3ITtA0BnLaAEg9FgZSgaEHjdDmYCgs4jROEDo8TQ0BZB8Hxu7Awg9toYSAKHH2VAUEHomJDSkBCSf+6VWAkLPqCSGngNCz8D6DQkAyad8ux2AOD9jaz5CTwChZ3idhloBySfr01xA6NlSjyEAnW0iIPTsqsFQByD5HJ0bBIjzs7HqI1QOSD5BGgEIPaurMwQgi8SA0HOgIkMAckkGCD1nqjAEIKPWAJJPin5VNyDOz7HSj1A+IPmM6PcBiEL1AULP1RINAcixoYDkc6H3Vw6I83O7rCMEINPGAZJPhD5aISDOj0MpRwhAvg0CJJ8FPQtAFKoEEO+XT/FXDEDWjQAknwJFAhCFAhCFAhCFSgb00Z8D0PYebDwTkPz7KR6AKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKFQaIPTY9tgQF4h4wigWgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCiUEhCGtvdg478DxBFyK6IHQAQgigUgCqUHhKG9Pdg1gOj/SgDxivkU1AMg96YAwtDG4u8XgKwrBMQr5lBcTyYgDO0q5fwAyLdyQLxit0vRkwwIQ1vKOj8AMq0JEIZOlqgHQI5NB4ShyT1b6HNAHKFj5eqpAoShmaWfHwB5pQGEoRtV6AGQUUpAGNpekR4AuaQHhKG91enpAIShjXpKAHGENlaqpwkQhnbpKQSEoUU16AHQ5YYCwtCKevR0A8LQcD1NgDA0uU49zwHxkI2tU48GEIYG6hEAwtC0+vVEAWFoThI9YkAYmqBHDAhD8oR6cgBhyFZPGiAMeeoZBAhDzXrGAcKQoZ5kQCmGYFRNJ1FPPiAMWekpAYQhHz1VgLIMwSiRToWeBYAwlDjJTYByDXkyyh1g0ZYLAWHovJ5yQOmGHBilT6x0v+WAKgxdZVQxqOrldgCC0Uk63YCKDG1nVDSTtp22AqoztJFR3Sg6F9oNqNTQFkalE2jepgBQtaGxkhq+un+VGkBtjCZI6vlM1RKVgNoM9WNq/i7hBsWA+g0VeRJ+hXZ9ekByRm8ik/+HmXRmAZpsaGbyfY0DBKNddIYCwtAiPUMBwWgFnemAYDSczg5A5ozkkz8CyJCRfNoHAZkwkk/4OKDDjORTNQJ0SZJ8htaAXskdWLl5dQfQK7kMBzevDgJ6Jbdy2M2ry4B+DDRFuQD6Obik5AvondnKeGcAolAAolAAolDfAYOGVRpMJjD1AAAAAElFTkSuQmCC">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2029,6 +2102,12 @@ async function addOrder() {
   } else {
     await ordersRef.add(orderData);
     showToast('✅ تم حفظ الأوردر');
+    // إشعار فوري لكل الأجهزة (المدير + المناديب)
+    sendPushNotification(
+      'أوردر جديد 🛵',
+      `${orderData.driverName} — ${orderData.restName}\n📍 ${orderData.address}\nج ${orderData.delivery} توصيل`,
+      'new-order'
+    );
   }
 
   if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '✅ حفظ الأوردر'; }
@@ -2168,6 +2247,19 @@ function initManagerApp() {
   themeMode = userProfile.themeMode || 'auto';
   applyTheme(themeMode);
   document.getElementById('managerBadge').textContent = userProfile.name || 'مدير';
+  // اطلب إذن الإشعارات
+  setTimeout(() => {
+    if (Notification.permission === 'default') {
+      Notification.requestPermission().then(p => {
+        if (p === 'granted') {
+          showToast('🔔 تم تفعيل الإشعارات');
+          subscribeToNtfy();
+        }
+      });
+    } else if (Notification.permission === 'granted') {
+      subscribeToNtfy();
+    }
+  }, 2000);
   // Set date in header
   const now = new Date();
   const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];

@@ -35,14 +35,13 @@ document.getElementById('manifest-link').href = manifestURL;
 
 <script>
 // ============================================================
-// PWA Push Notifications — ntfy.sh (مجاني 100%)
+// FCM Push Notifications — Firebase Cloud Messaging
 // ============================================================
 
-// Topic فريد للمشروع — غيّره لأي اسم سري تحبه
-const NTFY_TOPIC = 'nabilpro-orders-x7k2m9';
-const NTFY_URL   = 'https://ntfy.sh/' + NTFY_TOPIC;
+const VAPID_KEY = 'BKX2GMWVcMyv2iKtOGYlUncelQya3PQV-gdJATLpVsB9OuhcqszVLE8ObleVs3eo0oykGAA7DNpQukV077keZz0';
 
 let swRegistration = null;
+let fcmToken       = null;
 
 // تسجيل Service Worker
 async function registerSW() {
@@ -50,57 +49,66 @@ async function registerSW() {
   try {
     swRegistration = await navigator.serviceWorker.register('./sw.js');
     console.log('✅ SW registered');
-    await subscribeToPush();
   } catch(err) {
     console.warn('SW registration failed:', err);
   }
 }
 
-// الاشتراك في الإشعارات
-async function subscribeToPush() {
+// اطلب إذن وسجل الجهاز عند FCM
+async function subscribeFCM() {
   if (!swRegistration) return;
-  const permission = await Notification.requestPermission();
-  if (permission !== 'granted') {
-    console.log('🔕 Push permission denied');
-    return;
-  }
-  console.log('🔔 Push permission granted');
-}
+  if (!currentUser) return;
 
-// بعت إشعار لكل الأجهزة عن طريق ntfy.sh
-async function sendPushNotification(title, body, tag = 'order') {
   try {
-    await fetch(NTFY_URL, {
-      method: 'POST',
-      headers: {
-        'Title':    title,
-        'Priority': 'high',
-        'Tags':     tag,
-        'Content-Type': 'text/plain; charset=utf-8'
-      },
-      body: body
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+
+    // اشترك في FCM وخد الـ Token
+    const messaging = firebase.messaging();
+    fcmToken = await messaging.getToken({
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: swRegistration
     });
+
+    if (fcmToken) {
+      // احفظ الـ Token في Firestore
+      await db.collection('fcm_tokens').doc(currentUser.uid).set({
+        token:     fcmToken,
+        uid:       currentUser.uid,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log('✅ FCM token saved');
+    }
+
+    // لو الـ Token اتغير
+    messaging.onTokenRefresh(async () => {
+      const newToken = await messaging.getToken({ vapidKey: VAPID_KEY });
+      await db.collection('fcm_tokens').doc(currentUser.uid).set({
+        token: newToken, uid: currentUser.uid,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    // استقبل الإشعارات لما التطبيق مفتوح
+    messaging.onMessage(payload => {
+      const title = payload.notification?.title || 'Nabil Pro';
+      const body  = payload.notification?.body  || '';
+      showToast(`🔔 ${title}: ${body}`);
+      // اهتزاز
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    });
+
   } catch(err) {
-    console.warn('ntfy send failed:', err);
+    console.warn('FCM subscription failed:', err);
   }
 }
 
-// اشتراك في ntfy عن طريق SSE (Server-Sent Events)
-// ده بيخلي الإشعار يوصل حتى لو في الخلفية
-function subscribeToNtfy() {
-  if (!('serviceWorker' in navigator)) return;
-  if (Notification.permission !== 'granted') return;
+// مش محتاج sendPushNotification — Render بيتكلم بيعمل ده
+function sendPushNotification() {} // placeholder
 
-  // Service Worker يستمع لـ ntfy
-  if (swRegistration && swRegistration.active) {
-    swRegistration.active.postMessage({
-      type: 'SUBSCRIBE_NTFY',
-      topic: NTFY_TOPIC
-    });
-  }
-}
+function subscribeToNtfy() {} // placeholder
 
-// ابدأ تسجيل SW لما الصفحة تحمل
+// ابدأ
 window.addEventListener('load', () => {
   registerSW();
 });
@@ -114,6 +122,7 @@ window.addEventListener('load', () => {
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
 
 <style>
 /* ============================================================
@@ -2253,11 +2262,11 @@ function initManagerApp() {
       Notification.requestPermission().then(p => {
         if (p === 'granted') {
           showToast('🔔 تم تفعيل الإشعارات');
-          subscribeToNtfy();
+          subscribeFCM();
         }
       });
     } else if (Notification.permission === 'granted') {
-      subscribeToNtfy();
+      subscribeFCM();
     }
   }, 2000);
   // Set date in header

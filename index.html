@@ -1853,15 +1853,15 @@ function initDriverApp() {
 
   loadRestaurantsDriver();
   listenToDriverOrders();
-  showScreen('driverApp');
-}
-if (Notification.permission === 'granted') {
-  subscribeFCM();
-} else {
-  Notification.requestPermission().then(p => {
-    if (p === 'granted') subscribeFCM();
-  });
-}
+showScreen('driverApp');
+  if (Notification.permission === 'granted') {
+    subscribeFCM();
+  } else {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') subscribeFCM();
+    });
+  }
+ }
 // ============================================================
 // DRIVER: RESTAURANTS
 // ============================================================

@@ -1797,7 +1797,11 @@ async function doLogout() {
 
   if (ordersUnsubscribe) { ordersUnsubscribe(); ordersUnsubscribe = null; }
   if (allOrdersUnsubscribe) { allOrdersUnsubscribe(); allOrdersUnsubscribe = null; }
-
+try {
+  if (currentUser) {
+    await db.collection('fcm_tokens').doc(currentUser.uid).delete();
+  }
+} catch(e) {}
   try { await auth.signOut(); } catch(e) {}
 
   // تنظيف كامل للحالة

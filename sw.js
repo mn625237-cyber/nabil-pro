@@ -21,9 +21,8 @@ messaging.onBackgroundMessage(payload => {
 
   return self.registration.showNotification(title, {
     body,
-    icon:     '/icon-192.png',
-    badge:    '/icon-192.png',
-    tag:      'nabil-order',
+  icon: 'https://mn625237-cyber.github.io/nabil-pro/icon-192.png',
+badge: 'https://mn625237-cyber.github.io/nabil-pro/icon-192.png',    tag:      'nabil-order',
     renotify: true,
     vibrate:  [200, 100, 200],
     data:     { url: '/' }

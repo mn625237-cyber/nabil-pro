@@ -1855,7 +1855,13 @@ function initDriverApp() {
   listenToDriverOrders();
   showScreen('driverApp');
 }
-
+if (Notification.permission === 'granted') {
+  subscribeFCM();
+} else {
+  Notification.requestPermission().then(p => {
+    if (p === 'granted') subscribeFCM();
+  });
+}
 // ============================================================
 // DRIVER: RESTAURANTS
 // ============================================================

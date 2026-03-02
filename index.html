@@ -3,118 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0a0f1e">
+<meta name="theme-color" content="#0D0D0D">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Nabil Pro">
 <title>Nabil Pro 🛵</title>
 <link id="manifest-link" rel="manifest">
 <script>
-// Inline manifest - no external file needed
 const ICON_192 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEqklEQVR4nO3VTapcZwxFUbdDwL00M5eMyTP0rNxzIFAxGPu9d/VzJJ0Nu13UlRb6Pv3x+W+ix32S/wNaHYAoFIAoFIDe6Os/f8r/w+R8Af0rIzf5F0lyAZTOBVL/dRmQBI0bpoOA5FasJN0BJJfhKWk9ILkDc0lbAcm3jqStgORrhtFWQPLVwmgrIPk6YbQVkHyFE5JvYSUg+dqmJd/IGkDyVU1Ovp3pgOQbmp98R0MByRezK/m+ZgGS7+NXffvyl/w/TDakB6TFkZUtIzGgvWJGeTIFdAyNFpMXIAc3EkkWgNzcNEs6DsicTg+js4Cg08boICDoNDO6Awg6hxmVA4KOnNFiQNAZwmglIPQ4GKoCBJ2BjBwByfc3ITtA0BnLaAEg9FgZSgaEHjdDmYCgs4jROEDo8TQ0BZB8Hxu7Awg9toYSAKHH2VAUEHomJDSkBCSf+6VWAkLPqCSGngNCz8D6DQkAyad8ux2AOD9jaz5CTwChZ3idhloBySfr01xA6NlSjyEAnW0iIPTsqsFQByD5HJ0bBIjzs7HqI1QOSD5BGgEIPaurMwQgi8SA0HOgIkMAckkGCD1nqjAEIKPWAJJPin5VNyDOz7HSj1A+IPmM6PcBiEL1AULP1RINAcixoYDkc6H3Vw6I83O7rCMEINPGAZJPhD5aISDOj0MpRwhAvg0CJJ8FPQtAFKoEEO+XT/FXDEDWjQAknwJFAhCFAhCFAhCFSgb00Z8D0PYebDwTkPz7KR6AKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKFQaIPTY9tgQF4h4wigWgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCiUEhCGtvdg478DxBFyK6IHQAQgigUgCqUHhKG9Pdg1gOj/SgDxivkU1AMg96YAwtDG4u8XgKwrBMQr5lBcTyYgDO0q5fwAyLdyQLxit0vRkwwIQ1vKOj8AMq0JEIZOlqgHQI5NB4ShyT1b6HNAHKFj5eqpAoShmaWfHwB5pQGEoRtV6AGQUUpAGNpekR4AuaQHhKG91enpAIShjXpKAHGENlaqpwkQhnbpKQSEoUU16AHQ5YYCwtCKevR0A8LQcD1NgDA0uU49zwHxkI2tU48GEIYG6hEAwtC0+vVEAWFoThI9YkAYmqBHDAhD8oR6cgBhyFZPGiAMeeoZBAhDzXrGAcKQoZ5kQCmGYFRNJ1FPPiAMWekpAYQhHz1VgLIMwSiRToWeBYAwlDjJTYByDXkyyh1g0ZYLAWHovJ5yQOmGHBilT6x0v+WAKgxdZVQxqOrldgCC0Uk63YCKDG1nVDSTtp22AqoztJFR3Sg6F9oNqNTQFkalE2jepgBQtaGxkhq+un+VGkBtjCZI6vlM1RKVgNoM9WNq/i7hBsWA+g0VeRJ+hXZ9ekByRm8ik/+HmXRmAZpsaGbyfY0DBKNddIYCwtAiPUMBwWgFnemAYDSczg5A5ozkkz8CyJCRfNoHAZkwkk/4OKDDjORTNQJ0SZJ8htaAXskdWLl5dQfQK7kMBzevDgJ6Jbdy2M2ry4B+DDRFuQD6Obik5AvondnKeGcAolAAolAAolDfAYOGVRpMJjD1AAAAAElFTkSuQmCC";
-const ICON_512 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAIAAAB7GkOtAAAT4ElEQVR4nO3ZTa4dyXVGUbcvDLjnpufiMXmGmpV6lkChimKRj+8nM3dEnAWsAfDdjPNtlPQfr//6HwAG+o/8XwBAQgAAhhIAgKEEAGAoAQAYSgAAhhIAgKEEAGAoAQAYSgAAhhIARvvb//5n/m+AigCwsX/M9wry3wE+RwBYXb7v2sCpBICF5HutCowiAGTyIV5H/i2YSQB4Tr6zu8i/FEMIAPfKx3R3+RfkYALAxfLFPFv+fTmJAHCBfBZnyr87uxMAPi9fQL7JXwKbEgA+Jh873pa/EDYiALxLvmt8VP5mWJ8A8JZ8xfi6/BWxLAHgJ/LN4g75u2I1AsCf8oXiGflLYxECgN2fK397tARgrnx9WEf+GkkIwET53LCm/GXyMAEYJN8XdpG/VZ4hACPkg8KO8nfL3QTgcPmIsLv8DXMfAThTvhqcJ3/VXE4ATpPPBGfLXzgXEoBz5NPAHPlr5xICcIJ8Dpgpf/l8kQDsLZ8AyK+ATxOAXeVnD9/LL4JPEID95KcOv5JfBx8iADvJzxveI78U3kkA9pCfNHxUfjX8lgCsLj9j+Ir8gniDAKwrP124Sn5N/JQArCg/V7hDfln8QACWk18p3Ce/L74nAAvJjxOekd8a3wjAEvKDhOfld4cA9PI7hEp+fcMJQCk/P1hBfoljCUAjPzlYTX6VAwlAIL80WFN+m9MIwKPyA4P15Xc6hwA8J78r/urv//ff+b+Bv8qvdQgBeEJ+Tmf7x4hX8r/9bPnlHk8Abpdf0THCoReGSn6/ZxOAG+XHs7V8xCVhHfktn0oA7pLfzF7ygZaExeUXfSQBuEV+LVvIJ3gd+bfYQn7X5xGAi+VHsrJ8Z3eRf6mV5Td+EgG4Un4ba8r3dF/5t1tTfunHEIBr5Cexmnw6z5N/09XkV38AAbhAfgnryFdygvwrryO//d0JwFflN5DLB3Gy/Ovn8gXYmgB8Sf76Q/n28b38PYTyHdiXAHxS/uhD+djxK/nbCOWbsCMB+Iz8rSfydeP98teSyJdhOwLwYfkrf1i+ZXxF/n4elu/DXgTgY/L3/aR8vLhK/paelK/ERgTgvfJn/Zh8rbhP/roeky/GFgTgXfLX/Ix8nnhG/tKeke/G+gTg9/J3/IB8knhe/uoekK/H4gTgN/IXfLd8hmjlL/Bu+YasTADekr/d++S7w2ryN3mffEmWJQC/lL/am+RDw8ry93mTfE/WJAA/kT/Wm+Tjwi7yt3qTfFtWIwA/yt/oHfJBYUf5u71DvjBLEYB/k7/Oy+Ujwu7yN3y5fGfWIQB/yt/l5fLt4Az5S75cvjaLEIB/yV/ktfLJ4Dz5q75WvjkrEIB/yt/ihfKZ4Gz5C79Qvjw5AThn/fNpYI78tV8l35/W9ADk7+8q+SIwTf7mr5KvUGh0APKXd4l8CJgsf/+XyLeoMjcA+Zv7uvz44Zv8Fr4uX6TE0ADkr+3r8puH7+UX8XX5Lj1vYgDyd/ZF+anDr+TXoQEfMi4A+Quz/pwtvxENeL9ZAcjflulniPxeNOA9BgUgf1XWn1Hyq9GA35oSgPw9mX5myi9IA94wIgD5S7L+TJbfkQb8yvkByN+Q9Yf8mjTgpw4PQP56TD/8Ib8sDfiBACwnv1K4T35fAvC9kwOQvxvrD3+VX5kG/OHYAOQvxvTDG/KL04DXqQHI34r1h9/K704DDgxA/kqsP7xTfn3DG3BaAPL3Yfrho/JLHNuAowKQvwzrD5+T3+PMBgiA9Ycl5FcpABvL34T1hy/Kb3NaAw4JQP4arD9cIr/QUQ04IQD5O7D+cKH8Tuc0YPsA5C/A9MMd8pud0AABsP6wqPxyBWBp+be3/nCr/H7PbsDGAci/uvWHB+RXfHADdg1A/r2tPzwmv+VTG7BlAPIvbf3hYflFH9kAAbD+sIf8rgWgl39j6w+V/LoPa8BmAci/rvWHVn7jJzVAAKw/bCa/dAGw/tYfMvm9n9GAbQKQf1HrD0vJr/6ABuwRgPxbWn9YUH77uzdAAKw/bCxfAAGw/kAm34F9G7B6APLvZ/1hffkabNoAAbD+cIJ8EwRgyvoLAKwm34QdG7BuAPJvZv1hL/kybNcAAbD+cI58HwTA+gOZfCU2asCKAci/k/WHreVbsUsDBMD6w4HyxRAA6w9k8t1YvwECIABwpnw3BMD6A5l8PRZvwEIByL+K9Yfz5BuycgMEwPrD4fIlEYD91l8A4Az5kizbAAGw/nC+fE8EwPoDmXxVFmxAH4D8G1h/GCLfltUaIAACAFPk2yIA1h/I5AuzVAMEwPrDLPnOCID1BzL52izSAAEQABgnX5vpAch/cesPk+Wbs0IDBMD6w1D58gwNQP5bCwCQL0/eAAGw/jBXvj/jApD/ytYf+EO+QmEDBKB/f0AoX6FBAch/X+sP/CDfoqoBcwOQvzlgHfkinR+A/JcVAOCn8kVKGjA0APlrA1aT79LJAch/UwEA3pDv0vMNmBiA/J0Ba8rX6cwA5L+m9QfeI9+oJxsgAAB/yjfqtADkv6P1B94vX6rHGiAAAP8mX6pzApD/gtYf+Kh8r55pgAAA/CjfKwGw/kAmX63tA5D/dtYf+LR8u+5ugAAA/Fy+XRsHIP/VrD/wRfmC3doAAQD4pXzBtgxA/ntZf+AS+Y7d1wABAHhLvmMCYP2BTL5mOwUg/6UEALhQvmY3NeDYAOQvBjhJvml7BCD/jQQAuFy+aXc0QAAAfi/fNAGw/kAmX7bVA5D/OgIA3CRftssbcGAA8lcCnCrfNwEQAKCR79u6Ach/F+sP3C1fuQsbIAAAH5CvnABYfyCTb91yAch/EQEAnpFv3VUNEACAj8m3TgCsP5DJF2+hAOS/hQAAT8oX75IGHBKA/DUA0+S7JwACADTy3VsiAPmvIADA8/Ld+3oDTghA/g6AmfL1EwABABr5+sUByP9+AQAq+fp9sQHbByB/AcBk+QYKAEAj38C5Aci/PcDQAOTpyz88QL6EAgDQyJdwYgDyrw7wzbgA5NHLPznAN/keCgBAI99DAQBo5Hs4KwD59wb43qAA5LnLPzbA9/JVFACARr6KUwKQf2mAvxIAAQCGEgABAIYaEYD2jxQAYE35Np4fgPwbA/yKAAgAMJQACAAw1OEBsP4Ab9ioAQIAcCUBEABgKAEQAGAoARAAYKhjA2D9AX5rlwYIAMDFBEAAgKEEQACAoQTA+gNzCYAAAEOdFoDw7xEAYC/tYAoAQEYABAAYSgAEABhKAKw/MJcACAAwlAAIADDUOQEI/xIBAHbUzqYAAGQEQACAoQTA+gNzCYAAAEMJgAAAQwmAAABDCYAAAEMJgAAAQ50QgPBvEABgX+14CgBARgCsPzCXAAgAMJQACAAwlAAIADCUAAgAMJQACAAwlAAIADCUAAgAMJQACAAwlAAIADCUAAgAMJQACAAwlAAIADCUAAgAMJQACAAwlAAIADCUAAgAMJQACAAwlAAIADCUAAgAMNTeAbD+AF+xbAP8FwDAjZZdfwEAuJcACAAwlAAIADCUAAgAMJQACAAwlAAIADCUAAgAMJQACAAwlAAIADCUAAgAMJQACAAwlAAIADCUAAgAMJQACAAwlAAIADCUAAgAMJQACAAwlAAIADCUAAgAMJQAaAAwUTueAgCQOSEA/lcggE9Yef0FAOBGAiAAwFACIADAUAIgAMBQAiAAwFACoAHARO1sCgBARgAEABjqnAD4vwEAPmTx9RcAgLsIgAAAQwmABgATtYMpAAAZARAAYCgBEABgqNMC0DYg/5wA77f++gsAwC0EQAOAidqpFACAjAAIADCUAAgAMNSZAdAAgLftsv4CAHAxARAAYCgBEABgKAEQAGCokwOgAQC/stH6CwDAlQRAAIChBEADgInybXwiAHkD8s8M8Fd7rb8AAFxGAAQAGEoANACYKF9FAQBo5Kv4XADyBuQfG+B7263/xgHQAGAd+R4KAEAj30MBAGjke/h0APIG5J8c4Jsd13/vAGgAsIJ8CQUAoJEvYROAvAH5hwfYdP23D4AGAK18AwUAoJFv4OgAaABQydcvDsAKDcgfATBTvn5fXG8BAPikfP0EQAOAQL57SwRghQbkTwGYJt+9r0+3AAB8Rr57AqABQCBfvIUCsEID8gcBzJEv3iW7fU4ANAB4Rr51AiAAQCPfuuUCsEID8mcBTJBv3VWjfVQANAC4W75yAiAAQCNfuUUDoAHA2fJ9u3D9BQDgA/J9EwANAAL5sq0egEUakD8U4Dz5sl27/scGQAOAa+WbJgACADTyTdsjAIs0IH8uwEnyTbt8/U8OgAYAV8nXbKcALNKA/NEAZ8jX7I71PzwAGgB8Xb5jAiAAQCPfsf0CoAHAAfIFu2/9BQDgLfmC7RoADQC2lm/XresvAAC/lG/X3gHQAGBT+Wrdvf6DAqABwPvleyUAAgA08r06JAAaAOwlX6pn1l8AAH6UL9VRAdAAYBf5Rj22/gIA8G/yjTowABoArC9fpyfXf2gANAD4q3yXTg7AUg3InxqwmnyXHl7/uQHQAOB7+SKdH4ClGpA/OGAd+SI9v/6jA6ABwDf5Fk0JgAYAS8lXqFp/ARAAmC5foVkB0ABgEfn+hOsvABoAc+XLMzQAqzUgf4jA8/LladdfADQAhso3Z3QANACo5GuzwvoLgADARPnaCIAGAIF8ZxZZfwHQAJglXxgB0AAgkG/LUusvAAIAg+TbIgAaAATyVVlt/VcJgAYAt8r3ZMH1FwANgPPlSyIAWzYgf7jA1+VLsub6C4AGwOHyDREADQAC+XqsvP7LBUADgKvku7H4+guAAMCx8t0QAA0AAvlirL/+AqABcKB8KwRAA4BAvhK7rP+6AdAA4BPyfdho/QVAA+Ac+TIIgAYAgXwTtlv/1QOwcgPy5w58L9+E7dZfADQATpCvgQBoABDId2DT9d8jABoA/Eq+APuuvwBoAGwsv30B0AANgEB+9buv/04B0ADgD/m9H7D+mwVAA4C/W38BWFZ+G3C2/MYFQAM0AAL5dZ+0/lsGQANgpvyuD1t/AdAA2EN+0QKwkPxLawA8Jr/lI9d/4wBoAAyRX/Gp6793ADQAjpff78Hrv30ANAAOll/u2esvABoAi8pvVgD2kL8AGYAL5Xc6ZP1fZwTgpQFwivxC56z/65gAvDQA9pff5qj1f50UgJcGwM7yq5y2/i8B0ABYQX6PAnCC/GVoAHxUfokz1/91XgBeuzVABpgsv77J6/86MgAvDYAd5Hc3fP1fpwbgpQGwtvzirP/r4AC8NmyADDBBfmXW/w8nB+ClAbCY/L6s//cEYEX5lcId8ssSgB8cHoDXtg2QAU6SX5P1/6nzA/DSAEjld2T9f2VEAF4aAJH8gqz/G6YE4LVzA2SAHeVXY/1/a1AAXhoAT8nvxfq/x6wAvDZvgAywvvxGrP/7jQvASwPgNvl1WP8PmRiA1/4N+JsMsJj8Ir4u36XnDQ3ASwPgOvktfF2+SIm5AXgd0YC/yQCp/P1fIt+iyugAvE5pwN9kgMflb/4q+QqFpgfgpQHwcflrv0q+Py0B+Kf8FV4onwbOlr/wC+XLkxOAf8nf4rXymeA8+au+Vr45KxCAP+Uv8nL5ZHCG/CVfLl+bRQjAv8nf5eXy7WB3+Ru+XL4z6xCAH+Wv8w75iLCj/N3eIV+YpQjAT+Rv9Cb5oLCL/K3eJN+W1QjAL+WP9Sb5uLCy/H3eJN+TNQnAW/JXe598aFhN/ibvky/JsgTgN/K3e7d8d2jlL/Bu+YasTAB+L3/BD8hniOflr+4B+XosTgDeJX/Hz8gniWfkL+0Z+W6sTwDeK3/Nj8nnifvkr+sx+WJsQQA+Jn/WT8rXiqvkb+lJ+UpsRAA+LH/fD8vHi6/I38/D8n3YiwB8Rv7KE/mW8X75a0nky7AdAfik/K2H8nXjV/K3Eco3YUcC8CX5ow/lY8f38vcQyndgXwLwVfnrz+XbN1n+9XP5AmxNAC6Q38A68kGcIP/K68hvf3cCcI38ElaTr+R58m+6mvzqDyAAV8pPYk35dO4r/3Zryi/9GAJwsfw2Vpbv6S7yL7Wy/MZPIgC3yI9kC/nOriP/FlvI7/o8AnCX/Fr2kk+w0V9cftFHEoAb5TeztXygzf068ls+lQDcLj+eY+Qjbu6fl9/v2QTgCfkVnc3Qnyq/3OMJwHPyc+KvjPia8msdQgAeld8VrC+/0zkEIJAfGKwpv81pBKCRXxqsJr/KgQSglJ8crCC/xLEEoJefH1Ty6xtOAJaQ3yE8L787BGAh+UHCM/Jb4xsBWE5+nHCf/L74ngCsKL9SuEN+WfxAANaVnytcJb8mfkoAVpefLnxFfkG8QQD2kJ8xfFR+NfyWAOwkP2l4j/xSeCcB2E9+3vAr+XXwIQKwq/zU4Xv5RfAJArC3/OwhvwI+TQBOkE8AM+Uvny8SgHPkc8Ac+WvnEgJwmnwaOFv+wrmQAJwpnwnOk79qLicAh8tXg93lb5j7CMAI+Yiwo/zdcjcBGCQfFHaRv1WeIQAT5fvCmvKXycMEYK58blhH/hpJCABKMFf+9mgJAH/K94hn5C+NRQgAP5EvFHfI3xWrEQDekm8WX5e/IpYlALxLvmJ8VP5mWJ8A8DH5rvG2/IWwEQHg8/Kx45v8JbApAeAC+QLOlH93dicAXCyfxbPl35eTCAD3yhdzd/kX5GACwHPyMd1F/qUYQgDI5Du7jvxbMJMAsJB8iM09owgAq8v32tZzKgFgY/m+W3m2JgCMZr6ZTAAAhhIAgKEEAGAoAQAYSgAAhhIAgKEEAGAoAQAYSgAAhhIAgKH+H3SLG20HmOyFAAAAAElFTkSuQmCC";
+const ICON_512 = ICON_192;
 const manifestData = {
-  name: "Nabil Pro",
-  short_name: "Nabil Pro",
-  description: "تطبيق إدارة التوصيل",
-  start_url: "./",
-  display: "standalone",
-  background_color: "#0a0f1e",
-  theme_color: "#f97316",
-  orientation: "portrait",
-  lang: "ar",
-  icons: [
-    { src: ICON_192, sizes: "192x192", type: "image/png", purpose: "any maskable" },
-    { src: ICON_512, sizes: "512x512", type: "image/png", purpose: "any maskable" }
-  ]
+  name:"Nabil Pro",short_name:"Nabil Pro",description:"تطبيق إدارة التوصيل",
+  start_url:"./",display:"standalone",background_color:"#0D0D0D",theme_color:"#FF6C2F",
+  orientation:"portrait",lang:"ar",
+  icons:[{src:ICON_192,sizes:"192x192",type:"image/png",purpose:"any maskable"},
+         {src:ICON_512,sizes:"512x512",type:"image/png",purpose:"any maskable"}]
 };
-const blob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
-const manifestURL = URL.createObjectURL(blob);
-document.getElementById('manifest-link').href = manifestURL;
+const blob = new Blob([JSON.stringify(manifestData)],{type:'application/json'});
+document.getElementById('manifest-link').href = URL.createObjectURL(blob);
 </script>
 
 <script>
-// ============================================================
-// FCM Push Notifications — Firebase Cloud Messaging
-// ============================================================
-
 const VAPID_KEY = 'BKX2GMWVcMyv2iKtOGYlUncelQya3PQV-gdJATLpVsB9OuhcqszVLE8ObleVs3eo0oykGAA7DNpQukV077keZz0';
+let swRegistration = null, fcmToken = null;
 
-let swRegistration = null;
-let fcmToken       = null;
-
-// تسجيل Service Worker
 async function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  try {
-    swRegistration = await navigator.serviceWorker.register('./sw.js');
-    console.log('✅ SW registered');
-  } catch(err) {
-    console.warn('SW registration failed:', err);
-  }
+  try { swRegistration = await navigator.serviceWorker.register('./sw.js'); } catch(e) {}
 }
 
-// اطلب إذن وسجل الجهاز عند FCM
 async function subscribeFCM() {
-  if (!swRegistration) return;
-  if (!currentUser) return;
-
+  if (!swRegistration || !currentUser) return;
   try {
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return;
-
-    // اشترك في FCM وخد الـ Token
     const messaging = firebase.messaging();
-    fcmToken = await messaging.getToken({
-      vapidKey: VAPID_KEY,
-      serviceWorkerRegistration: swRegistration
-    });
-
+    fcmToken = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swRegistration });
     if (fcmToken) {
-      // احفظ الـ Token في Firestore
       await db.collection('fcm_tokens').doc(currentUser.uid).set({
-        token:     fcmToken,
-        uid:       currentUser.uid,
+        token: fcmToken, uid: currentUser.uid,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-      console.log('✅ FCM token saved');
     }
-
-    // لو الـ Token اتغير
     messaging.onTokenRefresh(async () => {
-      const newToken = await messaging.getToken({ vapidKey: VAPID_KEY });
-      await db.collection('fcm_tokens').doc(currentUser.uid).set({
-        token: newToken, uid: currentUser.uid,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      const t = await messaging.getToken({ vapidKey: VAPID_KEY });
+      await db.collection('fcm_tokens').doc(currentUser.uid).set({ token:t, uid:currentUser.uid, updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
     });
-
-    // استقبل الإشعارات لما التطبيق مفتوح
     messaging.onMessage(payload => {
       const title = payload.notification?.title || 'Nabil Pro';
-      const body  = payload.notification?.body  || '';
-      showToast(`🔔 ${title}: ${body}`);
-      // اهتزاز
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      const body = payload.notification?.body || '';
+      showToast('🔔 ' + title + ': ' + body);
+      if (navigator.vibrate) navigator.vibrate([200,100,200]);
     });
-
-  } catch(err) {
-    console.warn('FCM subscription failed:', err);
-  }
+  } catch(e) {}
 }
 
-// مش محتاج sendPushNotification — Render بيتكلم بيعمل ده
-function sendPushNotification() {} // placeholder
-
-function subscribeToNtfy() {} // placeholder
-
-// ابدأ
-window.addEventListener('load', () => {
-  registerSW();
-});
+function sendPushNotification() {}
+function subscribeToNtfy() {}
+window.addEventListener('load', () => { registerSW(); });
 </script>
+
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEqklEQVR4nO3VTapcZwxFUbdDwL00M5eMyTP0rNxzIFAxGPu9d/VzJJ0Nu13UlRb6Pv3x+W+ix32S/wNaHYAoFIAoFIDe6Os/f8r/w+R8Af0rIzf5F0lyAZTOBVL/dRmQBI0bpoOA5FasJN0BJJfhKWk9ILkDc0lbAcm3jqStgORrhtFWQPLVwmgrIPk6YbQVkHyFE5JvYSUg+dqmJd/IGkDyVU1Ovp3pgOQbmp98R0MByRezK/m+ZgGS7+NXffvyl/w/TDakB6TFkZUtIzGgvWJGeTIFdAyNFpMXIAc3EkkWgNzcNEs6DsicTg+js4Cg08boICDoNDO6Awg6hxmVA4KOnNFiQNAZwmglIPQ4GKoCBJ2BjBwByfc3ITtA0BnLaAEg9FgZSgaEHjdDmYCgs4jROEDo8TQ0BZB8Hxu7Awg9toYSAKHH2VAUEHomJDSkBCSf+6VWAkLPqCSGngNCz8D6DQkAyad8ux2AOD9jaz5CTwChZ3idhloBySfr01xA6NlSjyEAnW0iIPTsqsFQByD5HJ0bBIjzs7HqI1QOSD5BGgEIPaurMwQgi8SA0HOgIkMAckkGCD1nqjAEIKPWAJJPin5VNyDOz7HSj1A+IPmM6PcBiEL1AULP1RINAcixoYDkc6H3Vw6I83O7rCMEINPGAZJPhD5aISDOj0MpRwhAvg0CJJ8FPQtAFKoEEO+XT/FXDEDWjQAknwJFAhCFAhCFAhCFSgb00Z8D0PYebDwTkPz7KR6AKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKFQaIPTY9tgQF4h4wigWgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCiUEhCGtvdg478DxBFyK6IHQAQgigUgCqUHhKG9Pdg1gOj/SgDxivkU1AMg96YAwtDG4u8XgKwrBMQr5lBcTyYgDO0q5fwAyLdyQLxit0vRkwwIQ1vKOj8AMq0JEIZOlqgHQI5NB4ShyT1b6HNAHKFj5eqpAoShmaWfHwB5pQGEoRtV6AGQUUpAGNpekR4AuaQHhKG91enpAIShjXpKAHGENlaqpwkQhnbpKQSEoUU16AHQ5YYCwtCKevR0A8LQcD1NgDA0uU49zwHxkI2tU48GEIYG6hEAwtC0+vVEAWFoThI9YkAYmqBHDAhD8oR6cgBhyFZPGiAMeeoZBAhDzXrGAcKQoZ5kQCmGYFRNJ1FPPiAMWekpAYQhHz1VgLIMwSiRToWeBYAwlDjJTYByDXkyyh1g0ZYLAWHovJ5yQOmGHBilT6x0v+WAKgxdZVQxqOrldgCC0Uk63YCKDG1nVDSTtp22AqoztJFR3Sg6F9oNqNTQFkalE2jepgBQtaGxkhq+un+VGkBtjCZI6vlM1RKVgNoM9WNq/i7hBsWA+g0VeRJ+hXZ9ekByRm8ik/+HmXRmAZpsaGbyfY0DBKNddIYCwtAiPUMBwWgFnemAYDSczg5A5ozkkz8CyJCRfNoHAZkwkk/4OKDDjORTNQJ0SZJ8htaAXskdWLl5dQfQK7kMBzevDgJ6Jbdy2M2ry4B+DDRFuQD6Obik5AvondnKeGcAolAAolAAolDfAYOGVRpMJjD1AAAAAElFTkSuQmCC">
-<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEqklEQVR4nO3VTapcZwxFUbdDwL00M5eMyTP0rNxzIFAxGPu9d/VzJJ0Nu13UlRb6Pv3x+W+ix32S/wNaHYAoFIAoFIDe6Os/f8r/w+R8Af0rIzf5F0lyAZTOBVL/dRmQBI0bpoOA5FasJN0BJJfhKWk9ILkDc0lbAcm3jqStgORrhtFWQPLVwmgrIPk6YbQVkHyFE5JvYSUg+dqmJd/IGkDyVU1Ovp3pgOQbmp98R0MByRezK/m+ZgGS7+NXffvyl/w/TDakB6TFkZUtIzGgvWJGeTIFdAyNFpMXIAc3EkkWgNzcNEs6DsicTg+js4Cg08boICDoNDO6Awg6hxmVA4KOnNFiQNAZwmglIPQ4GKoCBJ2BjBwByfc3ITtA0BnLaAEg9FgZSgaEHjdDmYCgs4jROEDo8TQ0BZB8Hxu7Awg9toYSAKHH2VAUEHomJDSkBCSf+6VWAkLPqCSGngNCz8D6DQkAyad8ux2AOD9jaz5CTwChZ3idhloBySfr01xA6NlSjyEAnW0iIPTsqsFQByD5HJ0bBIjzs7HqI1QOSD5BGgEIPaurMwQgi8SA0HOgIkMAckkGCD1nqjAEIKPWAJJPin5VNyDOz7HSj1A+IPmM6PcBiEL1AULP1RINAcixoYDkc6H3Vw6I83O7rCMEINPGAZJPhD5aISDOj0MpRwhAvg0CJJ8FPQtAFKoEEO+XT/FXDEDWjQAknwJFAhCFAhCFAhCFSgb00Z8D0PYebDwTkPz7KR6AKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKFQaIPTY9tgQF4h4wigWgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCiUEhCGtvdg478DxBFyK6IHQAQgigUgCqUHhKG9Pdg1gOj/SgDxivkU1AMg96YAwtDG4u8XgKwrBMQr5lBcTyYgDO0q5fwAyLdyQLxit0vRkwwIQ1vKOj8AMq0JEIZOlqgHQI5NB4ShyT1b6HNAHKFj5eqpAoShmaWfHwB5pQGEoRtV6AGQUUpAGNpekR4AuaQHhKG91enpAIShjXpKAHGENlaqpwkQhnbpKQSEoUU16AHQ5YYCwtCKevR0A8LQcD1NgDA0uU49zwHxkI2tU48GEIYG6hEAwtC0+vVEAWFoThI9YkAYmqBHDAhD8oR6cgBhyFZPGiAMeeoZBAhDzXrGAcKQoZ5kQCmGYFRNJ1FPPiAMWekpAYQhHz1VgLIMwSiRToWeBYAwlDjJTYByDXkyyh1g0ZYLAWHovJ5yQOmGHBilT6x0v+WAKgxdZVQxqOrldgCC0Uk63YCKDG1nVDSTtp22AqoztJFR3Sg6F9oNqNTQFkalE2jepgBQtaGxkhq+un+VGkBtjCZI6vlM1RKVgNoM9WNq/i7hBsWA+g0VeRJ+hXZ9ekByRm8ik/+HmXRmAZpsaGbyfY0DBKNddIYCwtAiPUMBwWgFnemAYDSczg5A5ozkkz8CyJCRfNoHAZkwkk/4OKDDjORTNQJ0SZJ8htaAXskdWLl5dQfQK7kMBzevDgJ6Jbdy2M2ry4B+DDRFuQD6Obik5AvondnKeGcAolAAolAAolDfAYOGVRpMJjD1AAAAAElFTkSuQmCC">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
@@ -125,1592 +74,1230 @@ window.addEventListener('load', () => {
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
 
 <style>
-/* ============================================================
-   DESIGN SYSTEM
-   ============================================================ */
+/* ═══════════════════════════════════════
+   DESIGN SYSTEM — TALABAT-INSPIRED DARK
+═══════════════════════════════════════ */
 :root {
-  --bg: #0a0f1e;
-  --bg2: #111827;
-  --bg3: #1a2236;
-  --card: rgba(17,24,39,0.95);
-  --card-border: rgba(255,255,255,0.07);
-  --text: #f1f5f9;
-  --text2: #94a3b8;
-  --text3: #64748b;
-  --primary: #f97316;
-  --primary-dark: #c2410c;
-  --primary-glow: rgba(249,115,22,0.2);
-  --success: #22c55e;
-  --success-bg: rgba(34,197,94,0.1);
-  --danger: #ef4444;
-  --danger-bg: rgba(239,68,68,0.1);
-  --visa: #818cf8;
-  --cash: #22c55e;
-  --radius: 18px;
-  --radius-sm: 12px;
-  --shadow: 0 8px 32px rgba(0,0,0,0.5);
-  --nav-h: 68px;
-  --header-h: 62px;
+  --bg:       #0D0D0D;
+  --bg2:      #141414;
+  --bg3:      #1C1C1C;
+  --bg4:      #242424;
+  --card:     #181818;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.12);
+  --text:     #FFFFFF;
+  --text2:    #A0A0A0;
+  --text3:    #5C5C5C;
+  --orange:   #FF6C2F;
+  --orange2:  #FF8C5A;
+  --orange-bg: rgba(255,108,47,0.12);
+  --orange-glow: rgba(255,108,47,0.25);
+  --green:    #00C851;
+  --green-bg: rgba(0,200,81,0.1);
+  --red:      #FF3B3B;
+  --red-bg:   rgba(255,59,59,0.1);
+  --blue:     #4B9FFF;
+  --blue-bg:  rgba(75,159,255,0.1);
+  --purple:   #A855F7;
+  --purple-bg: rgba(168,85,247,0.1);
+  --gold:     #FFB800;
+  --gold-bg:  rgba(255,184,0,0.1);
+  --radius:   20px;
+  --radius-sm:14px;
+  --radius-xs:10px;
+  --nav-h:    70px;
+  --header-h: 60px;
+  --shadow:   0 8px 40px rgba(0,0,0,0.6);
+  --shadow-orange: 0 8px 30px rgba(255,108,47,0.3);
 }
-[data-theme="light"] {
-  --bg: #f8fafc;
-  --bg2: #ffffff;
-  --bg3: #e2e8f0;
-  --card: #ffffff;
-  --card-border: rgba(0,0,0,0.08);
-  --text: #0f172a;
-  --text2: #334155;
-  --text3: #64748b;
-  --primary-glow: rgba(249,115,22,0.12);
-  --shadow: 0 4px 20px rgba(0,0,0,0.08);
-}
-/* Light mode overrides for elements with hardcoded dark colors */
-[data-theme="light"] .auth-card { background:#ffffff; box-shadow:0 8px 40px rgba(0,0,0,0.1); }
-[data-theme="light"] .pin-dot { background:rgba(0,0,0,0.15); }
-[data-theme="light"] .pin-dot.filled { background:var(--primary); }
-[data-theme="light"] .mgr-stat-big.s1 { background:linear-gradient(145deg,rgba(34,197,94,0.12),rgba(34,197,94,0.03)); }
-[data-theme="light"] .mgr-stat-big.s2 { background:linear-gradient(145deg,rgba(249,115,22,0.12),rgba(249,115,22,0.03)); }
-[data-theme="light"] .mgr-stat-big.s3 { background:linear-gradient(145deg,rgba(129,140,248,0.12),rgba(129,140,248,0.03)); }
-[data-theme="light"] .mgr-stat-big.s4 { background:linear-gradient(145deg,rgba(245,158,11,0.12),rgba(245,158,11,0.03)); }
-[data-theme="light"] .mgr-stat-big-label { color:rgba(0,0,0,0.45); }
-[data-theme="light"] .feed-dot { background:#ef4444; }
-[data-theme="light"] .user-section-label { color:var(--text3); }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
 body { font-family:'Cairo',sans-serif; background:var(--bg); color:var(--text); height:100dvh; overflow:hidden; }
-input, textarea { user-select:text; -webkit-user-select:text; }
+input,textarea { user-select:text; -webkit-user-select:text; }
 input,textarea,select { font-family:'Cairo',sans-serif; }
 
-/* ============================================================
-   SCREEN MANAGEMENT
-   ============================================================ */
+/* ── SCREENS ── */
 .screen { display:none; width:100%; height:100dvh; position:fixed; inset:0; z-index:10; }
 .screen.active { display:flex; }
 
-/* ============================================================
+/* ══════════════════════════════════
    OFFLINE SCREEN
-   ============================================================ */
+══════════════════════════════════ */
 #offlineScreen {
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background:var(--bg);
-  gap:20px;
-  padding:40px;
+  flex-direction:column; align-items:center; justify-content:center;
+  background:var(--bg); gap:20px; padding:40px;
 }
-.offline-icon {
-  width:100px; height:100px;
-  background:rgba(239,68,68,0.1);
-  border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:48px;
+.offline-blob {
+  width:110px; height:110px; border-radius:50%;
+  background:var(--red-bg); border:1px solid rgba(255,59,59,0.2);
+  display:flex; align-items:center; justify-content:center; font-size:52px;
   animation: pulse-red 2s infinite;
 }
 @keyframes pulse-red {
-  0%,100% { box-shadow:0 0 0 0 rgba(239,68,68,0.3); }
-  50% { box-shadow:0 0 0 20px rgba(239,68,68,0); }
+  0%,100% { box-shadow:0 0 0 0 rgba(255,59,59,0.3); }
+  50% { box-shadow:0 0 0 20px rgba(255,59,59,0); }
 }
-.offline-title { font-size:22px; font-weight:700; color:var(--text); }
-.offline-sub { font-size:14px; color:var(--text2); text-align:center; line-height:1.6; }
+.offline-title { font-size:22px; font-weight:800; }
+.offline-sub { font-size:14px; color:var(--text2); text-align:center; line-height:1.7; max-width:280px; }
 .offline-btn {
-  background:var(--primary); color:#fff; border:none;
-  padding:14px 32px; border-radius:50px; font-size:15px;
-  font-weight:700; font-family:'Cairo',sans-serif; cursor:pointer;
-  margin-top:10px;
+  background:linear-gradient(135deg,var(--orange),#e55b24);
+  color:#fff; border:none; padding:16px 36px;
+  border-radius:50px; font-size:15px; font-weight:700;
+  font-family:'Cairo',sans-serif; cursor:pointer;
+  box-shadow:var(--shadow-orange); margin-top:8px;
 }
 
-/* ============================================================
+/* ══════════════════════════════════
    LOADING SCREEN
-   ============================================================ */
+══════════════════════════════════ */
 #loadingScreen {
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background:var(--bg);
-  gap:16px;
+  flex-direction:column; align-items:center; justify-content:center;
+  background:var(--bg); gap:20px;
 }
-.loading-logo {
-  width:80px; height:80px;
-  background:var(--primary-glow);
-  border-radius:50%;
+.loading-ring {
+  position:relative; width:90px; height:90px;
   display:flex; align-items:center; justify-content:center;
-  font-size:38px;
-  animation: spin-glow 2s linear infinite;
 }
-@keyframes spin-glow {
-  0%,100% { box-shadow:0 0 20px var(--primary-glow); transform:scale(1); }
-  50% { box-shadow:0 0 40px var(--primary-glow); transform:scale(1.05); }
+.loading-ring::before {
+  content:''; position:absolute; inset:0; border-radius:50%;
+  border:2px solid var(--border);
+  border-top-color:var(--orange);
+  animation:spin 1s linear infinite;
 }
-.loading-text { font-size:13px; color:var(--text2); }
-.loading-bar {
-  width:160px; height:3px;
-  background:var(--bg3);
-  border-radius:10px;
-  overflow:hidden;
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-logo-inner {
+  width:70px; height:70px; background:var(--orange-bg);
+  border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:34px;
 }
-.loading-bar-fill {
-  height:100%;
-  background:var(--primary);
-  border-radius:10px;
-  animation:loading-anim 1.5s ease-in-out infinite;
+.loading-brand { font-size:22px; font-weight:900; color:var(--orange); letter-spacing:1px; }
+.loading-sub { font-size:13px; color:var(--text3); }
+.loading-dots span {
+  display:inline-block; width:6px; height:6px; border-radius:50%;
+  background:var(--orange); margin:0 3px;
+  animation:bounce-dot 1.4s infinite both;
 }
-@keyframes loading-anim {
-  0% { width:0%; margin-right:100%; }
-  50% { width:60%; margin-right:40%; }
-  100% { width:0%; margin-right:0%; margin-left:100%; }
+.loading-dots span:nth-child(2) { animation-delay:.2s; }
+.loading-dots span:nth-child(3) { animation-delay:.4s; }
+@keyframes bounce-dot {
+  0%,80%,100% { transform:scale(0.6); opacity:0.4; }
+  40% { transform:scale(1); opacity:1; }
 }
 
-/* ============================================================
-   AUTH SCREEN
-   ============================================================ */
+/* ══════════════════════════════════
+   AUTH SCREEN — PREMIUM
+══════════════════════════════════ */
 #authScreen {
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background:var(--bg);
-  padding:24px;
+  flex-direction:column; align-items:center; justify-content:center;
+  background:var(--bg); padding:24px; position:relative; overflow:hidden;
+}
+#authScreen::before {
+  content:''; position:absolute;
+  top:-150px; right:-150px;
+  width:400px; height:400px; border-radius:50%;
+  background:radial-gradient(circle,rgba(255,108,47,0.08),transparent 70%);
+  pointer-events:none;
+}
+#authScreen::after {
+  content:''; position:absolute;
+  bottom:-200px; left:-100px;
+  width:350px; height:350px; border-radius:50%;
+  background:radial-gradient(circle,rgba(255,108,47,0.05),transparent 70%);
+  pointer-events:none;
 }
 .auth-card {
-  width:100%;
-  max-width:380px;
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:24px;
-  padding:32px 24px;
-  box-shadow:var(--shadow);
+  width:100%; max-width:400px; position:relative; z-index:1;
 }
-.auth-logo {
-  width:70px; height:70px;
-  background:var(--primary-glow);
-  border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:34px;
-  margin:0 auto 16px;
+.auth-header {
+  text-align:center; margin-bottom:40px;
 }
-.auth-title { text-align:center; font-size:22px; font-weight:900; margin-bottom:4px; }
-.auth-sub { text-align:center; font-size:13px; color:var(--text2); margin-bottom:28px; }
+.auth-logo-wrap {
+  width:80px; height:80px;
+  background:linear-gradient(135deg,var(--orange),#e55b24);
+  border-radius:28px; display:flex; align-items:center;
+  justify-content:center; font-size:38px; margin:0 auto 16px;
+  box-shadow:var(--shadow-orange);
+  animation:logo-pop .5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes logo-pop {
+  from { transform:scale(0.5); opacity:0; }
+  to { transform:scale(1); opacity:1; }
+}
+.auth-brand { font-size:28px; font-weight:900; color:var(--text); margin-bottom:4px; }
+.auth-tagline { font-size:13px; color:var(--text3); }
 
-.auth-step { display:none; flex-direction:column; gap:16px; }
-.auth-step.active { display:flex; }
-
-.input-group { display:flex; flex-direction:column; gap:6px; }
-.input-label { font-size:13px; font-weight:600; color:var(--text2); }
-.input-row {
-  display:flex;
-  background:var(--bg3);
-  border:1px solid var(--card-border);
-  border-radius:14px;
-  overflow:hidden;
-  transition:border-color .2s;
+.auth-form { display:flex; flex-direction:column; gap:16px; }
+.field-label {
+  font-size:12px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;
 }
-.input-row:focus-within { border-color:var(--primary); }
-.input-prefix {
-  padding:0 14px;
+.field-wrap {
+  background:var(--bg3); border:1.5px solid var(--border);
+  border-radius:var(--radius-sm); overflow:hidden;
+  transition:border-color .2s, box-shadow .2s;
   display:flex; align-items:center;
-  font-size:15px; font-weight:600;
-  color:var(--text2);
-  border-left:1px solid var(--card-border);
 }
-.input-row input {
-  flex:1;
-  background:transparent;
-  border:none; outline:none;
-  padding:14px 16px;
-  font-size:16px;
-  color:var(--text);
-  direction:ltr;
-  text-align:right;
+.field-wrap:focus-within {
+  border-color:var(--orange);
+  box-shadow:0 0 0 3px var(--orange-bg);
 }
-.otp-input {
-  background:var(--bg3);
-  border:1px solid var(--card-border);
-  border-radius:14px;
-  padding:16px;
-  font-size:24px;
-  font-weight:700;
-  text-align:center;
-  color:var(--text);
-  width:100%;
-  letter-spacing:8px;
-  direction:ltr;
-  outline:none;
-  transition:border-color .2s;
+.field-prefix {
+  padding:0 14px; font-size:18px;
+  border-left:1.5px solid var(--border);
+  height:54px; display:flex; align-items:center;
 }
-.otp-input:focus { border-color:var(--primary); }
+.field-wrap input {
+  flex:1; background:transparent; border:none; outline:none;
+  padding:0 16px; height:54px; font-size:16px; color:var(--text);
+  direction:ltr; text-align:right;
+}
+.field-wrap input::placeholder { color:var(--text3); direction:rtl; text-align:right; }
 
-.auth-btn {
-  background:var(--primary);
-  color:#fff; border:none;
-  padding:16px;
-  border-radius:14px;
-  font-size:16px; font-weight:700;
-  font-family:'Cairo',sans-serif;
-  cursor:pointer;
+.pin-field {
+  background:var(--bg3); border:1.5px solid var(--border);
+  border-radius:var(--radius-sm); padding:16px;
+  font-size:26px; font-weight:700; text-align:center;
+  color:var(--orange); width:100%; letter-spacing:10px;
+  direction:ltr; outline:none; transition:border-color .2s, box-shadow .2s;
+}
+.pin-field:focus {
+  border-color:var(--orange);
+  box-shadow:0 0 0 3px var(--orange-bg);
+}
+.pin-hint {
+  text-align:center; font-size:12px; color:var(--text3);
+  padding:4px 0; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.pin-hint::before { content:'ℹ️'; font-size:12px; }
+
+.auth-submit {
+  background:linear-gradient(135deg,var(--orange),#e55b24);
+  color:#fff; border:none; padding:18px;
+  border-radius:var(--radius-sm); font-size:17px; font-weight:900;
+  font-family:'Cairo',sans-serif; cursor:pointer;
+  box-shadow:var(--shadow-orange); margin-top:8px;
   transition:opacity .2s, transform .1s;
   display:flex; align-items:center; justify-content:center; gap:8px;
 }
-.auth-btn:active { transform:scale(0.98); }
-.auth-btn:disabled { opacity:0.5; cursor:default; }
-.auth-btn.secondary {
-  background:transparent;
-  color:var(--text2);
-  border:1px solid var(--card-border);
-  font-size:14px;
-}
+.auth-submit:active { transform:scale(0.98); }
+.auth-submit:disabled { opacity:0.5; }
 
-.otp-timer { text-align:center; font-size:13px; color:var(--text3); }
-.otp-timer span { color:var(--primary); font-weight:700; }
-#recaptcha-container { margin:0 auto; }
-
-/* ============================================================
+/* ══════════════════════════════════
    DRIVER APP
-   ============================================================ */
-#driverApp {
-  flex-direction:column;
-  background:var(--bg);
-  overflow:hidden;
-}
+══════════════════════════════════ */
+#driverApp { flex-direction:column; background:var(--bg); overflow:hidden; }
 
 /* Header */
-.header {
-  height:var(--header-h);
-  background:var(--card);
-  border-bottom:1px solid var(--card-border);
-  display:flex; align-items:center;
-  padding:0 16px;
-  gap:10px;
-  position:relative;
-  z-index:100;
-  flex-shrink:0;
+.drv-header {
+  height:var(--header-h); background:var(--bg);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 16px; gap:10px;
+  flex-shrink:0; position:relative; z-index:100;
 }
-.header-logo { font-size:26px; }
-.header-title { font-size:18px; font-weight:900; color:var(--primary); flex:1; }
-.icon-btn {
-  width:40px; height:40px;
-  background:var(--bg3);
-  border:none; border-radius:12px;
-  font-size:18px; cursor:pointer;
+.drv-header-logo {
+  width:38px; height:38px;
+  background:linear-gradient(135deg,var(--orange),#e55b24);
+  border-radius:12px; display:flex; align-items:center;
+  justify-content:center; font-size:20px;
+}
+.drv-header-title { flex:1; font-size:20px; font-weight:900; color:var(--text); }
+.drv-header-title span { color:var(--orange); }
+.hdr-btn {
+  width:38px; height:38px; background:var(--bg3);
+  border:1px solid var(--border); border-radius:12px;
+  font-size:16px; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
-  transition:background .2s;
-  color:var(--text);
+  color:var(--text); transition:all .2s;
 }
-.icon-btn:active { background:var(--primary-glow); }
+.hdr-btn:active { background:var(--orange-bg); border-color:var(--orange); }
 
-/* Status bar */
-.status-bar {
-  padding:6px 16px;
-  font-size:12px;
-  font-weight:600;
-  display:flex; align-items:center; gap:6px;
+/* Status pill */
+.status-pill {
+  margin:8px 16px; padding:6px 12px;
+  border-radius:50px; font-size:11px; font-weight:700;
+  display:flex; align-items:center; gap:6px; width:fit-content;
   flex-shrink:0;
 }
-.status-dot {
-  width:7px; height:7px;
-  border-radius:50%;
-  background:var(--success);
-  animation: pulse-dot 2s infinite;
-}
-.status-dot.error { background:var(--danger); animation:none; }
-@keyframes pulse-dot {
-  0%,100% { opacity:1; } 50% { opacity:0.4; }
-}
-.status-bar.ok { background:rgba(34,197,94,0.08); color:var(--success); }
-.status-bar.err { background:rgba(239,68,68,0.08); color:var(--danger); }
+.status-pill.ok { background:var(--green-bg); color:var(--green); border:1px solid rgba(0,200,81,0.2); }
+.status-pill.err { background:var(--red-bg); color:var(--red); border:1px solid rgba(255,59,59,0.2); }
+.status-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+.status-dot.pulse { animation:pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-/* Page system */
+/* Pages */
 .pages-wrapper {
-  display:flex;
-  flex:1;
-  overflow:hidden;
+  display:flex; flex:1; overflow:hidden;
   transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
   width:400%;
 }
-.page { width:25%; flex-shrink:0; overflow-y:auto; padding:16px; padding-bottom:calc(var(--nav-h) + 16px); }
+.page { width:25%; flex-shrink:0; overflow-y:auto; padding:16px; padding-bottom:calc(var(--nav-h) + 20px); }
 
 /* Bottom Nav */
 .bottom-nav {
-  height:var(--nav-h);
-  background:var(--card);
-  border-top:1px solid var(--card-border);
-  display:flex;
-  position:fixed; bottom:0; left:0; right:0;
-  z-index:100;
+  height:var(--nav-h); background:var(--bg2);
+  border-top:1px solid var(--border);
+  display:flex; position:fixed; bottom:0; left:0; right:0; z-index:100;
   padding-bottom:env(safe-area-inset-bottom);
 }
-.nav-item {
-  flex:1; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  gap:3px; border:none; background:transparent;
-  cursor:pointer; color:var(--text3);
-  font-size:10px; font-weight:600;
-  font-family:'Cairo',sans-serif;
-  transition:color .2s;
-  padding:8px 0;
+.nav-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:4px; border:none; background:transparent;
+  cursor:pointer; color:var(--text3); font-size:10px; font-weight:700;
+  font-family:'Cairo',sans-serif; transition:color .2s;
 }
-.nav-item.active { color:var(--primary); }
-.nav-item .nav-icon { font-size:22px; }
-.nav-item .nav-plus {
-  width:48px; height:48px;
-  background:var(--primary);
-  border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:26px; color:#fff;
-  box-shadow:0 4px 16px var(--primary-glow);
-  margin-top:-8px;
+.nav-btn.active { color:var(--orange); }
+.nav-btn .nav-icon-wrap { font-size:22px; position:relative; }
+.nav-btn.active .nav-icon-wrap::after {
+  content:''; position:absolute; bottom:-4px; left:50%;
+  transform:translateX(-50%); width:4px; height:4px;
+  border-radius:50%; background:var(--orange);
+}
+.nav-add-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; border:none; background:transparent; cursor:pointer;
+}
+.nav-add-circle {
+  width:52px; height:52px;
+  background:linear-gradient(135deg,var(--orange),#e55b24);
+  border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:28px; color:#fff;
+  box-shadow:var(--shadow-orange); margin-top:-10px;
 }
 
-/* Welcome card */
-.welcome {
-  background:linear-gradient(135deg,#1a0a00,#2d1500);
-  border:1px solid rgba(249,115,22,0.2);
-  border-radius:var(--radius);
-  padding:20px;
-  position:relative;
-  overflow:hidden;
-  margin-bottom:16px;
+/* ── WELCOME CARD ── */
+.welcome-card {
+  background:linear-gradient(135deg,#1a0d05,#2a1508,#1a0d05);
+  border:1px solid rgba(255,108,47,0.15);
+  border-radius:var(--radius); padding:20px;
+  position:relative; overflow:hidden; margin-bottom:16px;
 }
-.welcome::before {
-  content:'🛵';
-  position:absolute; left:16px; bottom:-8px;
-  font-size:72px; opacity:0.08;
+.welcome-card::after {
+  content:'🛵'; position:absolute;
+  left:-10px; bottom:-12px; font-size:90px; opacity:0.06;
+  transform:scaleX(-1);
 }
-.welcome-greeting { font-size:13px; color:rgba(249,115,22,0.7); margin-bottom:2px; }
-.welcome-name { font-size:20px; font-weight:900; color:#fff; margin-bottom:4px; }
-.welcome-time { font-size:28px; font-weight:900; color:var(--primary); }
+.welcome-greeting { font-size:12px; color:rgba(255,108,47,0.7); font-weight:600; margin-bottom:2px; }
+.welcome-name { font-size:22px; font-weight:900; color:#fff; margin-bottom:8px; }
+.welcome-time-row { display:flex; align-items:baseline; gap:8px; }
+.welcome-time { font-size:32px; font-weight:900; color:var(--orange); letter-spacing:-1px; }
+.welcome-date { font-size:12px; color:var(--text3); }
 
-/* Stats */
+/* ── STATS GRID ── */
 .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
 .stat-card {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius-sm);
-  padding:14px;
-  position:relative;
-  overflow:hidden;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:16px; position:relative; overflow:hidden;
 }
-.stat-card::after {
-  content:'';
-  position:absolute; bottom:0; left:0; right:0; height:3px;
+.stat-card::before {
+  content:''; position:absolute; top:0; right:0;
+  width:60px; height:60px; border-radius:50%;
+  transform:translate(20px,-20px); opacity:0.15;
 }
-.stat-card.c1::after { background:var(--success); }
-.stat-card.c2::after { background:var(--primary); }
-.stat-card.c3::after { background:var(--visa); }
-.stat-card.c4::after { background:#f59e0b; }
-.stat-icon { font-size:22px; margin-bottom:6px; }
-.stat-label { font-size:11px; color:var(--text2); margin-bottom:4px; }
-.stat-val { font-size:20px; font-weight:900; }
-.stat-card.c1 .stat-val { color:var(--success); }
-.stat-card.c2 .stat-val { color:var(--primary); }
-.stat-card.c3 .stat-val { color:var(--visa); }
-.stat-card.c4 .stat-val { color:#f59e0b; }
+.stat-card.s1::before { background:var(--green); }
+.stat-card.s2::before { background:var(--orange); }
+.stat-card.s3::before { background:var(--blue); }
+.stat-card.s4::before { background:var(--gold); }
+.stat-icon-wrap {
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; margin-bottom:10px;
+}
+.stat-card.s1 .stat-icon-wrap { background:var(--green-bg); }
+.stat-card.s2 .stat-icon-wrap { background:var(--orange-bg); }
+.stat-card.s3 .stat-icon-wrap { background:var(--blue-bg); }
+.stat-card.s4 .stat-icon-wrap { background:var(--gold-bg); }
+.stat-label { font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px; }
+.stat-val { font-size:22px; font-weight:900; letter-spacing:-0.5px; }
+.stat-card.s1 .stat-val { color:var(--green); }
+.stat-card.s2 .stat-val { color:var(--orange); }
+.stat-card.s3 .stat-val { color:var(--blue); }
+.stat-card.s4 .stat-val { color:var(--gold); }
 
-/* Section */
-.section-title {
-  font-size:14px; font-weight:700;
-  color:var(--text2); margin-bottom:12px;
-  display:flex; align-items:center; gap:6px;
+/* ── SECTION TITLE ── */
+.sec-title {
+  font-size:13px; font-weight:800; color:var(--text2);
+  text-transform:uppercase; letter-spacing:0.5px;
+  margin-bottom:12px; margin-top:4px;
+  display:flex; align-items:center; gap:8px;
 }
+.sec-title::before { content:''; width:3px; height:16px; background:var(--orange); border-radius:4px; }
 
-/* Report rows */
+/* ── SHIFT REPORT CARDS ── */
 .report-card {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius-sm);
-  margin-bottom:8px;
-  overflow:hidden;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); margin-bottom:8px; overflow:hidden;
 }
 .report-header {
   display:flex; align-items:center; justify-content:space-between;
-  padding:14px 16px;
-  cursor:pointer;
+  padding:14px 16px; cursor:pointer;
 }
-.report-rest { font-size:15px; font-weight:700; }
-.report-count { font-size:12px; color:var(--text2); }
-.report-delivery { font-size:15px; font-weight:700; color:var(--success); }
-.report-body { padding:0 16px 14px; display:none; }
+.report-rest-name { font-size:14px; font-weight:700; }
+.report-count { font-size:11px; color:var(--text3); margin-top:2px; }
+.report-delivery-val { font-size:16px; font-weight:900; color:var(--green); }
+.report-body { padding:0 16px 14px; display:none; border-top:1px solid var(--border); padding-top:12px; }
 .report-body.open { display:block; }
-.report-detail { display:flex; justify-content:space-between; font-size:12px; color:var(--text2); padding:3px 0; }
-
-/* Add order page */
-.form-section { margin-bottom:16px; }
-.form-label {
-  font-size:13px; font-weight:600;
-  color:var(--text2); margin-bottom:8px;
-  display:flex; align-items:center; gap:6px;
-}
-.form-input {
-  width:100%; background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius-sm);
-  padding:14px 16px;
-  font-size:15px; color:var(--text);
-  font-family:'Cairo',sans-serif;
-  outline:none;
-  transition:border-color .2s;
-}
-.form-input:focus { border-color:var(--primary); }
-.input-with-voice { position:relative; }
-.voice-btn {
-  position:absolute; left:12px; top:50%; transform:translateY(-50%);
-  background:var(--bg3); border:none; border-radius:8px;
-  width:32px; height:32px; font-size:16px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-}
-.voice-btn.active { background:var(--danger); animation:pulse-red 1s infinite; }
-
-.rest-chips { display:flex; flex-wrap:wrap; gap:8px; }
-.rest-chip {
-  padding:8px 16px;
-  background:var(--bg3);
-  border:1px solid var(--card-border);
-  border-radius:50px;
-  font-size:13px; font-weight:600;
-  cursor:pointer; color:var(--text2);
-  font-family:'Cairo',sans-serif;
-  transition:all .2s;
-}
-.rest-chip.active {
-  background:var(--primary-glow);
-  border-color:var(--primary);
-  color:var(--primary);
-}
-.rest-chip.add-chip {
-  background:transparent;
-  border-style:dashed;
-  color:var(--text3);
+.report-row-detail {
+  display:flex; justify-content:space-between;
+  font-size:12px; color:var(--text2); padding:3px 0;
 }
 
-.payment-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.pay-opt {
-  padding:14px;
-  background:var(--bg3);
-  border:2px solid transparent;
-  border-radius:var(--radius-sm);
-  text-align:center; cursor:pointer;
-  transition:all .2s;
+/* ── ORDER CARDS ── */
+.filter-scroll { display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+.filter-scroll::-webkit-scrollbar { display:none; }
+.filter-btn {
+  padding:7px 16px; background:var(--bg3); border:1px solid var(--border);
+  border-radius:50px; font-size:12px; font-weight:700;
+  cursor:pointer; color:var(--text2); white-space:nowrap;
+  font-family:'Cairo',sans-serif; transition:all .2s;
 }
-.pay-opt.active-cash { border-color:var(--cash); background:rgba(34,197,94,0.1); }
-.pay-opt.active-visa { border-color:var(--visa); background:rgba(129,140,248,0.1); }
-.pay-opt-icon { font-size:24px; margin-bottom:4px; }
-.pay-opt-label { font-size:13px; font-weight:700; }
-.pay-opt-note { font-size:11px; color:var(--text3); margin-top:2px; }
-
-.submit-btn {
-  width:100%; background:var(--primary); color:#fff;
-  border:none; padding:18px;
-  border-radius:var(--radius-sm);
-  font-size:17px; font-weight:900;
-  font-family:'Cairo',sans-serif;
-  cursor:pointer; margin-top:8px;
-  transition:opacity .2s, transform .1s;
-}
-.submit-btn:active { transform:scale(0.98); }
-
-/* Order cards */
-.filter-row { display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; padding-bottom:4px; }
-.filter-chip {
-  padding:6px 14px;
-  background:var(--bg3);
-  border:1px solid var(--card-border);
-  border-radius:50px;
-  font-size:12px; font-weight:600;
-  cursor:pointer; color:var(--text2);
-  white-space:nowrap;
-  font-family:'Cairo',sans-serif;
-  transition:all .2s;
-}
-.filter-chip.active { background:var(--primary-glow); border-color:var(--primary); color:var(--primary); }
+.filter-btn.active { background:var(--orange-bg); border-color:var(--orange); color:var(--orange); }
 
 .order-card {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius-sm);
-  padding:14px;
-  margin-bottom:10px;
-  position:relative;
-  overflow:hidden;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:14px;
+  margin-bottom:10px; position:relative; overflow:hidden;
 }
 .order-card::before {
-  content:'';
-  position:absolute; top:0; right:0; bottom:0; width:4px;
+  content:''; position:absolute; top:0; right:0;
+  bottom:0; width:3px; border-radius:0 var(--radius-sm) var(--radius-sm) 0;
 }
-.order-card.cash::before { background:var(--cash); }
-.order-card.visa::before { background:var(--visa); }
-
+.order-card.cash::before { background:var(--green); }
+.order-card.visa::before { background:var(--blue); }
 .order-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-.order-rest { font-size:15px; font-weight:700; }
-.order-time { font-size:11px; color:var(--text3); }
-.order-body { display:flex; justify-content:space-between; align-items:center; }
-.order-details { font-size:12px; color:var(--text2); line-height:1.8; }
-.order-amount { text-align:left; }
-.order-delivery { font-size:18px; font-weight:900; color:var(--success); }
-.order-total { font-size:11px; color:var(--text3); }
-.order-actions { display:flex; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid var(--card-border); }
+.order-rest-name { font-size:15px; font-weight:800; }
+.order-time-txt { font-size:11px; color:var(--text3); }
+.order-body { display:flex; justify-content:space-between; align-items:flex-end; }
+.order-info { font-size:12px; color:var(--text2); line-height:1.9; }
+.order-amounts { text-align:left; }
+.order-delivery-big { font-size:20px; font-weight:900; color:var(--green); }
+.order-total-small { font-size:11px; color:var(--text3); margin-top:2px; }
+.order-pay-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 8px; border-radius:20px; font-size:10px; font-weight:700; margin-top:4px;
+}
+.order-pay-badge.cash { background:var(--green-bg); color:var(--green); }
+.order-pay-badge.visa { background:var(--blue-bg); color:var(--blue); }
+.order-actions { display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
 .action-btn {
-  flex:1; padding:8px;
-  border-radius:10px; border:none;
-  font-size:12px; font-weight:700;
-  font-family:'Cairo',sans-serif;
-  cursor:pointer;
+  flex:1; padding:9px; border-radius:var(--radius-xs); border:none;
+  font-size:12px; font-weight:700; font-family:'Cairo',sans-serif; cursor:pointer;
+  transition:opacity .2s;
 }
-.action-btn.edit { background:rgba(249,115,22,0.1); color:var(--primary); }
-.action-btn.delete { background:var(--danger-bg); color:var(--danger); }
+.action-btn:active { opacity:0.7; }
+.action-btn.edit { background:var(--orange-bg); color:var(--orange); border:1px solid rgba(255,108,47,0.2); }
+.action-btn.del { background:var(--red-bg); color:var(--red); border:1px solid rgba(255,59,59,0.2); }
 
-/* Settings */
-.settings-card {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius-sm);
-  overflow:hidden;
-  margin-bottom:16px;
+/* ── ADD ORDER FORM ── */
+.form-group { margin-bottom:16px; }
+.form-lbl {
+  font-size:12px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.3px; margin-bottom:8px;
 }
-.settings-row {
+.form-field {
+  width:100%; background:var(--card); border:1.5px solid var(--border);
+  border-radius:var(--radius-sm); padding:14px 16px; font-size:15px;
+  color:var(--text); font-family:'Cairo',sans-serif; outline:none;
+  transition:border-color .2s, box-shadow .2s;
+}
+.form-field:focus { border-color:var(--orange); box-shadow:0 0 0 3px var(--orange-bg); }
+.form-field::placeholder { color:var(--text3); }
+
+.voice-wrap { position:relative; }
+.voice-wrap .form-field { padding-left:50px; }
+.mic-btn {
+  position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  background:var(--bg4); border:none; border-radius:8px;
+  width:32px; height:32px; font-size:15px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.mic-btn.on { background:var(--red-bg); color:var(--red); animation:pulse-red 1s infinite; }
+
+/* Rest chips */
+.rest-chip-grid { display:flex; flex-wrap:wrap; gap:8px; }
+.rest-chip {
+  padding:8px 16px; background:var(--bg3); border:1.5px solid var(--border);
+  border-radius:50px; font-size:13px; font-weight:700; cursor:pointer;
+  color:var(--text2); font-family:'Cairo',sans-serif; transition:all .2s;
+}
+.rest-chip.sel { background:var(--orange-bg); border-color:var(--orange); color:var(--orange); }
+.rest-chip.add { background:transparent; border-style:dashed; color:var(--text3); }
+
+/* Payment select */
+.pay-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.pay-card {
+  padding:16px; background:var(--bg3); border:2px solid var(--border);
+  border-radius:var(--radius-sm); text-align:center; cursor:pointer; transition:all .2s;
+}
+.pay-card.active-cash { border-color:var(--green); background:var(--green-bg); }
+.pay-card.active-visa { border-color:var(--blue); background:var(--blue-bg); }
+.pay-icon { font-size:26px; margin-bottom:6px; }
+.pay-name { font-size:14px; font-weight:800; }
+.pay-note { font-size:11px; color:var(--text3); margin-top:2px; }
+
+.submit-order-btn {
+  width:100%; background:linear-gradient(135deg,var(--orange),#e55b24);
+  color:#fff; border:none; padding:18px;
+  border-radius:var(--radius-sm); font-size:17px; font-weight:900;
+  font-family:'Cairo',sans-serif; cursor:pointer; margin-top:8px;
+  box-shadow:var(--shadow-orange); transition:opacity .2s, transform .1s;
+}
+.submit-order-btn:active { transform:scale(0.98); }
+
+/* ── SETTINGS ── */
+.settings-group {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); overflow:hidden; margin-bottom:16px;
+}
+.settings-item {
   display:flex; align-items:center; gap:14px;
-  padding:16px; border-bottom:1px solid var(--card-border);
-  cursor:pointer;
+  padding:16px; border-bottom:1px solid var(--border); cursor:pointer;
+  transition:background .2s;
 }
-.settings-row:last-child { border-bottom:none; }
-.settings-icon { font-size:20px; width:32px; text-align:center; }
-.settings-label { flex:1; font-size:14px; font-weight:600; }
-.settings-val { font-size:13px; color:var(--text2); }
-.toggle {
-  width:44px; height:24px;
-  background:var(--bg3); border-radius:50px;
-  position:relative; cursor:pointer; transition:background .2s;
+.settings-item:last-child { border-bottom:none; }
+.settings-item:active { background:var(--bg3); }
+.settings-item-icon {
+  width:36px; height:36px; border-radius:10px; background:var(--bg3);
+  display:flex; align-items:center; justify-content:center; font-size:18px;
 }
-.toggle::after {
-  content:'';
-  position:absolute; top:2px; right:2px;
-  width:20px; height:20px;
-  background:#fff; border-radius:50%;
-  transition:transform .2s;
-}
-.toggle.on { background:var(--primary); }
-.toggle.on::after { transform:translateX(-20px); }
+.settings-item-label { flex:1; font-size:14px; font-weight:600; }
+.settings-item-val { font-size:13px; color:var(--text3); }
+.settings-item.danger .settings-item-label { color:var(--red); }
+.settings-item.danger .settings-item-icon { background:var(--red-bg); }
 
-/* Empty state */
-.empty-state { text-align:center; padding:48px 16px; color:var(--text3); }
-.empty-icon { font-size:48px; margin-bottom:12px; opacity:0.5; }
-.empty-text { font-size:14px; }
-
-/* Toast */
-.toast {
-  position:fixed; bottom:calc(var(--nav-h) + 16px); left:50%;
-  transform:translateX(-50%) translateY(20px);
-  background:rgba(30,40,60,0.95);
-  color:#fff; padding:12px 20px;
-  border-radius:50px; font-size:14px; font-weight:600;
-  z-index:9999; white-space:nowrap;
-  opacity:0; transition:all .3s;
-  backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,0.1);
+.rest-row {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:14px 16px;
+  display:flex; align-items:center; gap:12px; margin-bottom:8px;
 }
-.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-/* Modal */
-.modal-overlay {
-  position:fixed; inset:0;
-  background:rgba(0,0,0,0.7);
-  z-index:500; display:none;
-  align-items:flex-end; justify-content:center;
-  backdrop-filter:blur(4px);
+.rest-row-icon {
+  width:36px; height:36px; background:var(--orange-bg);
+  border-radius:10px; display:flex; align-items:center;
+  justify-content:center; font-size:18px;
 }
-.modal-overlay.show { display:flex; }
-.modal {
-  background:var(--bg2);
-  border-radius:24px 24px 0 0;
-  padding:24px;
-  width:100%; max-height:80dvh;
-  overflow-y:auto;
-  animation:slide-up .3s ease;
-}
-@keyframes slide-up { from { transform:translateY(100%); } to { transform:translateY(0); } }
-.modal-title { font-size:18px; font-weight:900; margin-bottom:20px; }
-.modal-actions { display:flex; gap:10px; margin-top:20px; }
-.modal-btn {
-  flex:1; padding:14px;
-  border-radius:var(--radius-sm);
-  border:none; font-size:15px; font-weight:700;
-  font-family:'Cairo',sans-serif; cursor:pointer;
-}
-.modal-btn.confirm { background:var(--primary); color:#fff; }
-.modal-btn.cancel { background:var(--bg3); color:var(--text); }
-.modal-btn.danger { background:var(--danger); color:#fff; }
-
-/* ============================================================
-   MANAGER APP - REDESIGNED
-   ============================================================ */
-#managerApp {
-  flex-direction:column;
-  background:var(--bg);
-  overflow:hidden;
-}
-
-/* ══════════════════════════════════════
-   MANAGER HEADER - Premium Redesign
-══════════════════════════════════════ */
-.mgr-header {
-  background:var(--bg);
-  border-bottom:1px solid var(--card-border);
-  padding:0 16px;
-  height:64px;
-  display:flex; align-items:center; gap:10px;
-  flex-shrink:0; z-index:100;
-  position:relative;
-}
-.mgr-header::after {
-  content:''; position:absolute;
-  bottom:0; left:16px; right:16px; height:1px;
-  background:linear-gradient(90deg,transparent,var(--primary),transparent);
-  opacity:0.3;
-}
-.mgr-header-title {
-  font-size:16px; font-weight:900; flex:1;
-  background:linear-gradient(135deg,var(--text),var(--text2));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-}
-.mgr-badge {
-  background:linear-gradient(135deg, var(--primary), #ea6810);
-  color:#fff; padding:4px 12px; border-radius:50px;
-  font-size:10px; font-weight:800; letter-spacing:0.5px;
-}
-
-/* ══════════════════════════════════════
-   TABS - Bottom Navigation Style
-══════════════════════════════════════ */
-.mgr-tabs {
-  display:flex; background:var(--bg2);
-  border-top:1px solid var(--card-border);
-  flex-shrink:0; overflow-x:auto; scrollbar-width:none;
-  position:sticky; bottom:0; z-index:50;
-  order:999;
-}
-.mgr-tabs::-webkit-scrollbar { display:none; }
-.mgr-tab {
-  flex:1; padding:10px 4px 8px;
-  border:none; background:transparent;
-  font-family:'Cairo',sans-serif;
-  font-size:10px; font-weight:700;
-  color:var(--text3); cursor:pointer;
-  border-top:2px solid transparent;
-  white-space:nowrap; min-width:64px;
-  transition:all .2s;
-  display:flex; flex-direction:column;
-  align-items:center; gap:2px;
-}
-.mgr-tab .tab-icon { font-size:20px; }
-.mgr-tab.active { color:var(--primary); border-top-color:var(--primary); background:var(--primary-glow); }
-
-.mgr-content {
-  flex:1; overflow-y:auto;
-  padding:0; padding-bottom:0;
-}
-.mgr-tab-panel { display:none; padding:16px; animation:fadeUp .2s ease; }
-.mgr-tab-panel.active { display:block; }
-@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-
-/* ---- OVERVIEW: Hero stats ---- */
-.mgr-hero {
-  background:linear-gradient(135deg,#1a0a00 0%,#2d1500 100%);
-  border-bottom:1px solid rgba(249,115,22,0.15);
-  padding:20px 16px 16px;
-  margin:-16px -16px 16px;
-}
-.mgr-hero-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-.mgr-hero-date { font-size:12px; color:rgba(249,115,22,0.7); }
-.mgr-hero-title { font-size:16px; font-weight:900; color:#fff; }
-
-/* ============================================================
-   MANAGER DASHBOARD - REDESIGNED
-   ============================================================ */
-
-/* Stats Grid */
-.mgr-stats-big { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
-.mgr-stat-big {
-  border-radius:20px; padding:18px 16px;
-  position:relative; overflow:hidden;
-  cursor:default;
-}
-.mgr-stat-big::before {
-  content:''; position:absolute;
-  top:-30px; left:-30px;
-  width:100px; height:100px;
-  border-radius:50%;
-  opacity:0.15;
-}
-.mgr-stat-big.s1 { background:linear-gradient(145deg,rgba(34,197,94,0.15),rgba(34,197,94,0.04)); border:1px solid rgba(34,197,94,0.2); }
-.mgr-stat-big.s2 { background:linear-gradient(145deg,rgba(249,115,22,0.15),rgba(249,115,22,0.04)); border:1px solid rgba(249,115,22,0.2); }
-.mgr-stat-big.s3 { background:linear-gradient(145deg,rgba(129,140,248,0.15),rgba(129,140,248,0.04)); border:1px solid rgba(129,140,248,0.2); }
-.mgr-stat-big.s4 { background:linear-gradient(145deg,rgba(245,158,11,0.15),rgba(245,158,11,0.04)); border:1px solid rgba(245,158,11,0.2); }
-.mgr-stat-big.s1::before { background:radial-gradient(circle,#22c55e,transparent); }
-.mgr-stat-big.s2::before { background:radial-gradient(circle,#f97316,transparent); }
-.mgr-stat-big.s3::before { background:radial-gradient(circle,#818cf8,transparent); }
-.mgr-stat-big.s4::before { background:radial-gradient(circle,#f59e0b,transparent); }
-
-.mgr-stat-big-icon {
-  width:40px; height:40px; border-radius:13px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:20px; margin-bottom:12px;
-}
-.mgr-stat-big.s1 .mgr-stat-big-icon { background:rgba(34,197,94,0.18); }
-.mgr-stat-big.s2 .mgr-stat-big-icon { background:rgba(249,115,22,0.18); }
-.mgr-stat-big.s3 .mgr-stat-big-icon { background:rgba(129,140,248,0.18); }
-.mgr-stat-big.s4 .mgr-stat-big-icon { background:rgba(245,158,11,0.18); }
-
-.mgr-stat-big-label { font-size:10px; color:rgba(255,255,255,0.45); font-weight:600; letter-spacing:0.4px; margin-bottom:4px; text-transform:uppercase; }
-.mgr-stat-big-val { font-size:26px; font-weight:900; letter-spacing:-1px; }
-.mgr-stat-big.s1 .mgr-stat-big-val { color:#4ade80; }
-.mgr-stat-big.s2 .mgr-stat-big-val { color:var(--primary); }
-.mgr-stat-big.s3 .mgr-stat-big-val { color:#a5b4fc; }
-.mgr-stat-big.s4 .mgr-stat-big-val { color:#fbbf24; }
-
-/* Recent Orders Feed */
-.feed-title {
-  font-size:12px; font-weight:800; color:var(--text2);
-  text-transform:uppercase; letter-spacing:0.8px;
-  display:flex; align-items:center; gap:8px;
-  padding:4px 0 12px;
-}
-.feed-dot {
-  width:7px; height:7px; border-radius:50%;
-  background:#ef4444;
-  box-shadow:0 0 0 3px rgba(239,68,68,0.2);
-  animation:pulse 2s infinite;
-}
-
-/* Order Feed Card */
-.feed-card {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:16px;
-  padding:12px 14px;
-  margin-bottom:8px;
-  display:flex; align-items:center; gap:12px;
-  position:relative; overflow:hidden;
-}
-.feed-card::before {
-  content:''; position:absolute;
-  top:0; right:0; bottom:0; width:3px;
-}
-.feed-card.cash::before { background:var(--success); }
-.feed-card.visa::before { background:var(--visa); }
-.feed-pay-icon {
-  width:38px; height:38px; border-radius:12px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:18px; flex-shrink:0;
-}
-.feed-card.cash .feed-pay-icon { background:rgba(34,197,94,0.12); }
-.feed-card.visa .feed-pay-icon { background:rgba(129,140,248,0.12); }
-.feed-body { flex:1; min-width:0; }
-.feed-rest { font-size:13px; font-weight:800; margin-bottom:2px; }
-.feed-driver { font-size:11px; color:var(--text3); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.feed-time { font-size:10px; color:var(--text3); }
-.feed-amount { font-size:15px; font-weight:900; color:var(--primary); flex-shrink:0; }
-
-/* Section headers */
-.user-section-header {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:16px 0 10px;
-}
-.user-section-label {
-  font-size:11px; font-weight:800; color:var(--text3);
-  text-transform:uppercase; letter-spacing:0.8px;
-  display:flex; align-items:center; gap:6px;
-}
-.user-count-badge {
-  background:var(--card); border:1px solid var(--card-border);
-  border-radius:20px; padding:2px 8px;
-  font-size:11px; font-weight:700; color:var(--text2);
-}
-
-/* User cards (drivers + managers) */
-.user-card {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:18px;
-  padding:14px 16px;
-  margin-bottom:8px;
-  display:flex; align-items:center; gap:14px;
-  cursor:pointer;
-  transition:all .15s;
-  position:relative; overflow:hidden;
-}
-.user-card:active { transform:scale(0.98); border-color:var(--primary); }
-.user-card.manager-card { border-color:rgba(129,140,248,0.25); background:linear-gradient(135deg,rgba(129,140,248,0.06),var(--card)); }
-
-.user-avatar {
-  width:48px; height:48px; border-radius:15px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:20px; font-weight:900; flex-shrink:0;
-  position:relative;
-}
-.user-card.driver-card .user-avatar { background:rgba(249,115,22,0.12); color:var(--primary); }
-.user-card.manager-card .user-avatar { background:rgba(129,140,248,0.15); color:#a5b4fc; }
-
-.user-status-dot {
-  position:absolute; bottom:-1px; left:-1px;
-  width:13px; height:13px; border-radius:50%;
-  background:var(--bg3); border:2px solid var(--card);
-}
-.user-status-dot.online { background:var(--success); }
-
-.user-info { flex:1; min-width:0; }
-.user-name { font-size:14px; font-weight:800; margin-bottom:2px; }
-.user-phone { font-size:11px; color:var(--text3); direction:ltr; margin-bottom:6px; }
-.user-stats-row { display:flex; gap:5px; flex-wrap:wrap; }
-.user-pill {
-  padding:2px 8px; border-radius:20px;
-  font-size:10px; font-weight:700;
-}
-.user-pill.orders { background:rgba(249,115,22,0.1); color:var(--primary); }
-.user-pill.earn   { background:rgba(34,197,94,0.1);  color:var(--success); }
-.user-pill.role   { background:rgba(129,140,248,0.12); color:#a5b4fc; }
-
-/* Add user button */
-.add-user-btn {
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  width:100%; padding:14px;
-  background:transparent;
-  border:1.5px dashed rgba(249,115,22,0.35);
-  border-radius:18px;
-  color:var(--primary); font-size:13px; font-weight:700;
-  font-family:'Cairo',sans-serif; cursor:pointer;
-  transition:all .2s; margin-bottom:16px;
-}
-.add-user-btn:active { background:var(--primary-glow); border-style:solid; }
-
-/* Restaurant cards - redesigned */
-.rest-item {
-  background:var(--card); border:1px solid var(--card-border);
-  border-radius:16px; padding:14px 16px;
-  display:flex; align-items:center; gap:12px;
-  margin-bottom:8px;
-}
-.rest-item-icon {
-  width:40px; height:40px; border-radius:12px;
-  background:rgba(249,115,22,0.1);
-  display:flex; align-items:center; justify-content:center;
-  font-size:20px; flex-shrink:0;
-}
-.rest-item-name { flex:1; font-size:14px; font-weight:700; }
-.rest-item-del {
-  padding:6px 14px; border-radius:20px;
-  background:rgba(239,68,68,0.1); color:var(--danger);
-  border:1px solid rgba(239,68,68,0.2);
+.rest-row-name { flex:1; font-size:14px; font-weight:700; }
+.rest-del-btn {
+  padding:6px 12px; border-radius:20px; background:var(--red-bg);
+  color:var(--red); border:1px solid rgba(255,59,59,0.2);
   font-size:11px; font-weight:700; font-family:'Cairo',sans-serif; cursor:pointer;
 }
-.mgr-stat-big {
-  border-radius:18px; padding:16px 14px;
-  position:relative; overflow:hidden;
-  display:flex; flex-direction:column; gap:4px;
-}
-.mgr-stat-big.s1 { background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(34,197,94,0.06)); border:1.5px solid rgba(34,197,94,0.25); }
-.mgr-stat-big.s2 { background:linear-gradient(135deg,rgba(249,115,22,0.18),rgba(249,115,22,0.06)); border:1.5px solid rgba(249,115,22,0.25); }
-.mgr-stat-big.s3 { background:linear-gradient(135deg,rgba(129,140,248,0.18),rgba(129,140,248,0.06)); border:1.5px solid rgba(129,140,248,0.25); }
-.mgr-stat-big.s4 { background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(245,158,11,0.06)); border:1.5px solid rgba(245,158,11,0.25); }
-.mgr-stat-big-icon {
-  width:38px; height:38px; border-radius:12px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:20px; margin-bottom:8px;
-}
-.mgr-stat-big.s1 .mgr-stat-big-icon { background:rgba(34,197,94,0.15); }
-.mgr-stat-big.s2 .mgr-stat-big-icon { background:rgba(249,115,22,0.15); }
-.mgr-stat-big.s3 .mgr-stat-big-icon { background:rgba(129,140,248,0.15); }
-.mgr-stat-big.s4 .mgr-stat-big-icon { background:rgba(245,158,11,0.15); }
-.mgr-stat-big-label { font-size:10px; color:rgba(255,255,255,0.5); font-weight:600; letter-spacing:0.3px; }
-.mgr-stat-big-val { font-size:24px; font-weight:900; letter-spacing:-0.5px; }
-.mgr-stat-big.s1 .mgr-stat-big-val { color:var(--success); }
-.mgr-stat-big.s2 .mgr-stat-big-val { color:var(--primary); }
-.mgr-stat-big.s3 .mgr-stat-big-val { color:var(--visa); }
-.mgr-stat-big.s4 .mgr-stat-big-val { color:#f59e0b; }
 
-/* Manager stats (kept for compatibility) */
-.mgr-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
-.mgr-stat {
-  background:var(--card); border:1px solid var(--card-border);
-  border-radius:var(--radius-sm); padding:14px;
-}
-.mgr-stat-icon { font-size:22px; margin-bottom:6px; }
-.mgr-stat-label { font-size:10px; color:var(--text2); margin-bottom:2px; }
-.mgr-stat-val { font-size:20px; font-weight:900; color:var(--primary); }
-
-/* ---- DRIVERS TAB ---- */
-.search-bar {
-  display:flex;
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius-sm);
-  overflow:hidden; margin-bottom:12px;
-}
-.search-bar input {
-  flex:1; background:transparent; border:none; outline:none;
-  padding:12px 16px; font-size:14px; color:var(--text);
-  font-family:'Cairo',sans-serif;
-}
-.search-bar span { padding:0 14px; display:flex; align-items:center; font-size:18px; color:var(--text3); }
-
-/* Driver card - premium redesign */
-.driver-card {
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:18px;
-  padding:14px 16px;
-  margin-bottom:10px;
-  display:flex; align-items:center; gap:14px;
-  cursor:pointer;
-  transition:all .2s;
-  position:relative; overflow:hidden;
-}
-.driver-card::before {
-  content:'';
-  position:absolute; top:0; bottom:0; right:0; width:4px;
-  border-radius:0 18px 18px 0;
-  background:var(--bg3);
-  transition:background .2s;
-}
-.driver-card.online-card { border-color:rgba(34,197,94,0.2); }
-.driver-card.online-card::before { background:linear-gradient(180deg,var(--success),rgba(34,197,94,0.4)); }
-.driver-card:active { transform:scale(0.98); border-color:var(--primary); }
-
-.driver-avatar {
-  width:52px; height:52px;
-  border-radius:16px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:22px; font-weight:900;
-  flex-shrink:0; position:relative;
-}
-.driver-avatar.av-orange { background:rgba(249,115,22,0.12); color:var(--primary); }
-.driver-avatar.av-green  { background:rgba(34,197,94,0.12);  color:var(--success); }
-.driver-avatar.av-purple { background:rgba(129,140,248,0.12); color:var(--visa); }
-.driver-avatar.av-amber  { background:rgba(245,158,11,0.12);  color:#f59e0b; }
-
-.driver-online-badge {
-  position:absolute; bottom:-1px; left:-1px;
-  width:14px; height:14px; border-radius:50%;
-  background:var(--bg3); border:2px solid var(--card);
-  transition:background .2s;
-}
-.driver-online-badge.online { background:var(--success); }
-
-.driver-info { flex:1; min-width:0; }
-.driver-name { font-size:15px; font-weight:800; margin-bottom:1px; }
-.driver-phone { font-size:11px; color:var(--text3); direction:ltr; margin-bottom:7px; }
-
-.driver-stats-row { display:flex; gap:5px; flex-wrap:wrap; }
-.driver-pill {
-  padding:3px 9px; border-radius:20px;
-  font-size:10px; font-weight:700; line-height:1.5;
-}
-.driver-pill.orders   { background:rgba(249,115,22,0.12); color:var(--primary); }
-.driver-pill.delivery { background:rgba(34,197,94,0.12);  color:var(--success); }
-.driver-pill.role-mgr { background:rgba(129,140,248,0.15); color:var(--visa); }
-
-.driver-arrow { color:var(--text3); font-size:14px; flex-shrink:0; }
-
-/* Add btn */
 .add-btn {
-  width:100%; padding:14px;
-  background:transparent;
-  border:2px dashed var(--card-border);
-  border-radius:var(--radius-sm);
-  color:var(--text2); font-size:14px; font-weight:600;
+  width:100%; padding:14px; background:transparent;
+  border:2px dashed rgba(255,108,47,0.3); border-radius:var(--radius-sm);
+  color:var(--orange); font-size:14px; font-weight:700;
   font-family:'Cairo',sans-serif; cursor:pointer;
   display:flex; align-items:center; justify-content:center; gap:8px;
   margin-bottom:12px; transition:all .2s;
 }
-.add-btn:active { border-color:var(--primary); color:var(--primary); }
+.add-btn:active { background:var(--orange-bg); border-style:solid; }
 
-/* Recent orders - compact */
-.mgr-order-card {
-  background:var(--card); border:1px solid var(--card-border);
-  border-radius:var(--radius-sm); padding:12px;
-  margin-bottom:8px;
-  display:flex; align-items:center; gap:10px;
+/* ══════════════════════════════════
+   MANAGER APP
+══════════════════════════════════ */
+#managerApp { flex-direction:column; background:var(--bg); overflow:hidden; }
+
+.mgr-header {
+  height:64px; background:var(--bg); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 16px; gap:10px; flex-shrink:0; z-index:100;
 }
-.mgr-order-body { flex:1; min-width:0; }
-.mgr-order-rest { font-size:14px; font-weight:700; }
-.mgr-order-driver { font-size:11px; color:var(--text2); margin-top:2px; }
-.mgr-order-time { font-size:10px; color:var(--text3); margin-top:2px; }
-.mgr-order-amount { font-size:16px; font-weight:900; color:var(--success); flex-shrink:0; }
+.mgr-header-info { flex:1; }
+.mgr-header-sub { font-size:11px; color:var(--text3); font-weight:600; }
+.mgr-header-title { font-size:18px; font-weight:900; color:var(--text); }
+.mgr-badge {
+  padding:5px 12px; border-radius:50px;
+  background:linear-gradient(135deg,var(--orange),#e55b24);
+  color:#fff; font-size:11px; font-weight:800; letter-spacing:0.3px;
+}
 
-/* Restaurant */
-.rest-card {
-  background:var(--card); border:1px solid var(--card-border);
-  border-radius:var(--radius-sm); padding:14px;
+.mgr-content { flex:1; overflow-y:auto; }
+.mgr-panel { display:none; padding:16px; animation:fadeUp .25s ease; }
+.mgr-panel.active { display:block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+.mgr-tabs {
+  display:flex; background:var(--bg2); border-top:1px solid var(--border);
+  flex-shrink:0; order:999;
+}
+.mgr-tab {
+  flex:1; padding:10px 4px 8px; border:none; background:transparent;
+  font-family:'Cairo',sans-serif; font-size:10px; font-weight:700;
+  color:var(--text3); cursor:pointer; border-top:2px solid transparent;
+  white-space:nowrap; min-width:64px; transition:all .2s;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+}
+.mgr-tab .t-icon { font-size:20px; }
+.mgr-tab.active { color:var(--orange); border-top-color:var(--orange); background:var(--orange-bg); }
+
+/* ── MGR STATS ── */
+.mgr-stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.mgr-stat {
+  border-radius:var(--radius-sm); padding:16px; position:relative; overflow:hidden;
+}
+.mgr-stat.m1 { background:linear-gradient(135deg,rgba(0,200,81,0.15),rgba(0,200,81,0.05)); border:1px solid rgba(0,200,81,0.2); }
+.mgr-stat.m2 { background:linear-gradient(135deg,rgba(255,108,47,0.15),rgba(255,108,47,0.05)); border:1px solid rgba(255,108,47,0.2); }
+.mgr-stat.m3 { background:linear-gradient(135deg,rgba(75,159,255,0.15),rgba(75,159,255,0.05)); border:1px solid rgba(75,159,255,0.2); }
+.mgr-stat.m4 { background:linear-gradient(135deg,rgba(255,184,0,0.15),rgba(255,184,0,0.05)); border:1px solid rgba(255,184,0,0.2); }
+.mgr-stat-icon {
+  width:38px; height:38px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px;
+}
+.mgr-stat.m1 .mgr-stat-icon { background:rgba(0,200,81,0.15); }
+.mgr-stat.m2 .mgr-stat-icon { background:rgba(255,108,47,0.15); }
+.mgr-stat.m3 .mgr-stat-icon { background:rgba(75,159,255,0.15); }
+.mgr-stat.m4 .mgr-stat-icon { background:rgba(255,184,0,0.15); }
+.mgr-stat-label { font-size:10px; color:rgba(255,255,255,0.45); font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px; }
+.mgr-stat-val { font-size:26px; font-weight:900; letter-spacing:-1px; }
+.mgr-stat.m1 .mgr-stat-val { color:var(--green); }
+.mgr-stat.m2 .mgr-stat-val { color:var(--orange); }
+.mgr-stat.m3 .mgr-stat-val { color:var(--blue); }
+.mgr-stat.m4 .mgr-stat-val { color:var(--gold); }
+
+/* ── FEED ── */
+.feed-header {
+  display:flex; align-items:center; gap:8px;
+  font-size:11px; font-weight:800; color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px;
+}
+.live-dot {
+  width:8px; height:8px; border-radius:50%; background:var(--red);
+  box-shadow:0 0 0 3px rgba(255,59,59,0.2); animation:pulse-dot 2s infinite;
+}
+.feed-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:12px 14px;
   margin-bottom:8px; display:flex; align-items:center; gap:12px;
+  position:relative; overflow:hidden;
 }
-.rest-name-big { flex:1; font-size:15px; font-weight:700; }
-.rest-delete-btn {
-  background:var(--danger-bg); color:var(--danger);
-  border:none; border-radius:10px;
-  padding:8px 14px; font-size:13px; font-weight:700;
+.feed-card::before {
+  content:''; position:absolute; top:0; right:0; bottom:0; width:3px;
+}
+.feed-card.cash::before { background:var(--green); }
+.feed-card.visa::before { background:var(--blue); }
+.feed-pay {
+  width:40px; height:40px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center; font-size:20px;
+}
+.feed-card.cash .feed-pay { background:var(--green-bg); }
+.feed-card.visa .feed-pay { background:var(--blue-bg); }
+.feed-body { flex:1; min-width:0; }
+.feed-rest-name { font-size:13px; font-weight:800; margin-bottom:2px; }
+.feed-driver-info { font-size:11px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.feed-time-txt { font-size:10px; color:var(--text3); margin-top:2px; }
+.feed-amt { font-size:16px; font-weight:900; color:var(--orange); }
+
+/* ── TEAM CARDS ── */
+.search-box {
+  display:flex; background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); overflow:hidden; margin-bottom:14px;
+}
+.search-box input {
+  flex:1; background:transparent; border:none; outline:none;
+  padding:12px 16px; font-size:14px; color:var(--text);
+  font-family:'Cairo',sans-serif;
+}
+.search-box span { padding:0 14px; display:flex; align-items:center; font-size:18px; color:var(--text3); }
+
+.team-section-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 0 10px;
+}
+.team-section-lbl {
+  font-size:11px; font-weight:800; color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.8px;
+  display:flex; align-items:center; gap:6px;
+}
+.count-pill {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:20px; padding:2px 8px;
+  font-size:11px; font-weight:700; color:var(--text2);
+}
+.mini-add-btn {
+  padding:5px 12px; background:var(--orange-bg); border:1px solid rgba(255,108,47,0.25);
+  border-radius:20px; color:var(--orange); font-size:11px; font-weight:700;
   font-family:'Cairo',sans-serif; cursor:pointer;
 }
 
-/* Driver detail */
-.driver-detail-overlay {
-  position:fixed; inset:0; background:var(--bg);
-  z-index:200; display:none; flex-direction:column; overflow:hidden;
+.user-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:14px 16px;
+  margin-bottom:8px; display:flex; align-items:center; gap:14px;
+  cursor:pointer; transition:all .15s;
 }
-.driver-detail-overlay.show { display:flex; }
-.driver-detail-header {
-  padding:16px; background:var(--card);
-  border-bottom:1px solid var(--card-border);
-  display:flex; align-items:center; gap:10px;
+.user-card:active { transform:scale(0.98); border-color:var(--orange); }
+.user-card.manager-type { border-color:rgba(168,85,247,0.2); background:linear-gradient(135deg,rgba(168,85,247,0.05),var(--card)); }
+.user-avatar {
+  width:50px; height:50px; border-radius:16px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; font-weight:900; flex-shrink:0; position:relative;
 }
-.back-btn {
-  width:40px; height:40px; background:var(--bg3);
-  border:none; border-radius:12px; font-size:20px;
-  cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text);
+.driver-type .user-avatar { background:var(--orange-bg); color:var(--orange); }
+.manager-type .user-avatar { background:var(--purple-bg); color:var(--purple); }
+.online-indicator {
+  position:absolute; bottom:-1px; left:-1px;
+  width:13px; height:13px; border-radius:50%;
+  background:var(--bg3); border:2px solid var(--card);
 }
-.driver-detail-content { flex:1; overflow-y:auto; padding:16px; }
+.online-indicator.on { background:var(--green); }
+.user-info { flex:1; min-width:0; }
+.user-name-txt { font-size:14px; font-weight:800; margin-bottom:2px; }
+.user-phone-txt { font-size:11px; color:var(--text3); direction:ltr; margin-bottom:6px; }
+.user-pills { display:flex; gap:5px; flex-wrap:wrap; }
+.upill {
+  padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700;
+}
+.upill.orders { background:var(--orange-bg); color:var(--orange); }
+.upill.earn { background:var(--green-bg); color:var(--green); }
+.upill.role { background:var(--purple-bg); color:var(--purple); }
 
-/* Detail stats - redesigned */
-.driver-detail-stats {
-  display:grid; grid-template-columns:repeat(3,1fr);
-  gap:8px; margin-bottom:16px;
+/* ── RESTAURANTS ── */
+.rest-card-mgr {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:14px 16px;
+  display:flex; align-items:center; gap:12px; margin-bottom:8px;
 }
-.driver-detail-stat {
-  background:var(--card); border:1px solid var(--card-border);
-  border-radius:var(--radius-sm); padding:14px; text-align:center;
+.rest-card-icon {
+  width:40px; height:40px; background:var(--orange-bg);
+  border-radius:12px; display:flex; align-items:center;
+  justify-content:center; font-size:20px;
 }
-.dds-val { font-size:20px; font-weight:900; color:var(--primary); }
-.dds-label { font-size:10px; color:var(--text2); margin-top:3px; }
+.rest-card-name { flex:1; font-size:14px; font-weight:700; }
+.rest-del-btn-mgr {
+  padding:6px 14px; border-radius:20px;
+  background:var(--red-bg); color:var(--red);
+  border:1px solid rgba(255,59,59,0.2);
+  font-size:11px; font-weight:700; font-family:'Cairo',sans-serif; cursor:pointer;
+}
 
-/* Reports */
-.date-filter { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
-.date-btn {
-  padding:7px 16px;
-  background:var(--bg3); border:1px solid var(--card-border);
+/* ── REPORTS ── */
+.period-row { display:flex; gap:8px; margin-bottom:14px; }
+.period-btn {
+  padding:7px 18px; background:var(--bg3); border:1px solid var(--border);
   border-radius:50px; font-size:12px; font-weight:700;
   font-family:'Cairo',sans-serif; cursor:pointer; color:var(--text2);
   transition:all .2s;
 }
-.date-btn.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+.period-btn.active { background:var(--orange); border-color:var(--orange); color:#fff; }
 
-/* Report leaderboard style */
-.report-row {
-  background:var(--card); border:1px solid var(--card-border);
-  border-radius:var(--radius-sm); padding:14px;
-  margin-bottom:8px;
-  display:flex; align-items:center; gap:12px;
-  position:relative;
+.report-stat-big {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:16px; margin-bottom:14px;
+  display:flex; align-items:center; gap:14px;
 }
-.report-rank {
-  width:28px; height:28px;
-  border-radius:50%;
-  background:var(--bg3);
+.report-stat-icon { font-size:28px; }
+.report-stat-info {}
+.report-stat-lbl { font-size:11px; color:var(--text3); font-weight:600; }
+.report-stat-num { font-size:24px; font-weight:900; color:var(--orange); }
+
+.rank-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:14px 16px;
+  margin-bottom:8px; display:flex; align-items:center; gap:12px;
+}
+.rank-num {
+  width:30px; height:30px; border-radius:50%;
   display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:900; color:var(--text2);
-  flex-shrink:0;
+  font-size:13px; font-weight:900; flex-shrink:0;
 }
-.report-rank.gold { background:rgba(245,158,11,0.2); color:#f59e0b; }
-.report-rank.silver { background:rgba(148,163,184,0.2); color:#94a3b8; }
-.report-rank.bronze { background:rgba(180,120,60,0.2); color:#b47c3c; }
-.report-driver-name { font-size:14px; font-weight:700; flex:1; }
-.report-driver-orders { font-size:11px; color:var(--text3); margin-top:2px; }
-.report-driver-income { font-size:18px; font-weight:900; color:var(--success); }
+.rank-num.gold { background:var(--gold-bg); color:var(--gold); }
+.rank-num.silver { background:rgba(160,160,160,0.15); color:#a0a0a0; }
+.rank-num.bronze { background:rgba(180,120,60,0.15); color:#b47c3c; }
+.rank-num.default { background:var(--bg3); color:var(--text3); }
+.rank-name { font-size:14px; font-weight:700; flex:1; }
+.rank-orders { font-size:11px; color:var(--text3); margin-top:2px; }
+.rank-earn { font-size:18px; font-weight:900; color:var(--green); }
 
-/* Scrollbar */
-::-webkit-scrollbar { width:4px; height:4px; }
+/* ── DRIVER DETAIL ── */
+.detail-overlay {
+  position:fixed; inset:0; background:var(--bg);
+  z-index:200; display:none; flex-direction:column;
+}
+.detail-overlay.show { display:flex; }
+.detail-header {
+  padding:16px; background:var(--bg2); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:12px;
+}
+.back-btn {
+  width:40px; height:40px; background:var(--bg3);
+  border:1px solid var(--border); border-radius:12px; font-size:20px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text);
+}
+.detail-name { font-size:17px; font-weight:900; }
+.detail-phone { font-size:12px; color:var(--text3); direction:ltr; }
+.detail-actions { display:flex; gap:6px; margin-right:auto; }
+.detail-action-btn {
+  width:38px; height:38px; border-radius:11px; border:none; font-size:16px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.detail-content { flex:1; overflow-y:auto; padding:16px; }
+.detail-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+.detail-stat {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:14px; text-align:center;
+}
+.detail-stat-val { font-size:20px; font-weight:900; color:var(--orange); }
+.detail-stat-lbl { font-size:10px; color:var(--text3); margin-top:4px; font-weight:600; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.75);
+  z-index:500; display:none; align-items:flex-end; justify-content:center;
+  backdrop-filter:blur(6px);
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background:var(--bg2); border-radius:28px 28px 0 0;
+  padding:24px; width:100%; max-height:82dvh; overflow-y:auto;
+  animation:slide-up .3s ease; border-top:1px solid var(--border);
+}
+@keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-drag { width:36px; height:4px; background:var(--border2); border-radius:4px; margin:0 auto 20px; }
+.modal-title { font-size:18px; font-weight:900; margin-bottom:18px; }
+.modal-btns { display:flex; gap:10px; margin-top:20px; }
+.modal-btn {
+  flex:1; padding:14px; border-radius:var(--radius-sm);
+  border:none; font-size:15px; font-weight:700;
+  font-family:'Cairo',sans-serif; cursor:pointer; transition:opacity .2s;
+}
+.modal-btn:active { opacity:0.8; }
+.modal-btn.confirm { background:linear-gradient(135deg,var(--orange),#e55b24); color:#fff; }
+.modal-btn.cancel { background:var(--bg3); color:var(--text); border:1px solid var(--border); }
+.modal-btn.danger { background:linear-gradient(135deg,var(--red),#cc2020); color:#fff; }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:calc(var(--nav-h) + 20px); left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:var(--bg3); color:var(--text); padding:12px 20px;
+  border-radius:50px; font-size:14px; font-weight:600;
+  z-index:9999; white-space:nowrap; opacity:0;
+  transition:all .3s cubic-bezier(0.34,1.56,0.64,1);
+  border:1px solid var(--border2); backdrop-filter:blur(10px);
+  max-width:calc(100vw - 40px); overflow:hidden; text-overflow:ellipsis;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align:center; padding:48px 16px; color:var(--text3); }
+.empty-icon { font-size:52px; margin-bottom:12px; opacity:0.4; }
+.empty-text { font-size:14px; color:var(--text3); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:3px; height:3px; }
 ::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--bg3); border-radius:4px; }
+::-webkit-scrollbar-thumb { background:var(--bg4); border-radius:4px; }
+
+/* Light mode */
+[data-theme="light"] {
+  --bg:#F5F5F5; --bg2:#FFFFFF; --bg3:#EEEEEE; --bg4:#E0E0E0;
+  --card:#FFFFFF; --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.15);
+  --text:#111111; --text2:#444444; --text3:#888888;
+}
+[data-theme="light"] .welcome-card { background:linear-gradient(135deg,#fff4f0,#ffe8de); border-color:rgba(255,108,47,0.2); }
+[data-theme="light"] .welcome-name { color:#111; }
+[data-theme="light"] .mgr-stat-label { color:rgba(0,0,0,0.4); }
 </style>
 </head>
 <body>
 
-<!-- ============================================================
-     OFFLINE SCREEN
-     ============================================================ -->
+<!-- OFFLINE -->
 <div class="screen" id="offlineScreen">
-  <div class="offline-icon">📡</div>
-  <div class="offline-title">لا يوجد اتصال بالإنترنت</div>
-  <div class="offline-sub">التطبيق يعمل أونلاين فقط لضمان حفظ بياناتك في الكلاود</div>
+  <div class="offline-blob">📡</div>
+  <div class="offline-title">لا يوجد اتصال</div>
+  <div class="offline-sub">التطبيق يعمل أونلاين لضمان حفظ بياناتك</div>
   <button class="offline-btn" onclick="checkOnline()">🔄 إعادة المحاولة</button>
 </div>
 
-<!-- ============================================================
-     LOADING SCREEN
-     ============================================================ -->
+<!-- LOADING -->
 <div class="screen active" id="loadingScreen">
-  <div class="loading-logo">🛵</div>
-  <div style="font-size:20px;font-weight:900;color:var(--primary);">Nabil Pro</div>
-  <div class="loading-text">جاري التحميل...</div>
-  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  <div class="loading-ring"><div class="loading-logo-inner">🛵</div></div>
+  <div class="loading-brand">Nabil Pro</div>
+  <div class="loading-sub">جاري التحميل</div>
+  <div class="loading-dots"><span></span><span></span><span></span></div>
 </div>
 
-<!-- ============================================================
-     AUTH SCREEN
-     ============================================================ -->
+<!-- AUTH -->
 <div class="screen" id="authScreen">
   <div class="auth-card">
-    <div class="auth-logo">🛵</div>
-    <div class="auth-title">Nabil Pro</div>
-    <div class="auth-sub">تطبيق إدارة التوصيل</div>
-
-    <!-- Login -->
-    <div class="auth-step active" id="authStep1">
-      <div class="input-group">
-        <div class="input-label">📱 رقم الموبايل</div>
-        <div class="input-row">
-          <div class="input-prefix">🇪🇬</div>
+    <div class="auth-header">
+      <div class="auth-logo-wrap">🛵</div>
+      <div class="auth-brand">Nabil Pro</div>
+      <div class="auth-tagline">منصة إدارة التوصيل الذكية</div>
+    </div>
+    <div class="auth-form">
+      <div>
+        <div class="field-label">📱 رقم الموبايل</div>
+        <div class="field-wrap">
+          <div class="field-prefix">🇪🇬</div>
           <input type="tel" id="phoneInput" placeholder="01xxxxxxxxx" maxlength="11"
             oninput="this.value=this.value.replace(/\D/g,'')" inputmode="numeric">
         </div>
       </div>
-      <div class="input-group">
-        <div class="input-label">🔑 كود الدخول (6 أرقام)</div>
-        <input type="tel" class="otp-input" id="pinInput" placeholder="• • • • • •"
+      <div>
+        <div class="field-label">🔑 كود الدخول</div>
+        <input type="tel" class="pin-field" id="pinInput" placeholder="• • • • • •"
           maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+        <div class="pin-hint" style="margin-top:8px;">الكود بيجيلك من المدير</div>
       </div>
-      <div style="font-size:12px;color:var(--text3);text-align:center;padding:4px 0;">
-        كود الدخول بيجيلك من المدير
-      </div>
-      <button class="auth-btn" id="loginBtn" onclick="doLogin()">
-        🚀 دخول
+      <button class="auth-submit" id="loginBtn" onclick="doLogin()">
+        <span>دخول</span> <span>←</span>
       </button>
     </div>
   </div>
 </div>
 
-<!-- ============================================================
-     DRIVER APP
-     ============================================================ -->
+<!-- DRIVER APP -->
 <div class="screen" id="driverApp">
-  <div class="header">
-    <span class="header-logo">🛵</span>
-    <span class="header-title">Nabil Pro</span>
-    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-    <button class="icon-btn" onclick="confirmLogout()">🚪</button>
+  <div class="drv-header">
+    <div class="drv-header-logo">🛵</div>
+    <div class="drv-header-title">Nabil <span>Pro</span></div>
+    <button class="hdr-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button class="hdr-btn" onclick="confirmLogout()">🚪</button>
   </div>
-
-  <div class="status-bar ok" id="driverStatus">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">Firebase متصل • 0 أوردر</span>
+  <div class="status-pill ok" id="driverStatus">
+    <div class="status-dot pulse" id="statusDot"></div>
+    <span id="statusText">متصل • 0 أوردر</span>
   </div>
 
   <div class="pages-wrapper" id="pagesWrapper">
-
     <!-- Page 0: Home -->
     <div class="page" id="homePage">
-      <div class="welcome">
+      <div class="welcome-card">
         <div class="welcome-greeting" id="greeting">صباح الخير 👋</div>
         <div class="welcome-name" id="driverNameDisplay">مندوب</div>
-        <div class="welcome-time" id="clockDisplay">00:00 ص</div>
+        <div class="welcome-time-row">
+          <div class="welcome-time" id="clockDisplay">00:00</div>
+          <div class="welcome-date" id="dateDisplay"></div>
+        </div>
       </div>
-
       <div class="stats-grid">
-        <div class="stat-card c1">
-          <div class="stat-icon">📦</div>
+        <div class="stat-card s1">
+          <div class="stat-icon-wrap">📦</div>
           <div class="stat-label">أوردرات اليوم</div>
           <div class="stat-val" id="statOrders">0</div>
         </div>
-        <div class="stat-card c2">
-          <div class="stat-icon">💰</div>
-          <div class="stat-label">أرباح التوصيل</div>
-          <div class="stat-val" id="statDelivery">ج 0</div>
+        <div class="stat-card s2">
+          <div class="stat-icon-wrap">💰</div>
+          <div class="stat-label">دخل التوصيل</div>
+          <div class="stat-val" id="statDelivery">ج٠</div>
         </div>
-        <div class="stat-card c3">
-          <div class="stat-icon">💳</div>
-          <div class="stat-label">فيزا (أكسب)</div>
-          <div class="stat-val" id="statVisa">ج 0</div>
+        <div class="stat-card s3">
+          <div class="stat-icon-wrap">💳</div>
+          <div class="stat-label">فيزا</div>
+          <div class="stat-val" id="statVisa">ج٠</div>
         </div>
-        <div class="stat-card c4">
-          <div class="stat-icon">💵</div>
-          <div class="stat-label">تحصيل كاش</div>
-          <div class="stat-val" id="statCash">ج 0</div>
+        <div class="stat-card s4">
+          <div class="stat-icon-wrap">💵</div>
+          <div class="stat-label">كاش محصّل</div>
+          <div class="stat-val" id="statCash">ج٠</div>
         </div>
       </div>
-
-      <div class="section-title">📊 تقرير الشيفت</div>
-      <div id="shiftReport"><div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">لا أوردرات اليوم بعد</div></div></div>
+      <div class="sec-title">تقرير الشيفت</div>
+      <div id="shiftReport">
+        <div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">لا أوردرات اليوم بعد</div></div>
+      </div>
     </div>
 
     <!-- Page 1: Records -->
     <div class="page" id="recordsPage">
-      <div class="filter-row" id="filterRow">
-        <button class="filter-chip active" data-filter="all" onclick="setFilter(this,'all')">الكل</button>
-        <button class="filter-chip" data-filter="today" onclick="setFilter(this,'today')">اليوم</button>
-        <button class="filter-chip" data-filter="week" onclick="setFilter(this,'week')">الأسبوع</button>
-        <button class="filter-chip" data-filter="cash" onclick="setFilter(this,'cash')">كاش</button>
-        <button class="filter-chip" data-filter="visa" onclick="setFilter(this,'visa')">فيزا</button>
+      <div class="filter-scroll" id="filterRow">
+        <button class="filter-btn active" onclick="setFilter(this,'all')">الكل</button>
+        <button class="filter-btn" onclick="setFilter(this,'today')">اليوم</button>
+        <button class="filter-btn" onclick="setFilter(this,'week')">الأسبوع</button>
+        <button class="filter-btn" onclick="setFilter(this,'cash')">كاش</button>
+        <button class="filter-btn" onclick="setFilter(this,'visa')">فيزا</button>
       </div>
       <div id="ordersList"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد أوردرات</div></div></div>
     </div>
 
     <!-- Page 2: Add Order -->
     <div class="page" id="addPage">
-      <div class="form-section">
-        <div class="form-label">🏪 المطعم</div>
-        <div class="rest-chips" id="restChips"></div>
+      <div class="form-group">
+        <div class="form-lbl">🏪 المطعم</div>
+        <div class="rest-chip-grid" id="restChips"></div>
       </div>
-      <div class="form-section">
-        <div class="form-label">📍 العنوان</div>
-        <div class="input-with-voice">
-          <input class="form-input" id="addressInput" placeholder="العنوان كاملاً..." style="padding-left:52px;" maxlength="200">
-          <button class="voice-btn" id="voiceAddress" onclick="startVoice('addressInput','voiceAddress')">🎤</button>
+      <div class="form-group">
+        <div class="form-lbl">📍 العنوان</div>
+        <div class="voice-wrap">
+          <input class="form-field" id="addressInput" placeholder="العنوان كاملاً..." maxlength="200">
+          <button class="mic-btn" id="voiceAddress" onclick="startVoice('addressInput','voiceAddress')">🎤</button>
         </div>
       </div>
-      <div class="form-section">
-        <div class="form-label">📞 رقم العميل (اختياري)</div>
-        <input class="form-input" id="phoneOrderInput" placeholder="01xxxxxxxxx" type="tel" inputmode="numeric">
+      <div class="form-group">
+        <div class="form-lbl">📞 رقم العميل (اختياري)</div>
+        <input class="form-field" id="phoneOrderInput" placeholder="01xxxxxxxxx" type="tel" inputmode="numeric">
       </div>
-      <div class="form-section">
-        <div class="form-label">💰 قيمة الأوردر (للمطعم)</div>
-        <div class="input-with-voice">
-          <input class="form-input" id="restAmountInput" type="number" placeholder="0" style="padding-left:52px;" inputmode="decimal">
-          <button class="voice-btn" id="voiceAmount" onclick="startVoice('restAmountInput','voiceAmount')">🎤</button>
+      <div class="form-group">
+        <div class="form-lbl">💰 قيمة الأوردر</div>
+        <div class="voice-wrap">
+          <input class="form-field" id="restAmountInput" type="number" placeholder="0" inputmode="decimal">
+          <button class="mic-btn" id="voiceAmount" onclick="startVoice('restAmountInput','voiceAmount')">🎤</button>
         </div>
       </div>
-      <div class="form-section">
-        <div class="form-label">🛵 توصيل</div>
-        <input class="form-input" id="deliveryInput" type="number" placeholder="0" inputmode="decimal">
+      <div class="form-group">
+        <div class="form-lbl">🛵 رسوم التوصيل</div>
+        <input class="form-field" id="deliveryInput" type="number" placeholder="0" inputmode="decimal">
       </div>
-      <div class="form-section">
-        <div class="form-label">💳 طريقة الدفع</div>
-        <div class="payment-row">
-          <div class="pay-opt" id="payCash" onclick="selectPayment('cash')">
-            <div class="pay-opt-icon">💵</div>
-            <div class="pay-opt-label">كاش</div>
-            <div class="pay-opt-note">من العميل</div>
+      <div class="form-group">
+        <div class="form-lbl">💳 طريقة الدفع</div>
+        <div class="pay-grid">
+          <div class="pay-card" id="payCash" onclick="selectPayment('cash')">
+            <div class="pay-icon">💵</div>
+            <div class="pay-name">كاش</div>
+            <div class="pay-note">من العميل</div>
           </div>
-          <div class="pay-opt" id="payVisa" onclick="selectPayment('visa')">
-            <div class="pay-opt-icon">💳</div>
-            <div class="pay-opt-label">فيزا</div>
-            <div class="pay-opt-note">أنت بتكسب</div>
+          <div class="pay-card" id="payVisa" onclick="selectPayment('visa')">
+            <div class="pay-icon">💳</div>
+            <div class="pay-name">فيزا</div>
+            <div class="pay-note">أنت بتكسب</div>
           </div>
         </div>
       </div>
-      <button class="submit-btn" onclick="addOrder()">✅ حفظ الأوردر</button>
+      <button class="submit-order-btn" onclick="addOrder()">✅ حفظ الأوردر</button>
     </div>
 
     <!-- Page 3: Settings -->
     <div class="page" id="settingsPage">
-      <div class="section-title">⚙️ الإعدادات</div>
-      <div class="settings-card">
-        <div class="settings-row" onclick="editDriverName()">
-          <span class="settings-icon">👤</span>
-          <span class="settings-label">اسم السائق</span>
-          <span class="settings-val" id="settingsNameVal">—</span>
+      <div class="sec-title">الحساب</div>
+      <div class="settings-group">
+        <div class="settings-item" onclick="editDriverName()">
+          <div class="settings-item-icon">👤</div>
+          <div class="settings-item-label">اسم السائق</div>
+          <div class="settings-item-val" id="settingsNameVal">—</div>
         </div>
-        <div class="settings-row" onclick="cycleTheme()">
-          <span class="settings-icon">🎨</span>
-          <span class="settings-label">المظهر</span>
-          <span class="settings-val" id="themeVal">داكن</span>
+        <div class="settings-item" onclick="cycleTheme()">
+          <div class="settings-item-icon">🎨</div>
+          <div class="settings-item-label">المظهر</div>
+          <div class="settings-item-val" id="themeVal">داكن</div>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-icon">📞</div>
+          <div class="settings-item-label">رقم الهاتف</div>
+          <div class="settings-item-val" id="settingsPhone" dir="ltr">—</div>
         </div>
       </div>
-
-      <div class="section-title">🏪 المطاعم</div>
+      <div class="sec-title">المطاعم</div>
       <div id="restSettingsList"></div>
       <button class="add-btn" onclick="addRestaurant()">➕ إضافة مطعم</button>
-
-      <div class="section-title">📱 معلومات</div>
-      <div class="settings-card">
-        <div class="settings-row">
-          <span class="settings-icon">📞</span>
-          <span class="settings-label">رقم الهاتف</span>
-          <span class="settings-val" id="settingsPhone" dir="ltr">—</span>
-        </div>
-        <div class="settings-row" onclick="confirmLogout()">
-          <span class="settings-icon">🚪</span>
-          <span class="settings-label" style="color:var(--danger)">تسجيل الخروج</span>
+      <div class="settings-group">
+        <div class="settings-item danger" onclick="confirmLogout()">
+          <div class="settings-item-icon">🚪</div>
+          <div class="settings-item-label">تسجيل الخروج</div>
         </div>
       </div>
     </div>
-
-  </div><!-- end pages-wrapper -->
+  </div>
 
   <!-- Bottom Nav -->
   <div class="bottom-nav">
-    <button class="nav-item active" id="nav0" onclick="goPage(0)">
-      <span class="nav-icon">🏠</span>
+    <button class="nav-btn active" id="nav0" onclick="goPage(0)">
+      <div class="nav-icon-wrap">🏠</div>
       <span>الرئيسية</span>
     </button>
-    <button class="nav-item" id="nav1" onclick="goPage(1)">
-      <span class="nav-icon">📋</span>
+    <button class="nav-btn" id="nav1" onclick="goPage(1)">
+      <div class="nav-icon-wrap">📋</div>
       <span>السجلات</span>
     </button>
-    <button class="nav-item" id="nav2" onclick="goPage(2)">
-      <div class="nav-plus">＋</div>
+    <button class="nav-add-btn" id="nav2" onclick="goPage(2)">
+      <div class="nav-add-circle">＋</div>
     </button>
-    <button class="nav-item" id="nav3" onclick="goPage(3)">
-      <span class="nav-icon">⚙️</span>
+    <button class="nav-btn" id="nav3" onclick="goPage(3)">
+      <div class="nav-icon-wrap">⚙️</div>
       <span>الإعدادات</span>
     </button>
   </div>
-</div><!-- end driverApp -->
+</div>
 
-<!-- ============================================================
-     MANAGER APP
-     ============================================================ -->
+<!-- MANAGER APP -->
 <div class="screen" id="managerApp">
   <div class="mgr-header">
-    <div style="flex:1;">
-      <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.3px;" id="mgrHeroDate">اليوم</div>
+    <div class="mgr-header-info">
+      <div class="mgr-header-sub" id="mgrHeroDate">اليوم</div>
       <div class="mgr-header-title">لوحة الإدارة</div>
     </div>
     <span class="mgr-badge" id="managerBadge">مدير</span>
-    <button class="icon-btn" onclick="toggleTheme()" id="mgrThemeBtn">🔆</button>
-    <button class="icon-btn" onclick="confirmLogout()" style="background:var(--danger-bg);color:var(--danger);">🚪</button>
+    <button class="hdr-btn" onclick="toggleTheme()" id="mgrThemeBtn">🔆</button>
+    <button class="hdr-btn" style="background:var(--red-bg);color:var(--red);" onclick="confirmLogout()">🚪</button>
   </div>
 
   <div class="mgr-content">
-
-    <!-- Overview Tab -->
-    <div class="mgr-tab-panel active" id="mgrPanel0">
-      <div class="mgr-stats-big">
-        <div class="mgr-stat-big s1">
-          <div class="mgr-stat-big-icon">👥</div>
-          <div class="mgr-stat-big-label">مناديب نشطين</div>
-          <div class="mgr-stat-big-val" id="mgrStatDrivers">0</div>
+    <!-- Panel 0: Overview -->
+    <div class="mgr-panel active" id="mgrPanel0">
+      <div class="mgr-stats-grid">
+        <div class="mgr-stat m1">
+          <div class="mgr-stat-icon">👥</div>
+          <div class="mgr-stat-label">مناديب نشطين</div>
+          <div class="mgr-stat-val" id="mgrStatDrivers">0</div>
         </div>
-        <div class="mgr-stat-big s2">
-          <div class="mgr-stat-big-icon">📦</div>
-          <div class="mgr-stat-big-label">أوردرات اليوم</div>
-          <div class="mgr-stat-big-val" id="mgrStatOrders">0</div>
+        <div class="mgr-stat m2">
+          <div class="mgr-stat-icon">📦</div>
+          <div class="mgr-stat-label">أوردرات اليوم</div>
+          <div class="mgr-stat-val" id="mgrStatOrders">0</div>
         </div>
-        <div class="mgr-stat-big s3">
-          <div class="mgr-stat-big-icon">🛵</div>
-          <div class="mgr-stat-big-label">دخل التوصيل</div>
-          <div class="mgr-stat-big-val" id="mgrStatDelivery">ج 0</div>
+        <div class="mgr-stat m3">
+          <div class="mgr-stat-icon">🛵</div>
+          <div class="mgr-stat-label">دخل التوصيل</div>
+          <div class="mgr-stat-val" id="mgrStatDelivery">ج٠</div>
         </div>
-        <div class="mgr-stat-big s4">
-          <div class="mgr-stat-big-icon">💵</div>
-          <div class="mgr-stat-big-label">إجمالي كاش</div>
-          <div class="mgr-stat-big-val" id="mgrStatCash">ج 0</div>
+        <div class="mgr-stat m4">
+          <div class="mgr-stat-icon">💵</div>
+          <div class="mgr-stat-label">إجمالي كاش</div>
+          <div class="mgr-stat-val" id="mgrStatCash">ج٠</div>
         </div>
       </div>
-      <div class="feed-title"><span class="feed-dot"></span> آخر الأوردرات</div>
+      <div class="feed-header"><div class="live-dot"></div> آخر الأوردرات</div>
       <div id="mgrRecentOrders"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا أوردرات بعد</div></div></div>
     </div>
 
-    <!-- Drivers Tab -->
-    <div class="mgr-tab-panel" id="mgrPanel1">
-      <div class="search-bar" style="margin-bottom:12px;">
+    <!-- Panel 1: Team -->
+    <div class="mgr-panel" id="mgrPanel1">
+      <div class="search-box">
         <span>🔍</span>
         <input type="text" placeholder="بحث باسم أو رقم..." id="driverSearch" oninput="filterDrivers()">
       </div>
       <div id="driversList"></div>
     </div>
 
-    <!-- Restaurants Tab -->
-    <div class="mgr-tab-panel" id="mgrPanel2">
-      <button class="add-user-btn" onclick="showAddRestModal()">➕ إضافة مطعم جديد</button>
+    <!-- Panel 2: Restaurants -->
+    <div class="mgr-panel" id="mgrPanel2">
+      <button class="add-btn" onclick="showAddRestModal()">➕ إضافة مطعم جديد</button>
       <div id="mgrRestsList"></div>
     </div>
 
-    <!-- Reports Tab -->
-    <div class="mgr-tab-panel" id="mgrPanel3">
-      <div class="date-filter">
-        <button class="date-btn active" onclick="setReportPeriod('today',this)">اليوم</button>
-        <button class="date-btn" onclick="setReportPeriod('week',this)">الأسبوع</button>
-        <button class="date-btn" onclick="setReportPeriod('month',this)">الشهر</button>
+    <!-- Panel 3: Reports -->
+    <div class="mgr-panel" id="mgrPanel3">
+      <div class="period-row">
+        <button class="period-btn active" onclick="setReportPeriod('today',this)">اليوم</button>
+        <button class="period-btn" onclick="setReportPeriod('week',this)">الأسبوع</button>
+        <button class="period-btn" onclick="setReportPeriod('month',this)">الشهر</button>
       </div>
       <div id="reportsContent"></div>
     </div>
-
   </div>
 
   <div class="mgr-tabs">
-    <button class="mgr-tab active" onclick="mgrTab(0,this)">
-      <span class="tab-icon">📊</span>عامة
-    </button>
-    <button class="mgr-tab" onclick="mgrTab(1,this)">
-      <span class="tab-icon">👥</span>الفريق
-    </button>
-    <button class="mgr-tab" onclick="mgrTab(2,this)">
-      <span class="tab-icon">🏪</span>مطاعم
-    </button>
-    <button class="mgr-tab" onclick="mgrTab(3,this)">
-      <span class="tab-icon">📈</span>تقارير
-    </button>
+    <button class="mgr-tab active" onclick="mgrTab(0,this)"><span class="t-icon">📊</span>عامة</button>
+    <button class="mgr-tab" onclick="mgrTab(1,this)"><span class="t-icon">👥</span>الفريق</button>
+    <button class="mgr-tab" onclick="mgrTab(2,this)"><span class="t-icon">🏪</span>مطاعم</button>
+    <button class="mgr-tab" onclick="mgrTab(3,this)"><span class="t-icon">📈</span>تقارير</button>
   </div>
-</div><!-- end managerApp -->
+</div>
 
-<!-- Driver Detail (Manager view) -->
-<div class="driver-detail-overlay" id="driverDetailOverlay">
-  <div class="driver-detail-header">
+<!-- Driver Detail -->
+<div class="detail-overlay" id="driverDetailOverlay">
+  <div class="detail-header">
     <button class="back-btn" onclick="closeDriverDetail()">←</button>
     <div>
-      <div style="font-size:17px;font-weight:900;" id="detailDriverName">—</div>
-      <div style="font-size:12px;color:var(--text2);" id="detailDriverPhone" dir="ltr">—</div>
+      <div class="detail-name" id="detailDriverName">—</div>
+      <div class="detail-phone" id="detailDriverPhone">—</div>
     </div>
-    <div style="flex:1;"></div>
-    <button class="icon-btn" style="background:rgba(249,115,22,0.1);color:var(--primary);" onclick="changeDriverPin()" title="تغيير الكود">🔑</button>
-    <button class="icon-btn" style="background:rgba(129,140,248,0.1);color:#a5b4fc;margin:0 4px;" onclick="toggleDriverRole()" id="roleBtn">👑</button>
-    <button class="icon-btn" style="background:var(--danger-bg);color:var(--danger);" onclick="removeDriver()">🗑</button>
+    <div class="detail-actions">
+      <button class="detail-action-btn" style="background:var(--orange-bg);color:var(--orange);" onclick="changeDriverPin()">🔑</button>
+      <button class="detail-action-btn" style="background:var(--purple-bg);color:var(--purple);" onclick="toggleDriverRole()" id="roleBtn">👑</button>
+      <button class="detail-action-btn" style="background:var(--red-bg);color:var(--red);" onclick="removeDriver()">🗑</button>
+    </div>
   </div>
-  <div class="driver-detail-content">
-    <div class="driver-detail-stats">
-      <div class="driver-detail-stat">
-        <div class="dds-val" id="detailOrders">0</div>
-        <div class="dds-label">أوردرات اليوم</div>
-      </div>
-      <div class="driver-detail-stat">
-        <div class="dds-val" id="detailDelivery">0</div>
-        <div class="dds-label">دخل التوصيل</div>
-      </div>
-      <div class="driver-detail-stat">
-        <div class="dds-val" id="detailTotal">0</div>
-        <div class="dds-label">إجمالي الكاش</div>
-      </div>
+  <div class="detail-content">
+    <div class="detail-stats">
+      <div class="detail-stat"><div class="detail-stat-val" id="detailOrders">0</div><div class="detail-stat-lbl">أوردرات اليوم</div></div>
+      <div class="detail-stat"><div class="detail-stat-val" id="detailDelivery">0</div><div class="detail-stat-lbl">دخل التوصيل</div></div>
+      <div class="detail-stat"><div class="detail-stat-val" id="detailTotal">0</div><div class="detail-stat-lbl">إجمالي كاش</div></div>
     </div>
-    <div class="section-title">📋 أوردرات اليوم</div>
+    <div class="sec-title">أوردرات اليوم</div>
     <div id="detailOrdersList"></div>
   </div>
 </div>
 
-<!-- Modals -->
+<!-- Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modalBox">
+    <div class="modal-drag"></div>
     <div class="modal-title" id="modalTitle">تأكيد</div>
     <div id="modalBody"></div>
-    <div class="modal-actions" id="modalActions"></div>
+    <div class="modal-btns" id="modalActions"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-// SECURITY: Sanitize user input to prevent XSS
-// ============================================================
+// ══════════════════════════════════
+// SECURITY
+// ══════════════════════════════════
 function sanitize(str) {
   if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-// ============================================================
+// ══════════════════════════════════
 // FIREBASE CONFIG
-// ============================================================
+// ══════════════════════════════════
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
-  authDomain:        "nabil-pro.firebaseapp.com",
-  projectId:         "nabil-pro",
-  storageBucket:     "nabil-pro.firebasestorage.app",
-  messagingSenderId: "82099030853",
-  appId:             "1:82099030853:web:89de9eabad2cc53817cc2c"
+  apiKey:"AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
+  authDomain:"nabil-pro.firebaseapp.com",
+  projectId:"nabil-pro",
+  storageBucket:"nabil-pro.firebasestorage.app",
+  messagingSenderId:"82099030853",
+  appId:"1:82099030853:web:89de9eabad2cc53817cc2c"
 };
 
 let auth, db;
-
-// ============================================================
-// STATE
-// ============================================================
-let currentUser   = null;
-let userProfile   = null;
-let ordersCache   = [];
-let restaurantsCache = [];
-let allDrivers    = [];
-let allOrders     = [];
-let currentFilter = 'all';
-let selectedRest  = null;
-let selectedPayment = null;
-let currentPage   = 0;
-let themeMode     = 'dark';
-let recognizer    = null;
-let editingOrderId = null;
-let selectedDriverUid = null;
-let reportPeriod  = 'today';
-let ordersUnsubscribe = null;
-let allOrdersUnsubscribe = null;
-
-// Firestore refs (set after auth)
+let currentUser=null, userProfile=null, ordersCache=[], restaurantsCache=[];
+let allDrivers=[], allOrders=[], currentFilter='all', selectedRest=null;
+let selectedPayment=null, currentPage=0, themeMode='dark', recognizer=null;
+let editingOrderId=null, selectedDriverUid=null, reportPeriod='today';
+let ordersUnsubscribe=null, allOrdersUnsubscribe=null;
 let ordersRef, restaurantsRef, usersRef, settingsRef;
 
-// ============================================================
+// ══════════════════════════════════
 // NETWORK
-// ============================================================
+// ══════════════════════════════════
 function checkOnline() {
-  if (navigator.onLine) {
-    showScreen('loadingScreen');
-    initApp();
-  } else {
-    showScreen('offlineScreen');
-  }
+  if (navigator.onLine) { showScreen('loadingScreen'); initApp(); }
+  else showScreen('offlineScreen');
 }
 window.addEventListener('online', () => { if (!currentUser) checkOnline(); });
-window.addEventListener('offline', () => {
-  if (!currentUser) showScreen('offlineScreen');
-});
+window.addEventListener('offline', () => { if (!currentUser) showScreen('offlineScreen'); });
 
-// ============================================================
+// ══════════════════════════════════
 // SCREEN
-// ============================================================
+// ══════════════════════════════════
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  // Push state عشان زر الرجوع على Android يشتغل
-  const skip = ['loadingScreen', 'offlineScreen'];
-  if (!skip.includes(id)) {
-    history.pushState({ screen: id }, '', '');
-  }
+  const skip = ['loadingScreen','offlineScreen'];
+  if (!skip.includes(id)) history.pushState({screen:id},'','');
 }
 
-// ════════════════════════════════════════
-// زر الرجوع على Android
-// ════════════════════════════════════════
 window.addEventListener('popstate', function() {
-  // 1. Modal مفتوح؟
   const modal = document.getElementById('modalOverlay');
-  if (modal && modal.classList.contains('show')) {
-    closeModal();
-    history.pushState({}, '', '');
-    return;
-  }
-  // 2. Driver Detail مفتوح؟
+  if (modal && modal.classList.contains('show')) { closeModal(); history.pushState({},'',''); return; }
   const detail = document.getElementById('driverDetailOverlay');
-  if (detail && detail.classList.contains('show')) {
-    closeDriverDetail();
-    history.pushState({}, '', '');
-    return;
-  }
-  // 3. داخل التطبيق الرئيسي؟ → اسأل عن الخروج
+  if (detail && detail.classList.contains('show')) { closeDriverDetail(); history.pushState({},'',''); return; }
   const inApp = ['driverApp','managerApp'].some(id => {
     const el = document.getElementById(id);
     return el && el.classList.contains('active');
   });
-  if (inApp) {
-    history.pushState({}, '', '');
-    confirmLogout();
-    return;
-  }
-  // 4. أي مكان تاني → شاشة اللوجين
-  history.pushState({}, '', '');
-  showScreen('authScreen');
+  if (inApp) { history.pushState({},'',''); confirmLogout(); return; }
+  history.pushState({},'',''); showScreen('authScreen');
 });
+history.pushState({},'','');
 
-// State ابتدائي عشان popstate يشتغل من أول لحظة
-history.pushState({}, '', '');
-
-// ============================================================
+// ══════════════════════════════════
 // INIT
-// ============================================================
+// ══════════════════════════════════
 async function initApp() {
   if (!navigator.onLine) { showScreen('offlineScreen'); return; }
   showScreen('loadingScreen');
-
-  // Init Firebase here so SDKs are guaranteed loaded
   if (!auth) {
     firebase.initializeApp(FIREBASE_CONFIG);
     auth = firebase.auth();
-    db   = firebase.firestore();
+    db = firebase.firestore();
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
   }
-
   if (!window.authListenerSet) {
     auth.onAuthStateChanged(async user => {
-      if (user) {
-        currentUser = user;
-        await loadUserProfile(user.uid);
-      } else {
-        showScreen('authScreen');
-      }
+      if (user) { currentUser = user; await loadUserProfile(user.uid); }
+      else showScreen('authScreen');
     });
     window.authListenerSet = true;
   }
@@ -1723,36 +1310,20 @@ async function loadUserProfile(uid) {
     if (doc.exists) {
       userProfile = doc.data();
     } else {
-      // New user - create as driver
       const email = currentUser.email || '';
-      // Extract phone from email (format: 01xxx@nabilpro.app)
       const phone = email.replace('@nabilpro.app','');
-      userProfile = {
-        uid, phone, email, role: 'driver',
-        name: 'مندوب دليفري',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
+      userProfile = { uid, phone, email, role:'driver', name:'مندوب دليفري', createdAt:firebase.firestore.FieldValue.serverTimestamp() };
       await usersRef.doc(uid).set(userProfile);
     }
-
-    if (userProfile.role === 'manager') {
-      initManagerApp();
-    } else {
-      initDriverApp();
-    }
-  } catch(e) {
-    showToast('خطأ في تحميل البيانات');
-    showScreen('authScreen');
-  }
+    if (userProfile.role === 'manager') initManagerApp();
+    else initDriverApp();
+  } catch(e) { showToast('خطأ في تحميل البيانات'); showScreen('authScreen'); }
 }
 
-// ============================================================
-// EMAIL/PIN AUTH
-// phone number → email: 01012345678@nabilpro.app
-// PIN (6 digits) → password
-// ============================================================
+// ══════════════════════════════════
+// AUTH
+// ══════════════════════════════════
 function phoneToEmail(phone) {
-  // Normalize: always store with leading 0
   let p = phone.replace(/\D/g,'');
   if (!p.startsWith('0')) p = '0' + p;
   return p + '@nabilpro.app';
@@ -1760,309 +1331,230 @@ function phoneToEmail(phone) {
 
 async function doLogin() {
   const phone = document.getElementById('phoneInput').value.trim();
-  const pin   = document.getElementById('pinInput').value.trim();
+  const pin = document.getElementById('pinInput').value.trim();
   if (phone.length < 10) { showToast('ادخل رقم الموبايل'); return; }
-  if (pin.length !== 6)  { showToast('كود الدخول 6 أرقام'); return; }
-
+  if (pin.length !== 6) { showToast('كود الدخول 6 أرقام'); return; }
   const btn = document.getElementById('loginBtn');
-  btn.disabled = true;
-  btn.textContent = 'جاري الدخول...';
-
+  btn.disabled = true; btn.innerHTML = '<span>جاري الدخول...</span>';
   const email = phoneToEmail(phone);
-
   try {
     const result = await auth.signInWithEmailAndPassword(email, pin);
     currentUser = result.user;
     showScreen('loadingScreen');
     loadUserProfile(currentUser.uid);
   } catch(err) {
-    btn.disabled = false;
-    btn.innerHTML = '🚀 دخول';
-    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-      showToast('❌ رقم الموبايل أو الكود غير صحيح');
-    } else {
-      showToast('خطأ: تحقق من الاتصال');
-    }
+    btn.disabled = false; btn.innerHTML = '<span>دخول</span><span>←</span>';
+    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password')
+      showToast('❌ رقم أو كود غير صحيح');
+    else showToast('خطأ في الاتصال');
   }
 }
 
 function confirmLogout() {
-  showModal('تسجيل الخروج', '<p style="color:var(--text2);font-size:14px;">هل تريد تسجيل الخروج؟</p>',
-    [{ label: 'خروج', cls: 'danger', action: doLogout },
-     { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+  showModal('تسجيل الخروج','<p style="color:var(--text2);font-size:14px;">هل تريد تسجيل الخروج؟</p>',
+    [{label:'خروج',cls:'danger',action:doLogout},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
 async function doLogout() {
   closeModal();
-
-  if (ordersUnsubscribe) { ordersUnsubscribe(); ordersUnsubscribe = null; }
-  if (allOrdersUnsubscribe) { allOrdersUnsubscribe(); allOrdersUnsubscribe = null; }
-try {
-  if (currentUser) {
-    await db.collection('fcm_tokens').doc(currentUser.uid).delete();
-  }
-} catch(e) {}
+  if (ordersUnsubscribe) { ordersUnsubscribe(); ordersUnsubscribe=null; }
+  if (allOrdersUnsubscribe) { allOrdersUnsubscribe(); allOrdersUnsubscribe=null; }
+  try {
+    if (currentUser) await db.collection('fcm_tokens').doc(currentUser.uid).delete();
+  } catch(e) {}
   try { await auth.signOut(); } catch(e) {}
-
-  // تنظيف كامل للحالة
-  currentUser = null;
-  userProfile = null;
-  ordersCache = [];
-  restaurantsCache = [];
-  allDrivers = [];
-  allOrders = [];
-  selectedRest = null;
-  selectedPayment = null;
-  editingOrderId = null;
-  selectedDriverUid = null;
-  window.authListenerSet = false;
-
-  // تنظيف شاشة الدخول
+  currentUser=null; userProfile=null; ordersCache=[]; restaurantsCache=[];
+  allDrivers=[]; allOrders=[]; selectedRest=null; selectedPayment=null;
+  editingOrderId=null; selectedDriverUid=null; window.authListenerSet=false;
   const ph = document.getElementById('phoneInput');
   const pin = document.getElementById('pinInput');
-  if (ph) ph.value = '';
-  if (pin) pin.value = '';
-
-  // Reload الصفحة عشان نضمن تنظيف كامل
+  if (ph) ph.value=''; if (pin) pin.value='';
   window.location.reload();
 }
 
-// ============================================================
-// DRIVER APP INIT
-// ============================================================
+// ══════════════════════════════════
+// DRIVER APP
+// ══════════════════════════════════
 function initDriverApp() {
   const uid = currentUser.uid;
   ordersRef = db.collection('orders');
   restaurantsRef = db.collection('restaurants');
   settingsRef = db.collection('users').doc(uid);
-
-  // Update last seen
-  db.collection('users').doc(uid).update({
-    lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-    online: true
-  }).catch(() => {});
-
-  // Apply saved theme
+  db.collection('users').doc(uid).update({ lastSeen:firebase.firestore.FieldValue.serverTimestamp(), online:true }).catch(()=>{});
   themeMode = userProfile.themeMode || 'auto';
   applyTheme(themeMode);
-
-  // Set name in UI
   const name = userProfile.name || 'مندوب دليفري';
   document.getElementById('driverNameDisplay').textContent = name;
   document.getElementById('settingsNameVal').textContent = name;
   document.getElementById('settingsPhone').textContent = userProfile.phone || '—';
-
-  updateClock();
-  setInterval(updateClock, 30000);
-
+  updateClock(); setInterval(updateClock, 30000);
   loadRestaurantsDriver();
   listenToDriverOrders();
-showScreen('driverApp');
-  if (Notification.permission === 'granted') {
-    subscribeFCM();
-  } else {
-    Notification.requestPermission().then(p => {
-      if (p === 'granted') subscribeFCM();
-    });
-  }
- }
-// ============================================================
-// DRIVER: RESTAURANTS
-// ============================================================
+  showScreen('driverApp');
+  if (Notification.permission === 'granted') { subscribeFCM(); }
+  else { Notification.requestPermission().then(p => { if (p === 'granted') subscribeFCM(); }); }
+}
+
 async function loadRestaurantsDriver() {
   const snap = await restaurantsRef.orderBy('name').get();
-  restaurantsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  renderRestChips();
-  renderRestSettings();
+  restaurantsCache = snap.docs.map(d => ({id:d.id,...d.data()}));
+  renderRestChips(); renderRestSettings();
 }
 
 function renderRestChips() {
   const active = restaurantsCache.filter(r => r.active !== false);
   const html = active.map(r =>
-    `<button class="rest-chip ${selectedRest === r.id ? 'active' : ''}" onclick="selectRest('${r.id}')">${sanitize(r.name)}</button>`
+    `<button class="rest-chip ${selectedRest===r.id?'sel':''}" onclick="selectRest('${r.id}')">${sanitize(r.name)}</button>`
   ).join('');
-  document.getElementById('restChips').innerHTML = html + `<button class="rest-chip add-chip" onclick="addRestaurantFromOrder()">＋ جديد</button>`;
+  document.getElementById('restChips').innerHTML = html +
+    `<button class="rest-chip add" onclick="addRestaurantFromOrder()">＋ جديد</button>`;
 }
 
-function selectRest(id) {
-  selectedRest = selectedRest === id ? null : id;
-  renderRestChips();
-}
+function selectRest(id) { selectedRest = selectedRest===id?null:id; renderRestChips(); }
 
 function renderRestSettings() {
   const el = document.getElementById('restSettingsList');
-  if (!restaurantsCache.length) { el.innerHTML = '<div class="empty-state"><div class="empty-text">لا مطاعم بعد</div></div>'; return; }
-  el.innerHTML = restaurantsCache.map(r => `
-    <div class="rest-card">
-      <span style="font-size:20px;">🏪</span>
-      <span class="rest-name-big">${sanitize(r.name)}</span>
-      <button class="rest-delete-btn" onclick="deleteRestaurant('${sanitize(r.id)}','${sanitize(r.name)}')">حذف</button>
+  if (!restaurantsCache.length) { el.innerHTML='<div class="empty-state"><div class="empty-text">لا مطاعم بعد</div></div>'; return; }
+  el.innerHTML = restaurantsCache.map(r=>`
+    <div class="rest-row">
+      <div class="rest-row-icon">🏪</div>
+      <span class="rest-row-name">${sanitize(r.name)}</span>
+      <button class="rest-del-btn" onclick="deleteRestaurant('${sanitize(r.id)}','${sanitize(r.name)}')">حذف</button>
     </div>`).join('');
 }
 
 async function addRestaurant() {
   const name = prompt('اسم المطعم الجديد:');
   if (!name) return;
-  await restaurantsRef.add({ name: name.trim(), active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  showToast('✅ تم إضافة ' + name);
-  loadRestaurantsDriver();
+  await restaurantsRef.add({name:name.trim(),active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  showToast('✅ تم إضافة ' + name); loadRestaurantsDriver();
 }
 
 async function addRestaurantFromOrder() {
   const name = prompt('اسم المطعم:');
   if (!name) return;
-  const docRef = await restaurantsRef.add({ name: name.trim(), active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  await loadRestaurantsDriver();
-  selectedRest = docRef.id;
-  renderRestChips();
+  const docRef = await restaurantsRef.add({name:name.trim(),active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await loadRestaurantsDriver(); selectedRest = docRef.id; renderRestChips();
 }
 
 async function deleteRestaurant(id, name) {
-  // تحقق من وجود أوردرات للمطعم
   const ordersSnap = await ordersRef.where('restId','==',id).limit(1).get();
   if (!ordersSnap.empty) {
-    showModal('تنبيه', `<p style="color:var(--text2);font-size:14px;">لا يمكن حذف "${sanitize(name)}" لأن لديه أوردرات محفوظة.</p>`,
-      [{ label: 'حسناً', cls: 'cancel', action: closeModal }]);
-    return;
+    showModal('تنبيه',`<p style="color:var(--text2);font-size:14px;">لا يمكن حذف "${sanitize(name)}" لأن لديه أوردرات.</p>`,
+      [{label:'حسناً',cls:'cancel',action:closeModal}]); return;
   }
-  showModal('حذف المطعم', `<p style="color:var(--text2);font-size:14px;">هل تريد حذف "${sanitize(name)}"؟</p>`,
-    [{ label: 'حذف', cls: 'danger', action: async () => {
-        await restaurantsRef.doc(id).delete();
-        if (selectedRest === id) selectedRest = null;
-        closeModal();
-        showToast('تم الحذف');
-        loadRestaurantsDriver();
-    }},
-    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+  showModal('حذف المطعم',`<p style="color:var(--text2);font-size:14px;">حذف "${sanitize(name)}"؟</p>`,
+    [{label:'حذف',cls:'danger',action:async()=>{
+      await restaurantsRef.doc(id).delete();
+      if (selectedRest===id) selectedRest=null;
+      closeModal(); showToast('تم الحذف'); loadRestaurantsDriver();
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
-// ============================================================
-// DRIVER: ORDERS
-// ============================================================
+// ── ORDERS ──
 function listenToDriverOrders() {
   if (ordersUnsubscribe) ordersUnsubscribe();
-  ordersUnsubscribe = ordersRef
-    .where('driverId', '==', currentUser.uid)
-    .orderBy('timestamp', 'desc')
+  ordersUnsubscribe = ordersRef.where('driverId','==',currentUser.uid).orderBy('timestamp','desc')
     .onSnapshot(snap => {
-      ordersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      updateDriverStats();
-      renderShiftReport();
-      renderOrdersList();
-      updateStatusBar();
-    }, err => {
-      document.getElementById('driverStatus').className = 'status-bar err';
-      document.getElementById('statusDot').className = 'status-dot error';
-      document.getElementById('statusText').textContent = 'خطأ في المزامنة';
+      ordersCache = snap.docs.map(d=>({id:d.id,...d.data()}));
+      updateDriverStats(); renderShiftReport(); renderOrdersList(); updateStatusBar();
+    }, ()=>{
+      document.getElementById('driverStatus').className='status-pill err';
+      document.getElementById('statusDot').className='status-dot';
+      document.getElementById('statusText').textContent='خطأ في المزامنة';
     });
 }
 
 function getTodayOrders() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const start = new Date(); start.setHours(0,0,0,0);
   return ordersCache.filter(o => {
     if (!o.timestamp) return false;
-    const t = o.timestamp.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
+    const t = o.timestamp.toDate?o.timestamp.toDate():new Date(o.timestamp);
     return t >= start;
   });
 }
 
 function updateDriverStats() {
   const today = getTodayOrders();
-  const totalDelivery = today.reduce((s,o) => s + (o.delivery || 0), 0);
-  const visaOrders = today.filter(o => o.payment === 'visa');
-  const totalVisa = visaOrders.reduce((s,o) => s + (o.total || 0), 0);
-  const cashOrders = today.filter(o => o.payment === 'cash');
-  const totalCash = cashOrders.reduce((s,o) => s + (o.total || 0), 0);
-
+  const totalDelivery = today.reduce((s,o)=>s+(o.delivery||0),0);
+  const totalVisa = today.filter(o=>o.payment==='visa').reduce((s,o)=>s+(o.total||0),0);
+  const totalCash = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
   document.getElementById('statOrders').textContent = today.length;
-  document.getElementById('statDelivery').textContent = 'ج ' + totalDelivery;
-  document.getElementById('statVisa').textContent = 'ج ' + totalVisa;
-  document.getElementById('statCash').textContent = 'ج ' + totalCash;
+  document.getElementById('statDelivery').textContent = 'ج' + totalDelivery;
+  document.getElementById('statVisa').textContent = 'ج' + totalVisa;
+  document.getElementById('statCash').textContent = 'ج' + totalCash;
 }
 
 function updateStatusBar() {
   const today = getTodayOrders();
-  document.getElementById('driverStatus').className = 'status-bar ok';
-  document.getElementById('statusDot').className = 'status-dot';
-  document.getElementById('statusText').textContent = `Firebase 🔥 متصل • ${today.length} أوردر اليوم`;
+  document.getElementById('driverStatus').className='status-pill ok';
+  document.getElementById('statusDot').className='status-dot pulse';
+  document.getElementById('statusText').textContent=`متصل 🔥 • ${today.length} أوردر اليوم`;
 }
 
 function renderShiftReport() {
   const today = getTodayOrders();
   if (!today.length) {
-    document.getElementById('shiftReport').innerHTML = '<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">لا أوردرات اليوم بعد</div></div>';
+    document.getElementById('shiftReport').innerHTML='<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">لا أوردرات اليوم بعد</div></div>';
     return;
   }
   const byRest = {};
   today.forEach(o => {
-    if (!byRest[o.restName]) byRest[o.restName] = { orders:0, delivery:0, cash:0, visa:0 };
+    if (!byRest[o.restName]) byRest[o.restName]={orders:0,delivery:0,cash:0,visa:0};
     byRest[o.restName].orders++;
-    byRest[o.restName].delivery += o.delivery || 0;
-    if (o.payment === 'cash') byRest[o.restName].cash += o.total || 0;
-    if (o.payment === 'visa') byRest[o.restName].visa += o.total || 0;
+    byRest[o.restName].delivery += o.delivery||0;
+    if (o.payment==='cash') byRest[o.restName].cash += o.total||0;
+    if (o.payment==='visa') byRest[o.restName].visa += o.total||0;
   });
-  document.getElementById('shiftReport').innerHTML = Object.entries(byRest).map(([name, d]) => `
+  document.getElementById('shiftReport').innerHTML = Object.entries(byRest).map(([name,d])=>`
     <div class="report-card">
       <div class="report-header" onclick="this.nextElementSibling.classList.toggle('open')">
-        <div>
-          <div class="report-rest">${name}</div>
-          <div class="report-count">${d.orders} أوردر</div>
-        </div>
-        <div class="report-delivery">ج ${d.delivery}</div>
+        <div><div class="report-rest-name">${sanitize(name)}</div><div class="report-count">${d.orders} أوردر</div></div>
+        <div class="report-delivery-val">ج ${d.delivery}</div>
       </div>
       <div class="report-body">
-        <div class="report-detail"><span>كاش</span><span>ج ${d.cash}</span></div>
-        <div class="report-detail"><span>فيزا</span><span>ج ${d.visa}</span></div>
-        <div class="report-detail"><span>توصيل</span><span>ج ${d.delivery}</span></div>
+        <div class="report-row-detail"><span>كاش</span><span>ج ${d.cash}</span></div>
+        <div class="report-row-detail"><span>فيزا</span><span>ج ${d.visa}</span></div>
+        <div class="report-row-detail"><span>توصيل</span><span>ج ${d.delivery}</span></div>
       </div>
     </div>`).join('');
 }
 
 function renderOrdersList() {
   const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekStart = new Date(now); weekStart.setDate(now.getDate() - 7);
-
+  const todayStart = new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const weekStart = new Date(now); weekStart.setDate(now.getDate()-7);
   let list = [...ordersCache];
-  if (currentFilter === 'today') list = list.filter(o => {
-    const t = o.timestamp?.toDate?.() || new Date(o.timestamp);
-    return t >= todayStart;
-  });
-  else if (currentFilter === 'week') list = list.filter(o => {
-    const t = o.timestamp?.toDate?.() || new Date(o.timestamp);
-    return t >= weekStart;
-  });
-  else if (currentFilter === 'cash') list = list.filter(o => o.payment === 'cash');
-  else if (currentFilter === 'visa') list = list.filter(o => o.payment === 'visa');
-
+  if (currentFilter==='today') list=list.filter(o=>{const t=o.timestamp?.toDate?.()??new Date(o.timestamp);return t>=todayStart;});
+  else if (currentFilter==='week') list=list.filter(o=>{const t=o.timestamp?.toDate?.()??new Date(o.timestamp);return t>=weekStart;});
+  else if (currentFilter==='cash') list=list.filter(o=>o.payment==='cash');
+  else if (currentFilter==='visa') list=list.filter(o=>o.payment==='visa');
   if (!list.length) {
-    document.getElementById('ordersList').innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد أوردرات</div></div>';
-    return;
+    document.getElementById('ordersList').innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد أوردرات</div></div>'; return;
   }
-  document.getElementById('ordersList').innerHTML = list.map(o => {
-    const t = o.timestamp?.toDate?.() || (o.timestamp ? new Date(o.timestamp) : new Date());
-    const timeStr = t.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
-    const dateStr = t.toLocaleDateString('ar-EG', {day:'2-digit', month:'2-digit'});
-    return `<div class="order-card ${o.payment || 'cash'}">
+  document.getElementById('ordersList').innerHTML = list.map(o=>{
+    const t = o.timestamp?.toDate?.()??new Date(o.timestamp??Date.now());
+    const timeStr = t.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+    const dateStr = t.toLocaleDateString('ar-EG',{day:'2-digit',month:'2-digit'});
+    return `<div class="order-card ${o.payment||'cash'}">
       <div class="order-head">
-        <span class="order-rest">${sanitize(o.restName || '—')}</span>
-        <span class="order-time">${dateStr} ${timeStr}</span>
+        <span class="order-rest-name">${sanitize(o.restName||'—')}</span>
+        <span class="order-time-txt">${dateStr} ${timeStr}</span>
       </div>
       <div class="order-body">
-        <div class="order-details">
-          ${o.address ? '📍 ' + sanitize(o.address) + '<br>' : ''}
-          ${o.phone ? '📞 ' + o.phone + '<br>' : ''}
-          💳 ${o.payment === 'visa' ? 'فيزا' : 'كاش'}
+        <div class="order-info">
+          ${o.address?'📍 '+sanitize(o.address)+'<br>':''}
+          ${o.phone?'📞 '+o.phone+'<br>':''}
+          <span class="order-pay-badge ${o.payment||'cash'}">${o.payment==='visa'?'💳 فيزا':'💵 كاش'}</span>
         </div>
-        <div class="order-amount">
-          <div class="order-delivery">ج ${o.delivery || 0}</div>
-          <div class="order-total">إجمالي ج ${o.total || 0}</div>
+        <div class="order-amounts">
+          <div class="order-delivery-big">ج ${o.delivery||0}</div>
+          <div class="order-total-small">إجمالي ج ${o.total||0}</div>
         </div>
       </div>
       <div class="order-actions">
         <button class="action-btn edit" onclick="editOrder('${o.id}')">✏️ تعديل</button>
-        <button class="action-btn delete" onclick="deleteOrder('${o.id}')">🗑 حذف</button>
+        <button class="action-btn del" onclick="deleteOrder('${o.id}')">🗑 حذف</button>
       </div>
     </div>`;
   }).join('');
@@ -2070,709 +1562,489 @@ function renderOrdersList() {
 
 function setFilter(el, filter) {
   currentFilter = filter;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  renderOrdersList();
+  document.querySelectorAll('.filter-btn').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); renderOrdersList();
 }
 
-// ============================================================
-// ADD ORDER
-// ============================================================
+// ── ADD ORDER ──
 function selectPayment(type) {
   selectedPayment = type;
-  document.getElementById('payCash').className = 'pay-opt' + (type === 'cash' ? ' active-cash' : '');
-  document.getElementById('payVisa').className = 'pay-opt' + (type === 'visa' ? ' active-visa' : '');
+  document.getElementById('payCash').className='pay-card'+(type==='cash'?' active-cash':'');
+  document.getElementById('payVisa').className='pay-card'+(type==='visa'?' active-visa':'');
 }
 
 async function addOrder() {
   if (!selectedRest) { showToast('اختر المطعم أولاً'); return; }
-  const submitBtn = document.querySelector('.submit-btn');
-  if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '⏳ جاري الحفظ...'; }
-  const address  = document.getElementById('addressInput').value.trim();
-  const phone    = document.getElementById('phoneOrderInput').value.trim();
-  const restAmt  = parseFloat(document.getElementById('restAmountInput').value) || 0;
-  const delivery = parseFloat(document.getElementById('deliveryInput').value) || 0;
-  if (!address)   { showToast('ادخل العنوان'); return; }
-  if (!selectedPayment) { showToast('اختر طريقة الدفع'); return; }
-  if (restAmt < 0) { showToast('قيمة الأوردر غير صحيحة'); return; }
-  if (delivery < 0) { showToast('قيمة التوصيل غير صحيحة'); return; }
-
-  const rest = restaurantsCache.find(r => r.id === selectedRest);
+  const submitBtn = document.querySelector('.submit-order-btn');
+  if (submitBtn) { submitBtn.disabled=true; submitBtn.innerHTML='⏳ جاري الحفظ...'; }
+  const address = document.getElementById('addressInput').value.trim();
+  const phone = document.getElementById('phoneOrderInput').value.trim();
+  const restAmt = parseFloat(document.getElementById('restAmountInput').value)||0;
+  const delivery = parseFloat(document.getElementById('deliveryInput').value)||0;
+  if (!address) { showToast('ادخل العنوان'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='✅ حفظ الأوردر';} return; }
+  if (!selectedPayment) { showToast('اختر طريقة الدفع'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='✅ حفظ الأوردر';} return; }
+  const rest = restaurantsCache.find(r=>r.id===selectedRest);
   const total = restAmt + delivery;
-
   const orderData = {
-    driverId: currentUser.uid,
-    driverName: userProfile.name || 'مندوب',
-    restId: selectedRest,
-    restName: rest?.name || '—',
-    restAmount: restAmt,
-    delivery,
-    total,
-    payment: selectedPayment,
-    address,
-    phone,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    driverId:currentUser.uid, driverName:userProfile.name||'مندوب',
+    restId:selectedRest, restName:rest?.name||'—',
+    restAmount:restAmt, delivery, total, payment:selectedPayment, address, phone,
+    timestamp:firebase.firestore.FieldValue.serverTimestamp()
   };
-
   if (editingOrderId) {
     await ordersRef.doc(editingOrderId).update(orderData);
-    editingOrderId = null;
-    showToast('✅ تم تعديل الأوردر');
+    editingOrderId=null; showToast('✅ تم تعديل الأوردر');
   } else {
     await ordersRef.add(orderData);
     showToast('✅ تم حفظ الأوردر');
-    // إشعار فوري لكل الأجهزة (المدير + المناديب)
-    sendPushNotification(
-      'أوردر جديد 🛵',
-      `${orderData.driverName} — ${orderData.restName}\n📍 ${orderData.address}\nج ${orderData.delivery} توصيل`,
-      'new-order'
-    );
+    sendPushNotification('أوردر جديد 🛵', `${orderData.driverName} — ${orderData.restName}\n📍 ${orderData.address}`, 'new-order');
   }
-
-  if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '✅ حفظ الأوردر'; }
-  // Reset form
-  document.getElementById('addressInput').value = '';
-  document.getElementById('phoneOrderInput').value = '';
-  document.getElementById('restAmountInput').value = '';
-  document.getElementById('deliveryInput').value = '';
-  selectedRest = null;
-  selectedPayment = null;
-  renderRestChips();
-  document.getElementById('payCash').className = 'pay-opt';
-  document.getElementById('payVisa').className = 'pay-opt';
+  if (submitBtn) { submitBtn.disabled=false; submitBtn.innerHTML='✅ حفظ الأوردر'; }
+  document.getElementById('addressInput').value='';
+  document.getElementById('phoneOrderInput').value='';
+  document.getElementById('restAmountInput').value='';
+  document.getElementById('deliveryInput').value='';
+  selectedRest=null; selectedPayment=null; renderRestChips();
+  document.getElementById('payCash').className='pay-card';
+  document.getElementById('payVisa').className='pay-card';
   goPage(0);
 }
 
 async function editOrder(id) {
-  const o = ordersCache.find(x => x.id === id);
-  if (!o) return;
-  editingOrderId = id;
-  selectedRest = o.restId;
-  selectedPayment = o.payment;
-  document.getElementById('addressInput').value = o.address || '';
-  document.getElementById('phoneOrderInput').value = o.phone || '';
-  document.getElementById('restAmountInput').value = o.restAmount || '';
-  document.getElementById('deliveryInput').value = o.delivery || '';
-  renderRestChips();
-  selectPayment(o.payment);
-  goPage(2);
-  showToast('📝 جاري التعديل...');
+  const o = ordersCache.find(x=>x.id===id); if (!o) return;
+  editingOrderId=id; selectedRest=o.restId; selectedPayment=o.payment;
+  document.getElementById('addressInput').value=o.address||'';
+  document.getElementById('phoneOrderInput').value=o.phone||'';
+  document.getElementById('restAmountInput').value=o.restAmount||'';
+  document.getElementById('deliveryInput').value=o.delivery||'';
+  renderRestChips(); selectPayment(o.payment); goPage(2); showToast('📝 جاري التعديل...');
 }
 
 async function deleteOrder(id) {
-  showModal('حذف الأوردر', '<p style="color:var(--text2);font-size:14px;">هل تريد حذف هذا الأوردر نهائياً؟</p>',
-    [{ label: 'حذف', cls: 'danger', action: async () => {
-        await ordersRef.doc(id).delete();
-        closeModal(); showToast('🗑 تم الحذف');
-    }},
-    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+  showModal('حذف الأوردر','<p style="color:var(--text2);font-size:14px;">هل تريد حذف هذا الأوردر نهائياً؟</p>',
+    [{label:'حذف',cls:'danger',action:async()=>{await ordersRef.doc(id).delete();closeModal();showToast('🗑 تم الحذف');}},
+     {label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
-// ============================================================
-// NAVIGATION
-// ============================================================
+// ── NAV ──
 function goPage(n) {
-  currentPage = n;
-  document.getElementById('pagesWrapper').style.transform = `translateX(${n * 25}%)`;
-  document.querySelectorAll('.nav-item').forEach((el, i) => el.classList.toggle('active', i === n));
+  currentPage=n;
+  document.getElementById('pagesWrapper').style.transform=`translateX(${n*25}%)`;
+  document.querySelectorAll('.nav-btn').forEach((el,i)=>el.classList.toggle('active',i===n));
 }
 
-// ============================================================
-// SETTINGS
-// ============================================================
+// ── SETTINGS ──
 function editDriverName() {
-  showModal('تغيير الاسم', `<input class="form-input" id="newNameInput" value="${userProfile.name || ''}" placeholder="اسمك...">`,
-    [{ label: 'حفظ', cls: 'confirm', action: async () => {
-        const name = document.getElementById('newNameInput').value.trim() || 'مندوب دليفري';
-        userProfile.name = name;
-        await db.collection('users').doc(currentUser.uid).update({ name });
-        document.getElementById('driverNameDisplay').textContent = name;
-        document.getElementById('settingsNameVal').textContent = name;
-        closeModal(); showToast('✅ تم تغيير الاسم');
-    }},
-    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+  showModal('تغيير الاسم',`<input class="form-field" id="newNameInput" value="${userProfile.name||''}" placeholder="اسمك...">`,
+    [{label:'حفظ',cls:'confirm',action:async()=>{
+      const name=document.getElementById('newNameInput').value.trim()||'مندوب دليفري';
+      userProfile.name=name; await db.collection('users').doc(currentUser.uid).update({name});
+      document.getElementById('driverNameDisplay').textContent=name;
+      document.getElementById('settingsNameVal').textContent=name;
+      closeModal(); showToast('✅ تم تغيير الاسم');
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
 function cycleTheme() {
-  // دورة: dark → light → auto → dark
-  if (themeMode === 'dark') themeMode = 'light';
-  else if (themeMode === 'light') themeMode = 'auto';
-  else themeMode = 'dark';
+  if (themeMode==='dark') themeMode='light';
+  else if (themeMode==='light') themeMode='auto';
+  else themeMode='dark';
   applyTheme(themeMode);
-  db.collection('users').doc(currentUser.uid).update({ themeMode });
+  db.collection('users').doc(currentUser.uid).update({themeMode});
 }
-
 function toggleTheme() { cycleTheme(); }
 
 function applyTheme(mode) {
-  // 'auto' = حسب نظام الموبايل
-  let resolved = mode;
-  if (mode === 'auto' || !mode) {
-    resolved = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-  }
-  document.body.dataset.theme = resolved === 'light' ? 'light' : '';
-  document.getElementById('themeVal') && (document.getElementById('themeVal').textContent =
-    mode === 'auto' ? 'تلقائي' : resolved === 'light' ? 'فاتح' : 'داكن');
-  const btn = document.getElementById('themeBtn');
-  const mgrBtn = document.getElementById('mgrThemeBtn');
-  const icon = mode === 'auto' ? '🔆' : resolved === 'light' ? '🌙' : '☀️';
-  if (btn) btn.textContent = icon;
-  if (mgrBtn) mgrBtn.textContent = icon;
+  let resolved=mode;
+  if (mode==='auto'||!mode) resolved=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+  document.body.dataset.theme=resolved==='light'?'light':'';
+  const label=mode==='auto'?'تلقائي':resolved==='light'?'فاتح':'داكن';
+  if (document.getElementById('themeVal')) document.getElementById('themeVal').textContent=label;
+  const icon=mode==='auto'?'🔆':resolved==='light'?'🌙':'☀️';
+  const btn=document.getElementById('themeBtn');
+  const mgrBtn=document.getElementById('mgrThemeBtn');
+  if (btn) btn.textContent=icon;
+  if (mgrBtn) mgrBtn.textContent=icon;
 }
+window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{ if (themeMode==='auto'||!themeMode) applyTheme('auto'); });
 
-// Listen for OS theme change
-window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
-  if (themeMode === 'auto' || !themeMode) applyTheme('auto');
-});
-
-// ============================================================
-// CLOCK
-// ============================================================
+// ── CLOCK ──
 function updateClock() {
-  const now = new Date();
-  const h = now.getHours(), m = now.getMinutes();
-  const isAM = h < 12;
-  const h12 = h % 12 || 12;
-  const mStr = String(m).padStart(2, '0');
-  document.getElementById('clockDisplay').textContent = `${h12}:${mStr} ${isAM ? 'ص' : 'م'}`;
-  const g = document.getElementById('greeting');
-  if (h < 12) g.textContent = 'صباح الخير 👋';
-  else if (h < 17) g.textContent = 'مساء النور 💪';
-  else g.textContent = 'النهارده شغال 🔥';
+  const now=new Date();
+  const h=now.getHours(),m=now.getMinutes();
+  const h12=h%12||12; const mStr=String(m).padStart(2,'0');
+  const ampm=h<12?'ص':'م';
+  document.getElementById('clockDisplay').textContent=`${h12}:${mStr} ${ampm}`;
+  const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const months=['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  if (document.getElementById('dateDisplay'))
+    document.getElementById('dateDisplay').textContent=days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()];
+  const g=document.getElementById('greeting');
+  if (g) {
+    if (h<12) g.textContent='صباح الخير 👋';
+    else if (h<17) g.textContent='مساء النور 💪';
+    else g.textContent='النهارده شغال 🔥';
+  }
 }
 
-// ============================================================
-// VOICE INPUT
-// ============================================================
+// ── VOICE ──
 function startVoice(inputId, btnId) {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    showToast('المتصفح لا يدعم الصوت'); return;
-  }
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (recognizer) { recognizer.stop(); recognizer = null; document.getElementById(btnId).classList.remove('active'); return; }
-  recognizer = new SR();
-  recognizer.lang = 'ar-EG';
-  recognizer.interimResults = false;
-  document.getElementById(btnId).classList.add('active');
-  recognizer.onresult = e => { document.getElementById(inputId).value = e.results[0][0].transcript; };
-  recognizer.onend = () => { document.getElementById(btnId).classList.remove('active'); recognizer = null; };
+  if (!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)) { showToast('المتصفح لا يدعم الصوت'); return; }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if (recognizer) { recognizer.stop(); recognizer=null; document.getElementById(btnId).classList.remove('on'); return; }
+  recognizer=new SR(); recognizer.lang='ar-EG'; recognizer.interimResults=false;
+  document.getElementById(btnId).classList.add('on');
+  recognizer.onresult=e=>{ document.getElementById(inputId).value=e.results[0][0].transcript; };
+  recognizer.onend=()=>{ document.getElementById(btnId).classList.remove('on'); recognizer=null; };
   recognizer.start();
 }
 
-// ============================================================
+// ══════════════════════════════════
 // MANAGER APP
-// ============================================================
+// ══════════════════════════════════
 function initManagerApp() {
-  themeMode = userProfile.themeMode || 'auto';
-  applyTheme(themeMode);
-  document.getElementById('managerBadge').textContent = userProfile.name || 'مدير';
-  // اطلب إذن الإشعارات
-  setTimeout(() => {
-    if (Notification.permission === 'default') {
-      Notification.requestPermission().then(p => {
-        if (p === 'granted') {
-          showToast('🔔 تم تفعيل الإشعارات');
-          subscribeFCM();
-        }
-      });
-    } else if (Notification.permission === 'granted') {
-      subscribeFCM();
-    }
-  }, 2000);
-  // Set date in header
-  const now = new Date();
-  const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const months = ['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-  document.getElementById('mgrHeroDate').textContent =
-    days[now.getDay()] + '، ' + now.getDate() + ' ' + months[now.getMonth()];
+  themeMode=userProfile.themeMode||'auto'; applyTheme(themeMode);
+  document.getElementById('managerBadge').textContent=userProfile.name||'مدير';
+  setTimeout(()=>{
+    if (Notification.permission==='default') { Notification.requestPermission().then(p=>{if(p==='granted'){showToast('🔔 تم تفعيل الإشعارات');subscribeFCM();}});}
+    else if (Notification.permission==='granted') subscribeFCM();
+  },2000);
+  const now=new Date();
+  const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const months=['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  document.getElementById('mgrHeroDate').textContent=days[now.getDay()]+'، '+now.getDate()+' '+months[now.getMonth()];
   showScreen('managerApp');
-  listenAllOrders();
-  loadAllDrivers();
-  loadMgrRestaurants();
+  listenAllOrders(); loadAllDrivers(); loadMgrRestaurants();
 }
 
 function listenAllOrders() {
   if (allOrdersUnsubscribe) allOrdersUnsubscribe();
-  const todayStart = new Date();
-  todayStart.setHours(0,0,0,0);
-
-  allOrdersUnsubscribe = db.collection('orders')
-    .orderBy('timestamp', 'desc')
-    .onSnapshot(snap => {
-      allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      updateMgrOverview();
-      renderMgrRecentOrders();
-      renderMgrReports();
-    }, () => {});
+  allOrdersUnsubscribe = db.collection('orders').orderBy('timestamp','desc')
+    .onSnapshot(snap=>{
+      allOrders=snap.docs.map(d=>({id:d.id,...d.data()}));
+      updateMgrOverview(); renderMgrRecentOrders(); renderMgrReports();
+    },()=>{});
 }
 
 function updateMgrOverview() {
-  const todayStart = new Date();
-  todayStart.setHours(0,0,0,0);
-  const today = allOrders.filter(o => {
+  const todayStart=new Date(); todayStart.setHours(0,0,0,0);
+  const today=allOrders.filter(o=>{
     if (!o.timestamp) return false;
-    const t = o.timestamp.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
-    return t >= todayStart;
+    const t=o.timestamp.toDate?o.timestamp.toDate():new Date(o.timestamp);
+    return t>=todayStart;
   });
-  const driverIds = [...new Set(today.map(o => o.driverId))];
-  const totalDelivery = today.reduce((s,o) => s + (o.delivery||0), 0);
-  const totalCash = today.filter(o => o.payment === 'cash').reduce((s,o) => s + (o.total||0), 0);
-
-  document.getElementById('mgrStatDrivers').textContent = driverIds.length;
-  document.getElementById('mgrStatOrders').textContent = today.length;
-  document.getElementById('mgrStatDelivery').textContent = 'ج ' + totalDelivery;
-  document.getElementById('mgrStatCash').textContent = 'ج ' + totalCash;
+  const driverIds=[...new Set(today.map(o=>o.driverId))];
+  const totalDelivery=today.reduce((s,o)=>s+(o.delivery||0),0);
+  const totalCash=today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
+  document.getElementById('mgrStatDrivers').textContent=driverIds.length;
+  document.getElementById('mgrStatOrders').textContent=today.length;
+  document.getElementById('mgrStatDelivery').textContent='ج'+totalDelivery;
+  document.getElementById('mgrStatCash').textContent='ج'+totalCash;
 }
 
 function renderMgrRecentOrders() {
-  const recent = allOrders.slice(0, 20);
+  const recent=allOrders.slice(0,20);
   if (!recent.length) {
-    document.getElementById('mgrRecentOrders').innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا أوردرات بعد</div></div>';
-    return;
+    document.getElementById('mgrRecentOrders').innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا أوردرات بعد</div></div>'; return;
   }
-  document.getElementById('mgrRecentOrders').innerHTML = recent.map(o => {
-    const t = o.timestamp?.toDate?.() || new Date();
-    const timeStr = t.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
-    const isVisa = o.payment === 'visa';
-    return `<div class="feed-card ${isVisa ? 'visa' : 'cash'}">
-      <div class="feed-pay-icon">${isVisa ? '💳' : '💵'}</div>
+  document.getElementById('mgrRecentOrders').innerHTML=recent.map(o=>{
+    const t=o.timestamp?.toDate?.()??new Date();
+    const timeStr=t.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+    const isVisa=o.payment==='visa';
+    return `<div class="feed-card ${isVisa?'visa':'cash'}">
+      <div class="feed-pay">${isVisa?'💳':'💵'}</div>
       <div class="feed-body">
-        <div class="feed-rest">${sanitize(o.restName || '—')}</div>
-        <div class="feed-driver">👤 ${sanitize(o.driverName || '—')}  •  📍 ${sanitize(o.address || '—')}</div>
-        <div class="feed-time">⏰ ${timeStr}</div>
+        <div class="feed-rest-name">${sanitize(o.restName||'—')}</div>
+        <div class="feed-driver-info">👤 ${sanitize(o.driverName||'—')} • 📍 ${sanitize(o.address||'—')}</div>
+        <div class="feed-time-txt">⏰ ${timeStr}</div>
       </div>
-      <div class="feed-amount">ج ${o.delivery || 0}</div>
+      <div class="feed-amt">ج ${o.delivery||0}</div>
     </div>`;
   }).join('');
 }
 
-
-// ============================================================
-// MANAGER: DRIVERS
-// ============================================================
+// ── DRIVERS ──
 async function loadAllDrivers() {
-  // Load both drivers AND managers
-  const snap = await db.collection('users').get();
-  allDrivers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+  const snap=await db.collection('users').get();
+  allDrivers=snap.docs.map(d=>({uid:d.id,...d.data()}));
   renderDriversList();
 }
 
-
-function renderDriversList(filter = '') {
-  const managers = allDrivers.filter(d => d.role === 'manager');
-  const drivers  = allDrivers.filter(d => d.role !== 'manager');
-
-  let mgrsToShow = managers;
-  let drvsToShow = drivers;
-
+function renderDriversList(filter='') {
+  const managers=allDrivers.filter(d=>d.role==='manager');
+  const drivers=allDrivers.filter(d=>d.role!=='manager');
+  let mgrs=managers, drvs=drivers;
   if (filter) {
-    const q = filter.toLowerCase();
-    mgrsToShow = managers.filter(d => (d.name||'').includes(q) || (d.phone||'').includes(q));
-    drvsToShow  = drivers.filter(d =>  (d.name||'').includes(q) || (d.phone||'').includes(q));
+    const q=filter.toLowerCase();
+    mgrs=managers.filter(d=>(d.name||'').includes(q)||(d.phone||'').includes(q));
+    drvs=drivers.filter(d=>(d.name||'').includes(q)||(d.phone||'').includes(q));
   }
-
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-
-  function buildCard(d, isManager) {
-    const driverOrders = allOrders.filter(o => o.driverId === d.uid);
-    const todayOrders  = driverOrders.filter(o => {
-      if (!o.timestamp) return false;
-      const t = o.timestamp.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
-      return t >= todayStart;
-    });
-    const todayDelivery = todayOrders.reduce((s,o) => s + (o.delivery||0), 0);
-    const initials = (d.name||'م').charAt(0);
-    const isOnline = d.lastSeen && ((Date.now() - (d.lastSeen.toDate ? d.lastSeen.toDate() : new Date(d.lastSeen)).getTime()) < 300000);
-    const cardCls = isManager ? 'manager-card' : 'driver-card';
-
-    return `<div class="user-card ${cardCls}" onclick="showDriverDetail('${d.uid}')">
-      <div class="user-avatar">
-        ${initials}
-        <div class="user-status-dot ${isOnline ? 'online' : ''}"></div>
-      </div>
+  const todayStart=new Date(); todayStart.setHours(0,0,0,0);
+  function buildCard(d,isMgr) {
+    const dOrders=allOrders.filter(o=>o.driverId===d.uid);
+    const todayO=dOrders.filter(o=>{if(!o.timestamp)return false;const t=o.timestamp.toDate?o.timestamp.toDate():new Date(o.timestamp);return t>=todayStart;});
+    const todayD=todayO.reduce((s,o)=>s+(o.delivery||0),0);
+    const initials=(d.name||'م').charAt(0);
+    const isOnline=d.lastSeen&&((Date.now()-(d.lastSeen.toDate?d.lastSeen.toDate():new Date(d.lastSeen)).getTime())<300000);
+    const cardType=isMgr?'manager-type':'driver-type';
+    return `<div class="user-card ${cardType}" onclick="showDriverDetail('${d.uid}')">
+      <div class="user-avatar">${initials}<div class="online-indicator ${isOnline?'on':''}"></div></div>
       <div class="user-info">
-        <div class="user-name">${sanitize(d.name || 'بدون اسم')}</div>
-        <div class="user-phone">${sanitize(d.phone || '—')}</div>
-        <div class="user-stats-row">
-          ${!isManager ? `<span class="user-pill orders">📦 ${todayOrders.length} أوردر</span>
-          <span class="user-pill earn">ج ${todayDelivery}</span>` : ''}
-          ${isManager ? '<span class="user-pill role">👑 مدير</span>' : ''}
+        <div class="user-name-txt">${sanitize(d.name||'بدون اسم')}</div>
+        <div class="user-phone-txt">${sanitize(d.phone||'—')}</div>
+        <div class="user-pills">
+          ${!isMgr?`<span class="upill orders">📦 ${todayO.length}</span><span class="upill earn">ج ${todayD}</span>`:''}
+          ${isMgr?'<span class="upill role">👑 مدير</span>':''}
         </div>
       </div>
       <span style="color:var(--text3);font-size:14px;">‹</span>
     </div>`;
   }
-
-  let html = '';
-
-  // Managers section
-  if (mgrsToShow.length) {
-    html += `<div class="user-section-header">
-      <span class="user-section-label">👑 المديرين <span class="user-count-badge">${mgrsToShow.length}</span></span>
-      <button class="add-user-btn" style="width:auto;padding:6px 14px;font-size:11px;margin:0;" onclick="showAddUserModal('manager')">+ مدير</button>
+  let html='';
+  if (mgrs.length) {
+    html+=`<div class="team-section-header">
+      <span class="team-section-lbl">👑 المديرين <span class="count-pill">${mgrs.length}</span></span>
+      <button class="mini-add-btn" onclick="showAddUserModal('manager')">+ مدير</button>
     </div>`;
-    html += mgrsToShow.map(d => buildCard(d, true)).join('');
+    html+=mgrs.map(d=>buildCard(d,true)).join('');
   }
-
-  // Drivers section
-  html += `<div class="user-section-header">
-    <span class="user-section-label">🛵 المناديب <span class="user-count-badge">${drvsToShow.length}</span></span>
-    <button class="add-user-btn" style="width:auto;padding:6px 14px;font-size:11px;margin:0;" onclick="showAddUserModal('driver')">+ مندوب</button>
+  html+=`<div class="team-section-header">
+    <span class="team-section-lbl">🛵 المناديب <span class="count-pill">${drvs.length}</span></span>
+    <button class="mini-add-btn" onclick="showAddUserModal('driver')">+ مندوب</button>
   </div>`;
-
-  if (drvsToShow.length) {
-    html += drvsToShow.map(d => buildCard(d, false)).join('');
-  } else {
-    html += '<div class="empty-state" style="padding:20px 0;"><div class="empty-text">لا مناديب بعد</div></div>';
-  }
-
-  document.getElementById('driversList').innerHTML = html;
+  html+=drvs.length?drvs.map(d=>buildCard(d,false)).join('')
+    :'<div class="empty-state" style="padding:20px 0;"><div class="empty-text">لا مناديب بعد</div></div>';
+  document.getElementById('driversList').innerHTML=html;
 }
 
+function filterDrivers() { renderDriversList(document.getElementById('driverSearch').value.trim()); }
 
-function filterDrivers() {
-  const q = document.getElementById('driverSearch').value.trim();
-  renderDriversList(q);
+function showAddUserModal(role='driver') {
+  const isDriver=role==='driver';
+  showModal((isDriver?'➕ إضافة مندوب':'➕ إضافة مدير'),`
+    <div style="margin-bottom:12px;"><div class="field-label">👤 الاسم</div>
+      <input class="form-field" id="newUserName" placeholder="${isDriver?'اسم المندوب':'اسم المدير'}"></div>
+    <div style="margin-bottom:12px;"><div class="field-label">📱 رقم الموبايل</div>
+      <input class="form-field" type="tel" id="newUserPhone" placeholder="01xxxxxxxxx" inputmode="numeric"></div>
+    <div style="margin-bottom:8px;"><div class="field-label">🔑 كود الدخول (6 أرقام)</div>
+      <input class="form-field" type="tel" id="newUserPin" placeholder="123456" maxlength="6" inputmode="numeric"></div>`,
+    [{label:'إنشاء',cls:'confirm',action:()=>addUser(role)},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
-function showAddDriverModal() { showAddUserModal('driver'); }
-function showAddUserModal(role = 'driver') {
-  const isDriver = role === 'driver';
-  const title = isDriver ? '➕ إضافة مندوب' : '➕ إضافة مدير';
-  showModal(title, `
-    <div class="input-group" style="margin-bottom:12px;">
-      <div class="input-label">👤 الاسم</div>
-      <input class="form-input" id="newUserName" placeholder="${isDriver ? 'اسم المندوب' : 'اسم المدير'}">
-    </div>
-    <div class="input-group" style="margin-bottom:12px;">
-      <div class="input-label">📱 رقم الموبايل</div>
-      <input class="form-input" type="tel" id="newUserPhone" placeholder="01xxxxxxxxx" inputmode="numeric">
-    </div>
-    <div class="input-group" style="margin-bottom:8px;">
-      <div class="input-label">🔑 كود الدخول (6 أرقام)</div>
-      <input class="form-input" type="tel" id="newUserPin" placeholder="مثال: 123456" maxlength="6" inputmode="numeric">
-    </div>
-    <div style="font-size:11px;color:var(--text3);padding:4px 0;">ابعت الرقم والكود ${isDriver ? 'للمندوب' : 'للمدير'} عشان يدخل التطبيق</div>`,
-    [{ label: 'إنشاء حساب', cls: 'confirm', action: () => addUser(role) },
-     { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
-}
-
-
-async function addDriver() { await addUser('driver'); }
 async function addUser(role) {
-  const name  = document.getElementById('newUserName').value.trim();
-  const phone = document.getElementById('newUserPhone').value.trim();
-  const pin   = document.getElementById('newUserPin').value.trim();
-  if (!name)             { showToast('ادخل الاسم'); return; }
-  if (phone.length < 10) { showToast('ادخل رقم صحيح'); return; }
-  if (pin.length !== 6)  { showToast('الكود لازم 6 أرقام'); return; }
-
-  const btn = document.getElementById('mBtn0');
-  if (btn) { btn.disabled = true; btn.textContent = 'جاري الإنشاء...'; }
-
-  let p = phone.replace(/\D/g,'');
-  if (!p.startsWith('0')) p = '0' + p;
-  const email = p + '@nabilpro.app';
-
+  const name=document.getElementById('newUserName').value.trim();
+  const phone=document.getElementById('newUserPhone').value.trim();
+  const pin=document.getElementById('newUserPin').value.trim();
+  if (!name){showToast('ادخل الاسم');return;}
+  if (phone.length<10){showToast('ادخل رقم صحيح');return;}
+  if (pin.length!==6){showToast('الكود لازم 6 أرقام');return;}
+  const btn=document.getElementById('mBtn0');
+  if (btn){btn.disabled=true;btn.textContent='جاري الإنشاء...';}
+  let p=phone.replace(/\D/g,''); if(!p.startsWith('0'))p='0'+p;
+  const email=p+'@nabilpro.app';
   try {
     let secondaryApp;
-    try { secondaryApp = firebase.app('secondary'); }
-    catch(e) { secondaryApp = firebase.initializeApp(FIREBASE_CONFIG, 'secondary'); }
-
-    const secondaryAuth = secondaryApp.auth();
-    const result = await secondaryAuth.createUserWithEmailAndPassword(email, pin);
-    const uid = result.user.uid;
-    await secondaryAuth.signOut();
-
-    await db.collection('users').doc(uid).set({
-      uid, name, phone: p, email, role,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      createdBy: currentUser.uid
-    });
-
-    allDrivers.push({ uid, name, phone: p, email, role });
-    renderDriversList();
-    closeModal();
-    showToast(`✅ تم إنشاء حساب ${name}`);
+    try{secondaryApp=firebase.app('secondary');}catch(e){secondaryApp=firebase.initializeApp(FIREBASE_CONFIG,'secondary');}
+    const secondaryAuth=secondaryApp.auth();
+    const result=await secondaryAuth.createUserWithEmailAndPassword(email,pin);
+    const uid=result.user.uid; await secondaryAuth.signOut();
+    await db.collection('users').doc(uid).set({uid,name,phone:p,email,role,createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:currentUser.uid});
+    allDrivers.push({uid,name,phone:p,email,role}); renderDriversList(); closeModal();
+    showToast('✅ تم إنشاء حساب '+name);
   } catch(err) {
-    if (btn) { btn.disabled = false; btn.textContent = 'إنشاء حساب'; }
-    if (err.code === 'auth/email-already-in-use') showToast('❌ الرقم ده موجود بالفعل');
-    else showToast('خطأ: تحقق من الاتصال');
+    if(btn){btn.disabled=false;btn.textContent='إنشاء';}
+    if(err.code==='auth/email-already-in-use')showToast('❌ الرقم ده موجود بالفعل');
+    else showToast('خطأ في الاتصال');
   }
 }
 
-
 function showDriverDetail(uid) {
-  selectedDriverUid = uid;
-  const driver = allDrivers.find(d => d.uid === uid);
-  if (!driver) return;
-
-  document.getElementById('detailDriverName').textContent = driver.name || '—';
-  document.getElementById('detailDriverPhone').textContent = driver.phone || '—';
-
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  const dOrders = allOrders.filter(o => o.driverId === uid);
-  const todayOrders = dOrders.filter(o => {
-    const t = o.timestamp?.toDate?.() || new Date(o.timestamp);
-    return t >= todayStart;
-  });
-  const todayDelivery = todayOrders.reduce((s,o) => s + (o.delivery||0), 0);
-  const todayCash = todayOrders.filter(o => o.payment==='cash').reduce((s,o) => s + (o.total||0), 0);
-
-  document.getElementById('detailOrders').textContent = todayOrders.length;
-  document.getElementById('detailDelivery').textContent = 'ج ' + todayDelivery;
-  document.getElementById('detailTotal').textContent = 'ج ' + todayCash;
-
-  document.getElementById('detailOrdersList').innerHTML = todayOrders.length
-    ? todayOrders.map(o => {
-        const t = o.timestamp?.toDate?.() || new Date();
-        const timeStr = t.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
-        return `<div class="mgr-order-card">
-          <span style="font-size:20px;">${o.payment==='visa'?'💳':'💵'}</span>
-          <div class="mgr-order-body">
-            <div class="mgr-order-rest">${o.restName||'—'}</div>
-            <div class="mgr-order-driver">📍 ${o.address||'—'}</div>
-            <div class="mgr-order-time">⏰ ${timeStr}</div>
-          </div>
-          <div class="mgr-order-amount">ج ${o.delivery||0}</div>
-        </div>`;
-      }).join('')
-    : '<div class="empty-state"><div class="empty-text">لا أوردرات اليوم</div></div>';
-
+  selectedDriverUid=uid;
+  const driver=allDrivers.find(d=>d.uid===uid); if(!driver)return;
+  document.getElementById('detailDriverName').textContent=driver.name||'—';
+  document.getElementById('detailDriverPhone').textContent=driver.phone||'—';
+  const todayStart=new Date(); todayStart.setHours(0,0,0,0);
+  const dOrders=allOrders.filter(o=>o.driverId===uid);
+  const todayO=dOrders.filter(o=>{const t=o.timestamp?.toDate?.()??new Date(o.timestamp);return t>=todayStart;});
+  const todayD=todayO.reduce((s,o)=>s+(o.delivery||0),0);
+  const todayC=todayO.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
+  document.getElementById('detailOrders').textContent=todayO.length;
+  document.getElementById('detailDelivery').textContent='ج'+todayD;
+  document.getElementById('detailTotal').textContent='ج'+todayC;
+  document.getElementById('detailOrdersList').innerHTML=todayO.length
+    ?todayO.map(o=>{
+      const t=o.timestamp?.toDate?.()??new Date();
+      const timeStr=t.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+      return `<div class="feed-card ${o.payment==='visa'?'visa':'cash'}">
+        <div class="feed-pay">${o.payment==='visa'?'💳':'💵'}</div>
+        <div class="feed-body">
+          <div class="feed-rest-name">${sanitize(o.restName||'—')}</div>
+          <div class="feed-driver-info">📍 ${sanitize(o.address||'—')}</div>
+          <div class="feed-time-txt">⏰ ${timeStr}</div>
+        </div>
+        <div class="feed-amt">ج ${o.delivery||0}</div>
+      </div>`;
+    }).join('')
+    :'<div class="empty-state"><div class="empty-text">لا أوردرات اليوم</div></div>';
   document.getElementById('driverDetailOverlay').classList.add('show');
 }
 
-function closeDriverDetail() {
-  document.getElementById('driverDetailOverlay').classList.remove('show');
-  selectedDriverUid = null;
-}
+function closeDriverDetail() { document.getElementById('driverDetailOverlay').classList.remove('show'); selectedDriverUid=null; }
 
 async function toggleDriverRole() {
   if (!selectedDriverUid) return;
-  const driver = allDrivers.find(d => d.uid === selectedDriverUid);
-  if (!driver) return;
-  const newRole = driver.role === 'manager' ? 'driver' : 'manager';
-  const label = newRole === 'manager' ? 'ترقية لمدير' : 'تحويل لمندوب';
-  showModal(label, `<p style="color:var(--text2);font-size:14px;">${label} "${driver.name}"؟</p>`,
-    [{ label: label, cls: 'confirm', action: async () => {
-        await db.collection('users').doc(selectedDriverUid).update({ role: newRole });
-        driver.role = newRole;
-        renderDriversList();
-        closeModal();
-        showToast('✅ تم ' + label);
-        document.getElementById('roleBtn').textContent = newRole === 'manager' ? '👤' : '👑';
-    }},
-    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+  const driver=allDrivers.find(d=>d.uid===selectedDriverUid); if(!driver)return;
+  const newRole=driver.role==='manager'?'driver':'manager';
+  const label=newRole==='manager'?'ترقية لمدير':'تحويل لمندوب';
+  showModal(label,`<p style="color:var(--text2);font-size:14px;">${label} "${sanitize(driver.name)}"؟</p>`,
+    [{label:label,cls:'confirm',action:async()=>{
+      await db.collection('users').doc(selectedDriverUid).update({role:newRole});
+      driver.role=newRole; renderDriversList(); closeModal(); showToast('✅ تم '+label);
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
 async function changeDriverPin() {
   if (!selectedDriverUid) return;
-  const driver = allDrivers.find(d => d.uid === selectedDriverUid);
-  showModal('🔑 تغيير كود الدخول', `
+  const driver=allDrivers.find(d=>d.uid===selectedDriverUid);
+  showModal('🔑 تغيير كود الدخول',`
     <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">المندوب: <strong>${sanitize(driver?.name||'')}</strong></div>
-    <div class="input-group">
-      <div class="input-label">كود جديد (6 أرقام)</div>
-      <input class="form-input" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric">
-    </div>`,
-    [{ label: 'تغيير الكود', cls: 'confirm', action: async () => {
-        const newPin = document.getElementById('newPinInput').value.trim();
-        if (newPin.length !== 6) { showToast('الكود لازم 6 أرقام'); return; }
-
-        const btn = document.getElementById('mBtn0');
-        if (btn) { btn.disabled = true; btn.textContent = 'جاري التغيير...'; }
-
-        try {
-          // Login as the driver using secondary app then change password
-          let secondaryApp;
-          try { secondaryApp = firebase.app('secondary'); }
-          catch(e) { secondaryApp = firebase.initializeApp(FIREBASE_CONFIG, 'secondary'); }
-
-          const secondaryAuth = secondaryApp.auth();
-          const email = driver.email || (driver.phone + '@nabilpro.app');
-          // We don't have old pin, so store new pin in Firestore for driver to update on next login
-          await db.collection('users').doc(selectedDriverUid).update({
-            pendingPin: newPin,
-            pendingPinSetAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          closeModal();
-          showToast(`✅ كود ${driver?.name} الجديد: ${newPin} — ابعته ليه`);
-        } catch(err) {
-          if (btn) { btn.disabled = false; btn.textContent = 'تغيير الكود'; }
-          showToast('خطأ في تغيير الكود');
-        }
-    }},
-    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+    <div class="field-label">كود جديد (6 أرقام)</div>
+    <input class="form-field" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric">`,
+    [{label:'تغيير',cls:'confirm',action:async()=>{
+      const newPin=document.getElementById('newPinInput').value.trim();
+      if (newPin.length!==6){showToast('الكود لازم 6 أرقام');return;}
+      const btn=document.getElementById('mBtn0');
+      if(btn){btn.disabled=true;btn.textContent='جاري...';}
+      try {
+        await db.collection('users').doc(selectedDriverUid).update({pendingPin:newPin,pendingPinSetAt:firebase.firestore.FieldValue.serverTimestamp()});
+        closeModal(); showToast(`✅ كود ${driver?.name} الجديد: ${newPin}`);
+      } catch(e){if(btn){btn.disabled=false;btn.textContent='تغيير';}showToast('خطأ');}
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
-
 
 async function removeDriver() {
   if (!selectedDriverUid) return;
-  const driver = allDrivers.find(d => d.uid === selectedDriverUid);
-  const isManager = driver?.role === 'manager';
-  const label = isManager ? 'حذف المدير' : 'حذف المندوب';
-  const name = driver?.name || 'المستخدم';
-
-  // منع المدير من حذف نفسه
-  if (selectedDriverUid === currentUser.uid) {
-    showToast('❌ مش تقدر تحذف حسابك الخاص');
-    return;
-  }
-
-  showModal(label, `
-    <p style="color:var(--text2);font-size:14px;margin-bottom:8px;">هل تريد حذف <strong>${sanitize(name)}</strong> من النظام؟</p>
-    <p style="color:var(--danger);font-size:12px;">⚠️ الأوردرات القديمة هتفضل محفوظة</p>`,
-    [{ label: '🗑 حذف نهائي', cls: 'danger', action: async () => {
-        const btn = document.getElementById('mBtn0');
-        if (btn) { btn.disabled = true; btn.textContent = 'جاري الحذف...'; }
-        try {
-          // حذف من Firestore
-          await db.collection('users').doc(selectedDriverUid).delete();
-          // حذف من Firebase Auth عن طريق Cloud Function (لو متاحة) أو نسجل ملاحظة
-          // Note: حذف Auth account يحتاج Admin SDK - نحذف Firestore فقط
-          // ده كافي عشان المستخدم مش هيقدر يدخل لأن profile بتاعه اتحذف
-          allDrivers = allDrivers.filter(d => d.uid !== selectedDriverUid);
-          renderDriversList();
-          closeModal();
-          closeDriverDetail();
-          showToast(`✅ تم حذف ${name}`);
-        } catch(err) {
-          if (btn) { btn.disabled = false; btn.textContent = '🗑 حذف نهائي'; }
-          showToast('❌ خطأ في الحذف - تحقق من الصلاحيات');
-        }
-    }},
-    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+  const driver=allDrivers.find(d=>d.uid===selectedDriverUid);
+  if (selectedDriverUid===currentUser.uid){showToast('❌ مش تقدر تحذف حسابك');return;}
+  showModal('حذف المستخدم',`<p style="color:var(--text2);font-size:14px;margin-bottom:8px;">حذف <strong>${sanitize(driver?.name||'المستخدم')}</strong>؟</p>
+    <p style="color:var(--red);font-size:12px;">⚠️ الأوردرات القديمة هتفضل محفوظة</p>`,
+    [{label:'🗑 حذف',cls:'danger',action:async()=>{
+      const btn=document.getElementById('mBtn0');
+      if(btn){btn.disabled=true;btn.textContent='جاري...';}
+      try {
+        await db.collection('users').doc(selectedDriverUid).delete();
+        allDrivers=allDrivers.filter(d=>d.uid!==selectedDriverUid);
+        renderDriversList(); closeModal(); closeDriverDetail(); showToast('✅ تم الحذف');
+      } catch(e){if(btn){btn.disabled=false;btn.textContent='🗑 حذف';}showToast('❌ خطأ في الحذف');}
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
-// ============================================================
-// MANAGER: RESTAURANTS
-// ============================================================
+// ── RESTAURANTS ──
 async function loadMgrRestaurants() {
-  const snap = await db.collection('restaurants').orderBy('name').get();
-  const rests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  document.getElementById('mgrRestsList').innerHTML = rests.length
-    ? rests.map(r => `
-      <div class="rest-item">
-        <div class="rest-item-icon">🏪</div>
-        <span class="rest-item-name">${sanitize(r.name)}</span>
-        <button class="rest-item-del" onclick="deleteMgrRest('${sanitize(r.id)}','${sanitize(r.name)}')">حذف</button>
-      </div>`).join('')
-    : '<div class="empty-state"><div class="empty-text">لا مطاعم بعد</div></div>';
+  const snap=await db.collection('restaurants').orderBy('name').get();
+  const rests=snap.docs.map(d=>({id:d.id,...d.data()}));
+  document.getElementById('mgrRestsList').innerHTML=rests.length
+    ?rests.map(r=>`<div class="rest-card-mgr">
+      <div class="rest-card-icon">🏪</div>
+      <span class="rest-card-name">${sanitize(r.name)}</span>
+      <button class="rest-del-btn-mgr" onclick="deleteMgrRest('${sanitize(r.id)}','${sanitize(r.name)}')">حذف</button>
+    </div>`).join('')
+    :'<div class="empty-state"><div class="empty-text">لا مطاعم بعد</div></div>';
 }
-
 
 function showAddRestModal() {
-  showModal('إضافة مطعم', `<input class="form-input" id="newRestName" placeholder="اسم المطعم">`,
-    [{ label: 'إضافة', cls: 'confirm', action: async () => {
-        const name = document.getElementById('newRestName').value.trim();
-        if (!name) return;
-        await db.collection('restaurants').add({ name, active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        closeModal(); showToast('✅ تم إضافة ' + name);
-        loadMgrRestaurants();
-    }},
-    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+  showModal('إضافة مطعم',`<input class="form-field" id="newRestName" placeholder="اسم المطعم">`,
+    [{label:'إضافة',cls:'confirm',action:async()=>{
+      const name=document.getElementById('newRestName').value.trim(); if(!name)return;
+      await db.collection('restaurants').add({name,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+      closeModal(); showToast('✅ تم إضافة '+name); loadMgrRestaurants();
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
-async function deleteMgrRest(id, name) {
-  showModal('حذف المطعم', `<p style="color:var(--text2);margin-bottom:8px;">حذف "${sanitize(name)}"؟</p><p style="color:var(--text3);font-size:12px;">ملاحظة: الأوردرات القديمة المرتبطة به لن تُحذف</p>`,
-    [{ label: 'حذف', cls: 'danger', action: async () => {
-        await db.collection('restaurants').doc(id).delete();
-        closeModal(); showToast('✅ تم الحذف');
-        loadMgrRestaurants();
-    }},
-    { label: 'إلغاء', cls: 'cancel', action: closeModal }]);
+async function deleteMgrRest(id,name) {
+  showModal('حذف المطعم',`<p style="color:var(--text2);">حذف "${sanitize(name)}"؟</p>`,
+    [{label:'حذف',cls:'danger',action:async()=>{
+      await db.collection('restaurants').doc(id).delete();
+      closeModal(); showToast('✅ تم الحذف'); loadMgrRestaurants();
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
-// ============================================================
-// MANAGER: REPORTS
-// ============================================================
-function mgrTab(n, el) {
-  document.querySelectorAll('.mgr-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.mgr-tab-panel').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('mgrPanel' + n).classList.add('active');
-  if (n === 1) renderDriversList();
-  if (n === 2) loadMgrRestaurants();
-  if (n === 3) renderMgrReports();
+// ── REPORTS ──
+function mgrTab(n,el) {
+  document.querySelectorAll('.mgr-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.mgr-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active'); document.getElementById('mgrPanel'+n).classList.add('active');
+  if (n===1) renderDriversList();
+  if (n===2) loadMgrRestaurants();
+  if (n===3) renderMgrReports();
 }
 
-function setReportPeriod(p, el) {
-  reportPeriod = p;
-  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  renderMgrReports();
+function setReportPeriod(p,el) {
+  reportPeriod=p;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active'); renderMgrReports();
 }
 
 function renderMgrReports() {
-  const now = new Date();
-  let startDate;
-  if (reportPeriod === 'today') { startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
-  else if (reportPeriod === 'week') { startDate = new Date(now); startDate.setDate(now.getDate() - 7); }
-  else { startDate = new Date(now.getFullYear(), now.getMonth(), 1); }
-
-  const filtered = allOrders.filter(o => {
-    const t = o.timestamp?.toDate?.() || new Date(o.timestamp);
-    return t >= startDate;
-  });
-
-  // Group by driver
-  const byDriver = {};
-  filtered.forEach(o => {
-    if (!byDriver[o.driverId]) byDriver[o.driverId] = { name: o.driverName || '—', orders:0, delivery:0, cash:0 };
+  const now=new Date(); let startDate;
+  if (reportPeriod==='today') startDate=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  else if (reportPeriod==='week') {startDate=new Date(now);startDate.setDate(now.getDate()-7);}
+  else startDate=new Date(now.getFullYear(),now.getMonth(),1);
+  const filtered=allOrders.filter(o=>{const t=o.timestamp?.toDate?.()??new Date(o.timestamp);return t>=startDate;});
+  const byDriver={};
+  filtered.forEach(o=>{
+    if (!byDriver[o.driverId]) byDriver[o.driverId]={name:o.driverName||'—',orders:0,delivery:0,cash:0};
     byDriver[o.driverId].orders++;
-    byDriver[o.driverId].delivery += o.delivery || 0;
-    if (o.payment === 'cash') byDriver[o.driverId].cash += o.total || 0;
+    byDriver[o.driverId].delivery+=o.delivery||0;
+    if (o.payment==='cash') byDriver[o.driverId].cash+=o.total||0;
   });
-
-  const entries = Object.entries(byDriver).sort((a,b) => b[1].delivery - a[1].delivery);
-  const totalDelivery = filtered.reduce((s,o) => s + (o.delivery||0), 0);
-
-  document.getElementById('reportsContent').innerHTML = `
-    <div class="mgr-stat" style="margin-bottom:14px;">
-      <div class="mgr-stat-icon">📊</div>
-      <div class="mgr-stat-label">إجمالي التوصيل</div>
-      <div class="mgr-stat-val">ج ${totalDelivery}</div>
+  const entries=Object.entries(byDriver).sort((a,b)=>b[1].delivery-a[1].delivery);
+  const totalDelivery=filtered.reduce((s,o)=>s+(o.delivery||0),0);
+  const rankClasses=['gold','silver','bronze'];
+  document.getElementById('reportsContent').innerHTML=`
+    <div class="report-stat-big">
+      <div class="report-stat-icon">📊</div>
+      <div class="report-stat-info">
+        <div class="report-stat-lbl">إجمالي التوصيل</div>
+        <div class="report-stat-num">ج ${totalDelivery}</div>
+      </div>
     </div>
-    ${entries.map(([uid, d]) => `
-      <div class="report-row">
-        <div>
-          <div class="report-driver-name">${d.name}</div>
-          <div class="report-driver-orders">${d.orders} أوردر</div>
-        </div>
-        <div class="report-driver-income">ج ${d.delivery}</div>
-      </div>`).join('') || '<div class="empty-state"><div class="empty-text">لا بيانات</div></div>'}`;
+    ${entries.map(([uid,d],i)=>`
+      <div class="rank-card">
+        <div class="rank-num ${rankClasses[i]||'default'}">${i+1}</div>
+        <div><div class="rank-name">${sanitize(d.name)}</div><div class="rank-orders">${d.orders} أوردر</div></div>
+        <div class="rank-earn">ج ${d.delivery}</div>
+      </div>`).join('')||'<div class="empty-state"><div class="empty-text">لا بيانات</div></div>'}`;
 }
 
-// ============================================================
+// ══════════════════════════════════
 // MODAL
-// ============================================================
-function showModal(title, bodyHTML, buttons) {
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalBody').innerHTML = bodyHTML;
-  document.getElementById('modalActions').innerHTML = buttons.map((b,i) =>
+// ══════════════════════════════════
+function showModal(title,bodyHTML,buttons) {
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').innerHTML=bodyHTML;
+  document.getElementById('modalActions').innerHTML=buttons.map((b,i)=>
     `<button class="modal-btn ${b.cls}" id="mBtn${i}">${b.label}</button>`).join('');
-  buttons.forEach((b,i) => document.getElementById('mBtn'+i).onclick = b.action);
+  buttons.forEach((b,i)=>document.getElementById('mBtn'+i).onclick=b.action);
   document.getElementById('modalOverlay').classList.add('show');
 }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
-document.getElementById('modalOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
+document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
-// ============================================================
+// ══════════════════════════════════
 // TOAST
-// ============================================================
+// ══════════════════════════════════
 let toastTimer;
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-// ============================================================
+// ══════════════════════════════════
 // START
-// ============================================================
-window.addEventListener("load", initApp);
+// ══════════════════════════════════
+window.addEventListener('load', initApp);
 </script>
 </body>
 </html>

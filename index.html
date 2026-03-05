@@ -851,6 +851,17 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 .modal-btn.cancel { background:var(--bg3); color:var(--text); border:1px solid var(--border); }
 .modal-btn.danger { background:linear-gradient(135deg,var(--red),#cc2020); color:#fff; }
 
+.logout-btn {
+  display:flex; align-items:center; gap:5px;
+  padding:7px 14px; border-radius:50px;
+  background:linear-gradient(135deg,var(--red),#cc2020);
+  color:#fff; border:none; font-family:'Cairo',sans-serif;
+  font-size:12px; font-weight:800; cursor:pointer;
+  box-shadow:0 4px 14px rgba(255,59,59,0.35);
+  transition:transform .15s, box-shadow .15s;
+}
+.logout-btn:active { transform:scale(0.95); box-shadow:none; }
+
 /* ── TOAST ── */
 .toast {
   position:fixed; bottom:calc(var(--nav-h) + 20px); left:50%;
@@ -1110,8 +1121,11 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
       <div class="mgr-header-title">لوحة الإدارة</div>
     </div>
     <span class="mgr-badge" id="managerBadge">مدير</span>
-    <button class="hdr-btn" onclick="confirmLogout()" style="background:var(--red-bg);color:var(--red);">⏏️</button>
     <button class="hdr-btn" onclick="switchToDriverMode()" style="background:var(--orange-bg);color:var(--orange);" title="وضع المندوب">🛵</button>
+    <button class="hdr-btn" onclick="showMgrSettings()" style="background:var(--bg3);">⚙️</button>
+    <button class="logout-btn" onclick="confirmLogout()">
+      <span>خروج</span><span style="font-size:14px;">⏏</span>
+    </button>
   </div>
 
   <div class="mgr-content">
@@ -1698,6 +1712,39 @@ function startVoice(inputId, btnId) {
 // ══════════════════════════════════
 // MANAGER AS DRIVER
 // ══════════════════════════════════
+function showMgrSettings() {
+  showModal('⚙️ الإعدادات', `
+    <div class="settings-group" style="margin-bottom:0">
+      <div class="settings-item" onclick="editMgrName()">
+        <div class="settings-item-icon">👤</div>
+        <div class="settings-item-label">الاسم</div>
+        <div class="settings-item-val" id="mgrNameVal">${sanitize(userProfile.name||'مدير')}</div>
+      </div>
+      <div class="settings-item" onclick="cycleTheme();document.getElementById('mgrThemeVal').textContent=document.getElementById('themeVal')?.textContent||'داكن'">
+        <div class="settings-item-icon" id="mgrThemeIcon">🌙</div>
+        <div class="settings-item-label">المظهر</div>
+        <div class="settings-item-val" id="mgrThemeVal">داكن</div>
+      </div>
+      <div class="settings-item" onclick="switchToDriverMode();closeModal()">
+        <div class="settings-item-icon" style="background:var(--orange-bg)">🛵</div>
+        <div class="settings-item-label" style="color:var(--orange)">وضع المندوب</div>
+        <div class="settings-item-val">←</div>
+      </div>
+    </div>`,
+    [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+}
+
+function editMgrName() {
+  showModal('تغيير الاسم',`<input class="form-field" id="newMgrName" value="${sanitize(userProfile.name||'')}" placeholder="اسمك...">`,
+    [{label:'حفظ',cls:'confirm',action:async()=>{
+      const name=document.getElementById('newMgrName').value.trim()||'مدير';
+      userProfile.name=name;
+      await db.collection('users').doc(currentUser.uid).update({name});
+      document.getElementById('managerBadge').textContent=name;
+      closeModal(); showToast('✅ تم تغيير الاسم');
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
+}
+
 function switchToDriverMode() {
   showModal('🛵 وضع المندوب',
     '<p style="color:var(--text2);font-size:14px;line-height:1.8;">هتتحول لواجهة المندوب — تقدر تسجل أوردرات.<br>الإشعارات هتفضل شغالة للمدير.</p>',

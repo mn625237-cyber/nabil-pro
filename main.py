@@ -1,6 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 import os, json, time, threading
+from datetime import datetime, timezone
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # ══════════════════════════════════
@@ -29,7 +30,7 @@ class KeepAlive(BaseHTTPRequestHandler):
 def run_http_server():
     port = int(os.environ.get('PORT', 8080))
     server = HTTPServer(('0.0.0.0', port), KeepAlive)
-    print(f'🌐 HTTP Server شغال على port {port}')
+    print(f'🌐 HTTP Server على port {port}')
     server.serve_forever()
 
 http_thread = threading.Thread(target=run_http_server, daemon=True)
@@ -39,65 +40,47 @@ http_thread.start()
 # FCM - المديرين فقط
 # ══════════════════════════════════
 def get_manager_tokens():
-    """
-    بيجيب توكن واحد بس لكل مدير (الأحدث).
-    بيتحقق من الـ role مباشرة في fcm_tokens أو من users collection.
-    """
     tokens = []
-    seen_uids = set()
-
     try:
-        # جيب كل التوكنات اللي role = manager
         docs = db.collection('fcm_tokens').stream()
         token_list = []
-
         for doc in docs:
             data = doc.to_dict()
             uid = data.get('uid')
             token = data.get('token')
             role = data.get('role', '')
             updated = data.get('updatedAt')
-
             if not uid or not token:
                 continue
-
-            # لو الـ role موجود في التوكن نفسه
             if role == 'manager':
                 token_list.append((uid, token, updated))
                 continue
-
-            # لو مش موجود - اسأل users collection
-            if role == '' or role is None:
+            if not role:
                 user_doc = db.collection('users').document(uid).get()
                 if user_doc.exists and user_doc.to_dict().get('role') == 'manager':
                     token_list.append((uid, token, updated))
 
-        # لكل uid - خد آخر توكن بس (الأحدث)
         uid_tokens = {}
         for uid, token, updated in token_list:
             if uid not in uid_tokens:
                 uid_tokens[uid] = (token, updated)
             else:
-                # قارن الوقت وخد الأحدث
-                prev_updated = uid_tokens[uid][1]
-                if updated and prev_updated and updated > prev_updated:
+                prev = uid_tokens[uid][1]
+                if updated and prev and updated > prev:
                     uid_tokens[uid] = (token, updated)
 
         tokens = [t for t, _ in uid_tokens.values()]
         print(f'✅ مديرين: {len(tokens)} توكن')
-
     except Exception as e:
-        print(f'❌ خطأ في جلب التوكنات: {e}')
-
+        print(f'خطأ: {e}')
     return tokens
 
 
 def send_fcm(title, body):
     tokens = get_manager_tokens()
     if not tokens:
-        print('⚠️ مفيش مديرين مسجلين')
+        print('مفيش مديرين مسجلين')
         return
-
     msg = messaging.MulticastMessage(
         notification=messaging.Notification(title=title, body=body),
         tokens=tokens,
@@ -106,46 +89,47 @@ def send_fcm(title, body):
     )
     try:
         r = messaging.send_each_for_multicast(msg)
-        print(f'📨 إشعار اتبعت لـ {r.success_count} مدير')
-
-        # امسح التوكنات الفاشلة
+        print(f'اشعار اتبعت لـ {r.success_count} مدير')
         if r.failure_count > 0:
             for i, resp in enumerate(r.responses):
                 if not resp.success:
                     try:
-                        bad_token = tokens[i]
-                        bad_docs = db.collection('fcm_tokens').where('token','==',bad_token).stream()
-                        for d in bad_docs:
-                            d.reference.delete()
-                        print(f'🗑️ توكن فاشل اتمسح')
+                        bad_docs = db.collection('fcm_tokens').where('token','==',tokens[i]).stream()
+                        for d in bad_docs: d.reference.delete()
                     except: pass
-
     except Exception as e:
-        print(f'❌ خطأ FCM: {e}')
+        print(f'خطأ FCM: {e}')
 
 
 # ══════════════════════════════════
 # FIRESTORE LISTENER
 # ══════════════════════════════════
+startup_done = False  # اول batch = اوردرات قديمة نتجاهلها
+
 def on_snapshot(col_snapshot, changes, read_time):
+    global startup_done
+    if not startup_done:
+        startup_done = True
+        print(f'تجاهل {len(col_snapshot)} اوردر قديم عند البداية')
+        return
+
     for change in changes:
         if change.type.name == 'ADDED':
             o = change.document.to_dict()
             order_id = change.document.id
-            driver = o.get('driverName', '؟')
-            rest = o.get('restName', '؟')
+            driver = o.get('driverName', '?')
+            rest = o.get('restName', '?')
             address = o.get('address', '')
             delivery = o.get('delivery', 0)
-
-            print(f'📦 أوردر جديد: {order_id} | {driver} | {rest}')
-
+            print(f'اوردر جديد: {order_id} | {driver} | {rest}')
             send_fcm(
-                f'أوردر جديد 🛵',
-                f'{driver} — {rest}\n📍 {address}\nج{delivery} توصيل'
+                'اوردر جديد',
+                f'{driver} - {rest}\n{address}\n{delivery} توصيل'
             )
 
+
 col_watch = db.collection('orders').on_snapshot(on_snapshot)
-print('👂 بيسمع على Firestore...')
+print('بيسمع على Firestore...')
 
 while True:
     time.sleep(60)

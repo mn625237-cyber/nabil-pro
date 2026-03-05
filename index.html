@@ -150,23 +150,38 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 ══════════════════════════════════ */
 #loadingScreen {
   flex-direction:column; align-items:center; justify-content:center;
-  background:var(--bg); gap:20px;
+  background:var(--bg); gap:0;
+  transition:background .4s;
 }
-.loading-ring {
-  position:relative; width:90px; height:90px;
+.splash-wrap {
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+}
+.splash-icon-box {
+  width:120px; height:120px; border-radius:32px;
+  background:#FF6C2F;
   display:flex; align-items:center; justify-content:center;
+  box-shadow:0 12px 40px rgba(255,108,47,0.4);
+  margin-bottom:8px;
+  animation:splash-pop .5s cubic-bezier(0.34,1.56,0.64,1);
 }
-.loading-ring::before {
-  content:''; position:absolute; inset:0; border-radius:50%;
-  border:2px solid var(--border);
-  border-top-color:var(--orange);
-  animation:spin 1s linear infinite;
+/* وضع فاتح - خلفية بيضاء مع حدود برتقالية */
+body[data-theme=light] .splash-icon-box {
+  background:#fff;
+  box-shadow:0 12px 40px rgba(255,108,47,0.2);
+  border:2px solid rgba(255,108,47,0.2);
 }
-@keyframes spin { to { transform:rotate(360deg); } }
-.loading-logo-inner {
-  width:70px; height:70px; background:var(--orange-bg);
-  border-radius:50%; display:flex; align-items:center;
-  justify-content:center; font-size:34px;
+.splash-icon-img {
+  width:90px; height:90px; object-fit:contain;
+  border-radius:20px;
+}
+.splash-brand {
+  font-size:28px; font-weight:900; color:var(--text); letter-spacing:1px;
+}
+.splash-brand span { color:var(--orange); }
+.splash-sub { font-size:13px; color:var(--text3); }
+@keyframes splash-pop {
+  0% { transform:scale(0.6); opacity:0; }
+  100% { transform:scale(1); opacity:1; }
 }
 .loading-brand { font-size:22px; font-weight:900; color:var(--orange); letter-spacing:1px; }
 .loading-sub { font-size:13px; color:var(--text3); }
@@ -967,10 +982,14 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 
 <!-- LOADING -->
 <div class="screen active" id="loadingScreen">
-  <div class="loading-ring"><div class="loading-logo-inner">🛵</div></div>
-  <div class="loading-brand">Nabil Pro</div>
-  <div class="loading-sub">جاري التحميل</div>
-  <div class="loading-dots"><span></span><span></span><span></span></div>
+  <div class="splash-wrap" id="splashWrap">
+    <div class="splash-icon-box" id="splashBox">
+      <img src="./icon-512.png" class="splash-icon-img" id="splashImg">
+    </div>
+    <div class="splash-brand">Nabil <span>Pro</span></div>
+    <div class="splash-sub">منصة إدارة التوصيل الذكية</div>
+    <div class="loading-dots" style="margin-top:8px"><span></span><span></span><span></span></div>
+  </div>
 </div>
 
 <!-- AUTH -->

@@ -851,6 +851,18 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 .modal-btn.cancel { background:var(--bg3); color:var(--text); border:1px solid var(--border); }
 .modal-btn.danger { background:linear-gradient(135deg,var(--red),#cc2020); color:#fff; }
 
+.theme-pill {
+  flex:1; padding:8px 0; border-radius:20px;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text2); font-family:'Cairo',sans-serif;
+  font-size:12px; font-weight:700; cursor:pointer;
+  transition:all .2s;
+}
+.theme-pill.active {
+  background:var(--orange); border-color:var(--orange);
+  color:#fff; box-shadow:0 4px 12px rgba(255,108,47,0.35);
+}
+
 .logout-btn {
   display:flex; align-items:center; gap:5px;
   padding:7px 14px; border-radius:50px;
@@ -899,6 +911,11 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
 <body>
 
 <!-- OFFLINE -->
+<div id="ptrIndicator" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9999;
+  background:var(--orange);color:#fff;border-radius:50%;width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  opacity:0;transition:opacity .2s,transform .3s;pointer-events:none;">🔄</div>
+
 <div class="screen" id="offlineScreen">
   <div class="offline-blob">📡</div>
   <div class="offline-title">لا يوجد اتصال</div>
@@ -949,7 +966,7 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
   <div class="drv-header">
     <div class="drv-header-logo">🛵</div>
     <div class="drv-header-title">Nabil <span>Pro</span></div>
-    <button class="hdr-btn" onclick="confirmLogout()" style="background:var(--red-bg);color:var(--red);">⏏️</button>
+
   </div>
   <div class="status-pill ok" id="driverStatus">
     <div class="status-dot pulse" id="statusDot"></div>
@@ -1123,9 +1140,7 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
     <span class="mgr-badge" id="managerBadge">مدير</span>
     <button class="hdr-btn" onclick="switchToDriverMode()" style="background:var(--orange-bg);color:var(--orange);" title="وضع المندوب">🛵</button>
     <button class="hdr-btn" onclick="showMgrSettings()" style="background:var(--bg3);">⚙️</button>
-    <button class="logout-btn" onclick="confirmLogout()">
-      <span>خروج</span><span style="font-size:14px;">⏏</span>
-    </button>
+
   </div>
 
   <div class="mgr-content">
@@ -1657,6 +1672,17 @@ function editDriverName() {
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
+function setThemeMode(mode) {
+  themeMode = mode;
+  applyTheme(mode);
+  try { db.collection('users').doc(currentUser.uid).update({themeMode:mode}); } catch(e){}
+  // update active state on pills
+  ['dark','light','auto'].forEach(m => {
+    const btn = document.getElementById('tmbtn-'+m);
+    if (btn) btn.className = 'theme-pill' + (m===mode?' active':'');
+  });
+}
+
 function cycleTheme() {
   if (themeMode==='dark') themeMode='light';
   else if (themeMode==='light') themeMode='auto';
@@ -1713,22 +1739,39 @@ function startVoice(inputId, btnId) {
 // MANAGER AS DRIVER
 // ══════════════════════════════════
 function showMgrSettings() {
+  const curTheme = themeMode==='auto'?'تلقائي':themeMode==='light'?'فاتح':'داكن';
   showModal('⚙️ الإعدادات', `
-    <div class="settings-group" style="margin-bottom:0">
+    <div class="settings-group" style="margin-bottom:12px">
       <div class="settings-item" onclick="editMgrName()">
         <div class="settings-item-icon">👤</div>
         <div class="settings-item-label">الاسم</div>
-        <div class="settings-item-val" id="mgrNameVal">${sanitize(userProfile.name||'مدير')}</div>
+        <div class="settings-item-val">${sanitize(userProfile.name||'مدير')}</div>
       </div>
-      <div class="settings-item" onclick="cycleTheme();document.getElementById('mgrThemeVal').textContent=document.getElementById('themeVal')?.textContent||'داكن'">
-        <div class="settings-item-icon" id="mgrThemeIcon">🌙</div>
-        <div class="settings-item-label">المظهر</div>
-        <div class="settings-item-val" id="mgrThemeVal">داكن</div>
+    </div>
+    <div class="settings-group" style="margin-bottom:12px">
+      <div class="settings-item" style="flex-direction:column;align-items:flex-start;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px;width:100%">
+          <div class="settings-item-icon">🌙</div>
+          <div class="settings-item-label">المظهر</div>
+        </div>
+        <div style="display:flex;gap:8px;width:100%">
+          <button onclick="setThemeMode('dark')" id="tmbtn-dark" class="theme-pill ${themeMode==='dark'?'active':''}">داكن</button>
+          <button onclick="setThemeMode('light')" id="tmbtn-light" class="theme-pill ${themeMode==='light'?'active':''}">فاتح</button>
+          <button onclick="setThemeMode('auto')" id="tmbtn-auto" class="theme-pill ${themeMode==='auto'?'active':''}">تلقائي</button>
+        </div>
       </div>
-      <div class="settings-item" onclick="switchToDriverMode();closeModal()">
+    </div>
+    <div class="settings-group" style="margin-bottom:12px">
+      <div class="settings-item" onclick="closeModal();switchToDriverMode()">
         <div class="settings-item-icon" style="background:var(--orange-bg)">🛵</div>
         <div class="settings-item-label" style="color:var(--orange)">وضع المندوب</div>
         <div class="settings-item-val">←</div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-item danger" onclick="closeModal();confirmLogout()">
+        <div class="settings-item-icon" style="background:var(--red-bg)">⏏️</div>
+        <div class="settings-item-label" style="color:var(--red)">تسجيل الخروج</div>
       </div>
     </div>`,
     [{label:'إغلاق',cls:'cancel',action:closeModal}]);
@@ -1746,14 +1789,10 @@ function editMgrName() {
 }
 
 function switchToDriverMode() {
-  showModal('🛵 وضع المندوب',
-    '<p style="color:var(--text2);font-size:14px;line-height:1.8;">هتتحول لواجهة المندوب — تقدر تسجل أوردرات.<br>الإشعارات هتفضل شغالة للمدير.</p>',
-    [{label:'تحويل',cls:'confirm',action:()=>{
-      closeModal();
-      userProfile._savedRole = userProfile.role;
-      userProfile.role = 'driver';
-      initDriverApp();
-    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
+  userProfile._savedRole = userProfile.role;
+  userProfile.role = 'driver';
+  initDriverApp();
+  showToast('🛵 وضع المندوب — اضغط ⚙️ للعودة للإدارة');
 }
 
 function switchBackToManager() {
@@ -2185,6 +2224,39 @@ function showDriverStatDetail(type) {
 // ══════════════════════════════════
 // START
 // ══════════════════════════════════
+// ══════════════════════════════════
+// PULL TO REFRESH
+// ══════════════════════════════════
+let ptrStartY = 0, ptrActive = false;
+const PTR_THRESHOLD = 70;
+
+document.addEventListener('touchstart', e => {
+  const el = e.target.closest('.page,.mgr-content');
+  if (!el) return;
+  if (el.scrollTop === 0) { ptrStartY = e.touches[0].clientY; ptrActive = true; }
+}, {passive:true});
+
+document.addEventListener('touchmove', e => {
+  if (!ptrActive) return;
+  const dy = e.touches[0].clientY - ptrStartY;
+  if (dy > 20) {
+    const ind = document.getElementById('ptrIndicator');
+    if (ind) { ind.style.opacity = Math.min(1, dy/PTR_THRESHOLD); ind.style.transform = `translateY(${Math.min(dy*0.4,28)}px)`; }
+  }
+}, {passive:true});
+
+document.addEventListener('touchend', e => {
+  if (!ptrActive) return;
+  const dy = e.changedTouches[0].clientY - ptrStartY;
+  ptrActive = false;
+  const ind = document.getElementById('ptrIndicator');
+  if (ind) { ind.style.opacity = 0; ind.style.transform = ''; }
+  if (dy > PTR_THRESHOLD) {
+    showToast('🔄 جاري التحديث...');
+    setTimeout(() => location.reload(), 400);
+  }
+}, {passive:true});
+
 window.addEventListener('load', initApp);
 </script>
 </body>

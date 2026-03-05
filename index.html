@@ -1309,6 +1309,13 @@ let auth, db;
 let currentUser=null, userProfile=null, ordersCache=[], restaurantsCache=[];
 let allDrivers=[], allOrders=[], currentFilter='all', selectedRest=null;
 let selectedPayment=null, currentPage=0, themeMode='dark', recognizer=null;
+
+// ── تحديد المظهر حسب الوقت عند البداية ──
+function getThemeByTime() {
+  const h = new Date().getHours();
+  // 6 صباحاً → 6 مساءً = فاتح | الباقي = داكن
+  return (h >= 6 && h < 18) ? 'light' : 'dark';
+}
 let editingOrderId=null, selectedDriverUid=null, reportPeriod='today';
 let ordersUnsubscribe=null, allOrdersUnsubscribe=null;
 let ordersRef, restaurantsRef, usersRef, settingsRef;
@@ -1734,7 +1741,11 @@ function toggleTheme() { cycleTheme(); }
 
 function applyTheme(mode) {
   let resolved=mode;
-  if (mode==='auto'||!mode) resolved=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+  if (mode==='auto'||!mode) {
+    // تلقائي = حسب الوقت أولاً، لو مش ممكن = حسب النظام
+    const h = new Date().getHours();
+    resolved = (h >= 6 && h < 18) ? 'light' : 'dark';
+  }
   document.body.dataset.theme=resolved==='light'?'light':'';
   const label=mode==='auto'?'تلقائي':resolved==='light'?'فاتح':'داكن';
   if (document.getElementById('themeVal')) document.getElementById('themeVal').textContent=label;
@@ -2338,6 +2349,14 @@ document.addEventListener('touchend', e => {
     setTimeout(() => location.reload(), 400);
   }
 }, {passive:true});
+
+// ── تطبيق المظهر فوراً عند تحميل الصفحة (قبل الدخول) ──
+(function() {
+  const h = new Date().getHours();
+  const isDark = h < 6 || h >= 18;
+  if (!isDark) document.body.dataset.theme = 'light';
+  themeMode = isDark ? 'dark' : 'light';
+})();
 
 window.addEventListener('load', initApp);
 </script>

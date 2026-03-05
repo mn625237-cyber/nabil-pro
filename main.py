@@ -36,32 +36,68 @@ http_thread = threading.Thread(target=run_http_server, daemon=True)
 http_thread.start()
 
 # ══════════════════════════════════
-# FCM FUNCTIONS
+# FCM - المديرين فقط
 # ══════════════════════════════════
 def get_manager_tokens():
+    """
+    بيجيب توكن واحد بس لكل مدير (الأحدث).
+    بيتحقق من الـ role مباشرة في fcm_tokens أو من users collection.
+    """
     tokens = []
+    seen_uids = set()
+
     try:
+        # جيب كل التوكنات اللي role = manager
         docs = db.collection('fcm_tokens').stream()
+        token_list = []
+
         for doc in docs:
             data = doc.to_dict()
             uid = data.get('uid')
-            if not uid:
+            token = data.get('token')
+            role = data.get('role', '')
+            updated = data.get('updatedAt')
+
+            if not uid or not token:
                 continue
-            user_doc = db.collection('users').document(uid).get()
-            if user_doc.exists:
-                if user_doc.to_dict().get('role') == 'manager':
-                    token = data.get('token')
-                    if token:
-                        tokens.append(token)
+
+            # لو الـ role موجود في التوكن نفسه
+            if role == 'manager':
+                token_list.append((uid, token, updated))
+                continue
+
+            # لو مش موجود - اسأل users collection
+            if role == '' or role is None:
+                user_doc = db.collection('users').document(uid).get()
+                if user_doc.exists and user_doc.to_dict().get('role') == 'manager':
+                    token_list.append((uid, token, updated))
+
+        # لكل uid - خد آخر توكن بس (الأحدث)
+        uid_tokens = {}
+        for uid, token, updated in token_list:
+            if uid not in uid_tokens:
+                uid_tokens[uid] = (token, updated)
+            else:
+                # قارن الوقت وخد الأحدث
+                prev_updated = uid_tokens[uid][1]
+                if updated and prev_updated and updated > prev_updated:
+                    uid_tokens[uid] = (token, updated)
+
+        tokens = [t for t, _ in uid_tokens.values()]
+        print(f'✅ مديرين: {len(tokens)} توكن')
+
     except Exception as e:
-        print(f'خطأ: {e}')
+        print(f'❌ خطأ في جلب التوكنات: {e}')
+
     return tokens
+
 
 def send_fcm(title, body):
     tokens = get_manager_tokens()
     if not tokens:
-        print('مفيش توكنات مديرين')
+        print('⚠️ مفيش مديرين مسجلين')
         return
+
     msg = messaging.MulticastMessage(
         notification=messaging.Notification(title=title, body=body),
         tokens=tokens,
@@ -70,9 +106,23 @@ def send_fcm(title, body):
     )
     try:
         r = messaging.send_each_for_multicast(msg)
-        print(f'إشعار اتبعت لـ {r.success_count} جهاز')
+        print(f'📨 إشعار اتبعت لـ {r.success_count} مدير')
+
+        # امسح التوكنات الفاشلة
+        if r.failure_count > 0:
+            for i, resp in enumerate(r.responses):
+                if not resp.success:
+                    try:
+                        bad_token = tokens[i]
+                        bad_docs = db.collection('fcm_tokens').where('token','==',bad_token).stream()
+                        for d in bad_docs:
+                            d.reference.delete()
+                        print(f'🗑️ توكن فاشل اتمسح')
+                    except: pass
+
     except Exception as e:
-        print(f'خطأ FCM: {e}')
+        print(f'❌ خطأ FCM: {e}')
+
 
 # ══════════════════════════════════
 # FIRESTORE LISTENER
@@ -81,14 +131,21 @@ def on_snapshot(col_snapshot, changes, read_time):
     for change in changes:
         if change.type.name == 'ADDED':
             o = change.document.to_dict()
-            print(f'📦 أوردر جديد: {change.document.id}')
+            order_id = change.document.id
+            driver = o.get('driverName', '؟')
+            rest = o.get('restName', '؟')
+            address = o.get('address', '')
+            delivery = o.get('delivery', 0)
+
+            print(f'📦 أوردر جديد: {order_id} | {driver} | {rest}')
+
             send_fcm(
-                'أوردر جديد 🛵',
-                f"{o.get('driverName','؟')} — {o.get('restName','؟')}\n📍 {o.get('address','')}\nج {o.get('delivery',0)} توصيل"
+                f'أوردر جديد 🛵',
+                f'{driver} — {rest}\n📍 {address}\nج{delivery} توصيل'
             )
 
 col_watch = db.collection('orders').on_snapshot(on_snapshot)
-print('بيسمع على Firestore...')
+print('👂 بيسمع على Firestore...')
 
 while True:
     time.sleep(60)

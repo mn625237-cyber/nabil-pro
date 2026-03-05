@@ -29,12 +29,13 @@ async function subscribeFCM() {
     if (fcmToken) {
       await db.collection('fcm_tokens').doc(currentUser.uid).set({
         token: fcmToken, uid: currentUser.uid,
+        role: userProfile?.role || 'driver',
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     }
     messaging.onTokenRefresh(async () => {
       const t = await messaging.getToken({ vapidKey: VAPID_KEY });
-      await db.collection('fcm_tokens').doc(currentUser.uid).set({ token:t, uid:currentUser.uid, updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
+      await db.collection('fcm_tokens').doc(currentUser.uid).set({ token:t, uid:currentUser.uid, role:userProfile?.role||'driver', updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
     });
     messaging.onMessage(payload => {
       const title = payload.notification?.title || 'Nabil Pro';
@@ -937,8 +938,7 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
   <div class="drv-header">
     <div class="drv-header-logo">🛵</div>
     <div class="drv-header-title">Nabil <span>Pro</span></div>
-    <button class="hdr-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-    <button class="hdr-btn" onclick="confirmLogout()">🚪</button>
+    <button class="hdr-btn" onclick="confirmLogout()" style="background:var(--red-bg);color:var(--red);">⏏️</button>
   </div>
   <div class="status-pill ok" id="driverStatus">
     <div class="status-dot pulse" id="statusDot"></div>
@@ -957,22 +957,22 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
         </div>
       </div>
       <div class="stats-grid">
-        <div class="stat-card s1">
+        <div class="stat-card s1" onclick="goPage(1);setFilter(document.querySelector('.filter-btn[onclick*=today]'),'today')" style="cursor:pointer">
           <div class="stat-icon-wrap">📦</div>
           <div class="stat-label">أوردرات اليوم</div>
           <div class="stat-val" id="statOrders">0</div>
         </div>
-        <div class="stat-card s2">
+        <div class="stat-card s2" onclick="showDriverStatDetail('delivery')" style="cursor:pointer">
           <div class="stat-icon-wrap">💰</div>
           <div class="stat-label">دخل التوصيل</div>
           <div class="stat-val" id="statDelivery">ج٠</div>
         </div>
-        <div class="stat-card s3">
+        <div class="stat-card s3" onclick="goPage(1);setFilter(document.querySelector('.filter-btn[onclick*=visa]'),'visa')" style="cursor:pointer">
           <div class="stat-icon-wrap">💳</div>
           <div class="stat-label">فيزا</div>
           <div class="stat-val" id="statVisa">ج٠</div>
         </div>
-        <div class="stat-card s4">
+        <div class="stat-card s4" onclick="goPage(1);setFilter(document.querySelector('.filter-btn[onclick*=cash]'),'cash')" style="cursor:pointer">
           <div class="stat-icon-wrap">💵</div>
           <div class="stat-label">كاش محصّل</div>
           <div class="stat-val" id="statCash">ج٠</div>
@@ -1051,23 +1051,31 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
           <div class="settings-item-label">اسم السائق</div>
           <div class="settings-item-val" id="settingsNameVal">—</div>
         </div>
-        <div class="settings-item" onclick="cycleTheme()">
-          <div class="settings-item-icon">🎨</div>
-          <div class="settings-item-label">المظهر</div>
-          <div class="settings-item-val" id="themeVal">داكن</div>
-        </div>
         <div class="settings-item">
           <div class="settings-item-icon">📞</div>
           <div class="settings-item-label">رقم الهاتف</div>
           <div class="settings-item-val" id="settingsPhone" dir="ltr">—</div>
         </div>
+        <div class="settings-item" onclick="cycleTheme()">
+          <div class="settings-item-icon" id="themeIcon">🌙</div>
+          <div class="settings-item-label">المظهر</div>
+          <div class="settings-item-val" id="themeVal">داكن</div>
+        </div>
       </div>
       <div class="sec-title">المطاعم</div>
       <div id="restSettingsList"></div>
       <button class="add-btn" onclick="addRestaurant()">➕ إضافة مطعم</button>
+      <div id="backToMgrWrap" style="display:none;margin-bottom:12px">
+        <div class="settings-group">
+          <div class="settings-item" onclick="switchBackToManager()" style="color:var(--purple)">
+            <div class="settings-item-icon" style="background:var(--purple-bg)">👑</div>
+            <div class="settings-item-label" style="color:var(--purple)">العودة للوحة المدير</div>
+          </div>
+        </div>
+      </div>
       <div class="settings-group">
         <div class="settings-item danger" onclick="confirmLogout()">
-          <div class="settings-item-icon">🚪</div>
+          <div class="settings-item-icon">⏏️</div>
           <div class="settings-item-label">تسجيل الخروج</div>
         </div>
       </div>
@@ -1102,30 +1110,30 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
       <div class="mgr-header-title">لوحة الإدارة</div>
     </div>
     <span class="mgr-badge" id="managerBadge">مدير</span>
-    <button class="hdr-btn" onclick="toggleTheme()" id="mgrThemeBtn">🔆</button>
-    <button class="hdr-btn" style="background:var(--red-bg);color:var(--red);" onclick="confirmLogout()">🚪</button>
+    <button class="hdr-btn" onclick="confirmLogout()" style="background:var(--red-bg);color:var(--red);">⏏️</button>
+    <button class="hdr-btn" onclick="switchToDriverMode()" style="background:var(--orange-bg);color:var(--orange);" title="وضع المندوب">🛵</button>
   </div>
 
   <div class="mgr-content">
     <!-- Panel 0: Overview -->
     <div class="mgr-panel active" id="mgrPanel0">
       <div class="mgr-stats-grid">
-        <div class="mgr-stat m1">
+        <div class="mgr-stat m1" onclick="showStatDetail('drivers')" style="cursor:pointer">
           <div class="mgr-stat-icon">👥</div>
           <div class="mgr-stat-label">مناديب نشطين</div>
           <div class="mgr-stat-val" id="mgrStatDrivers">0</div>
         </div>
-        <div class="mgr-stat m2">
+        <div class="mgr-stat m2" onclick="showStatDetail('orders')" style="cursor:pointer">
           <div class="mgr-stat-icon">📦</div>
           <div class="mgr-stat-label">أوردرات اليوم</div>
           <div class="mgr-stat-val" id="mgrStatOrders">0</div>
         </div>
-        <div class="mgr-stat m3">
+        <div class="mgr-stat m3" onclick="showStatDetail('delivery')" style="cursor:pointer">
           <div class="mgr-stat-icon">🛵</div>
           <div class="mgr-stat-label">دخل التوصيل</div>
           <div class="mgr-stat-val" id="mgrStatDelivery">ج٠</div>
         </div>
-        <div class="mgr-stat m4">
+        <div class="mgr-stat m4" onclick="showStatDetail('cash')" style="cursor:pointer">
           <div class="mgr-stat-icon">💵</div>
           <div class="mgr-stat-label">إجمالي كاش</div>
           <div class="mgr-stat-val" id="mgrStatCash">ج٠</div>
@@ -1370,6 +1378,9 @@ function initDriverApp() {
   db.collection('users').doc(uid).update({ lastSeen:firebase.firestore.FieldValue.serverTimestamp(), online:true }).catch(()=>{});
   themeMode = userProfile.themeMode || 'auto';
   applyTheme(themeMode);
+  // Show back to manager button if manager switched to driver mode
+  const backWrap = document.getElementById('backToMgrWrap');
+  if (backWrap) backWrap.style.display = userProfile._savedRole === 'manager' ? 'block' : 'none';
   const name = userProfile.name || 'مندوب دليفري';
   document.getElementById('driverNameDisplay').textContent = name;
   document.getElementById('settingsNameVal').textContent = name;
@@ -1637,7 +1648,7 @@ function cycleTheme() {
   else if (themeMode==='light') themeMode='auto';
   else themeMode='dark';
   applyTheme(themeMode);
-  db.collection('users').doc(currentUser.uid).update({themeMode});
+  try { db.collection('users').doc(currentUser.uid).update({themeMode}); } catch(e){}
 }
 function toggleTheme() { cycleTheme(); }
 
@@ -1648,10 +1659,8 @@ function applyTheme(mode) {
   const label=mode==='auto'?'تلقائي':resolved==='light'?'فاتح':'داكن';
   if (document.getElementById('themeVal')) document.getElementById('themeVal').textContent=label;
   const icon=mode==='auto'?'🔆':resolved==='light'?'🌙':'☀️';
-  const btn=document.getElementById('themeBtn');
-  const mgrBtn=document.getElementById('mgrThemeBtn');
-  if (btn) btn.textContent=icon;
-  if (mgrBtn) mgrBtn.textContent=icon;
+  const iconEl=document.getElementById('themeIcon');
+  if (iconEl) iconEl.textContent=icon;
 }
 window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{ if (themeMode==='auto'||!themeMode) applyTheme('auto'); });
 
@@ -1684,6 +1693,27 @@ function startVoice(inputId, btnId) {
   recognizer.onresult=e=>{ document.getElementById(inputId).value=e.results[0][0].transcript; };
   recognizer.onend=()=>{ document.getElementById(btnId).classList.remove('on'); recognizer=null; };
   recognizer.start();
+}
+
+// ══════════════════════════════════
+// MANAGER AS DRIVER
+// ══════════════════════════════════
+function switchToDriverMode() {
+  showModal('🛵 وضع المندوب',
+    '<p style="color:var(--text2);font-size:14px;line-height:1.8;">هتتحول لواجهة المندوب — تقدر تسجل أوردرات.<br>الإشعارات هتفضل شغالة للمدير.</p>',
+    [{label:'تحويل',cls:'confirm',action:()=>{
+      closeModal();
+      userProfile._savedRole = userProfile.role;
+      userProfile.role = 'driver';
+      initDriverApp();
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
+}
+
+function switchBackToManager() {
+  if (userProfile._savedRole === 'manager') {
+    userProfile.role = 'manager';
+    initManagerApp();
+  }
 }
 
 // ══════════════════════════════════
@@ -2026,6 +2056,83 @@ function showToast(msg) {
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ══════════════════════════════════
+// STAT DETAIL MODALS
+// ══════════════════════════════════
+function showStatDetail(type) {
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const today = allOrders.filter(o=>{const t=o.timestamp?.toDate?.()??new Date(o.timestamp);return t>=todayStart;});
+  
+  if (type === 'drivers') {
+    const driverIds = [...new Set(today.map(o=>o.driverId))];
+    const byDriver = {};
+    today.forEach(o=>{
+      if (!byDriver[o.driverId]) byDriver[o.driverId]={name:o.driverName||'؟',orders:0,delivery:0};
+      byDriver[o.driverId].orders++;
+      byDriver[o.driverId].delivery+=o.delivery||0;
+    });
+    const rows = Object.values(byDriver).sort((a,b)=>b.delivery-a.delivery)
+      .map(d=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(d.name)}</span><span style="color:var(--green);font-weight:800">ج${d.delivery} • ${d.orders} أوردر</span></div>`).join('');
+    showModal('👥 المناديب النشطين اليوم', rows || '<div class="empty-state"><div class="empty-text">لا مناديب اليوم</div></div>',
+      [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+  }
+  else if (type === 'orders') {
+    const rows = today.slice(0,20).map(o=>{
+      const t=o.timestamp?.toDate?.()??new Date();
+      const time=t.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+      return `<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <span><div style="font-weight:700">${sanitize(o.restName||'؟')}</div><div style="font-size:11px;color:var(--text3)">${sanitize(o.driverName||'؟')} • ${time}</div></span>
+        <span style="color:var(--orange);font-weight:800">ج${o.delivery||0}</span></div>`;
+    }).join('');
+    showModal('📦 أوردرات اليوم', rows || '<div class="empty-state"><div class="empty-text">لا أوردرات</div></div>',
+      [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+  }
+  else if (type === 'delivery') {
+    const byDriver = {};
+    today.forEach(o=>{
+      if (!byDriver[o.driverId]) byDriver[o.driverId]={name:o.driverName||'؟',delivery:0};
+      byDriver[o.driverId].delivery+=o.delivery||0;
+    });
+    const total = today.reduce((s,o)=>s+(o.delivery||0),0);
+    const rows = Object.values(byDriver).sort((a,b)=>b.delivery-a.delivery)
+      .map(d=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(d.name)}</span><span style="color:var(--blue);font-weight:800">ج${d.delivery}</span></div>`).join('');
+    showModal('🛵 دخل التوصيل اليوم',
+      `<div style="text-align:center;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px"><div style="font-size:32px;font-weight:900;color:var(--blue)">ج${total}</div><div style="font-size:12px;color:var(--text3)">إجمالي التوصيل</div></div>${rows}`,
+      [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+  }
+  else if (type === 'cash') {
+    const cashOrders = today.filter(o=>o.payment==='cash');
+    const total = cashOrders.reduce((s,o)=>s+(o.total||0),0);
+    const byDriver = {};
+    cashOrders.forEach(o=>{
+      if (!byDriver[o.driverId]) byDriver[o.driverId]={name:o.driverName||'؟',cash:0,count:0};
+      byDriver[o.driverId].cash+=o.total||0;
+      byDriver[o.driverId].count++;
+    });
+    const rows = Object.values(byDriver).sort((a,b)=>b.cash-a.cash)
+      .map(d=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(d.name)}<br><span style="font-size:11px;color:var(--text3)">${d.count} أوردر</span></span><span style="color:var(--gold);font-weight:800">ج${d.cash}</span></div>`).join('');
+    showModal('💵 الكاش المحصّل اليوم',
+      `<div style="text-align:center;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px"><div style="font-size:32px;font-weight:900;color:var(--gold)">ج${total}</div><div style="font-size:12px;color:var(--text3)">إجمالي الكاش</div></div>${rows}`,
+      [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+  }
+}
+
+function showDriverStatDetail(type) {
+  const today = getTodayOrders();
+  const delivery = today.reduce((s,o)=>s+(o.delivery||0),0);
+  const byRest = {};
+  today.forEach(o=>{
+    if (!byRest[o.restName]) byRest[o.restName]={orders:0,delivery:0};
+    byRest[o.restName].orders++;
+    byRest[o.restName].delivery+=o.delivery||0;
+  });
+  const rows = Object.entries(byRest).sort((a,b)=>b[1].delivery-a[1].delivery)
+    .map(([name,d])=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(name)}<br><span style="font-size:11px;color:var(--text3)">${d.orders} أوردر</span></span><span style="color:var(--orange);font-weight:800">ج${d.delivery}</span></div>`).join('');
+  showModal('💰 دخل التوصيل اليوم',
+    `<div style="text-align:center;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px"><div style="font-size:36px;font-weight:900;color:var(--orange)">ج${delivery}</div><div style="font-size:12px;color:var(--text3)">إجمالي التوصيل</div></div>${rows}`,
+    [{label:'إغلاق',cls:'cancel',action:closeModal}]);
 }
 
 // ══════════════════════════════════

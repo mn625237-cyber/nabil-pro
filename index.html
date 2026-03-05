@@ -863,6 +863,38 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
   color:#fff; box-shadow:0 4px 12px rgba(255,108,47,0.35);
 }
 
+.swipe-to-driver {
+  position:relative; height:50px; border-radius:25px;
+  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+  overflow:hidden; touch-action:none; user-select:none;
+}
+.std-fill {
+  position:absolute; inset:0; border-radius:25px;
+  background:linear-gradient(135deg,#FF6C2F,#ff9a6c);
+  transform:translateX(105%);
+}
+.std-handle {
+  position:absolute; top:5px; right:5px;
+  width:40px; height:40px; border-radius:50%;
+  background:linear-gradient(135deg,#FF6C2F,#ff8c5a);
+  box-shadow:0 4px 14px rgba(255,108,47,0.5);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; cursor:grab; z-index:2;
+}
+.std-txt {
+  position:absolute; inset:0; display:flex; align-items:center;
+  justify-content:center; padding-left:50px;
+  font-size:12px; font-weight:800; color:rgba(255,255,255,0.4);
+  pointer-events:none; gap:5px;
+}
+.std-arr { animation:std-arr 1.4s ease-in-out infinite; display:inline-block; }
+@keyframes std-arr { 0%,100%{transform:translateX(0);opacity:.3} 50%{transform:translateX(-4px);opacity:1} }
+.std-done {
+  position:absolute; inset:0; display:flex; align-items:center;
+  justify-content:center; font-size:13px; font-weight:900; color:#fff;
+  opacity:0; pointer-events:none; transition:opacity .25s;
+}
+
 .logout-btn {
   display:flex; align-items:center; gap:5px;
   padding:7px 14px; border-radius:50px;
@@ -1138,7 +1170,6 @@ input,textarea,select { font-family:'Cairo',sans-serif; }
       <div class="mgr-header-title">لوحة الإدارة</div>
     </div>
     <span class="mgr-badge" id="managerBadge">مدير</span>
-    <button class="hdr-btn" onclick="switchToDriverMode()" style="background:var(--orange-bg);color:var(--orange);" title="وضع المندوب">🛵</button>
     <button class="hdr-btn" onclick="showMgrSettings()" style="background:var(--bg3);">⚙️</button>
 
   </div>
@@ -1738,6 +1769,41 @@ function startVoice(inputId, btnId) {
 // ══════════════════════════════════
 // MANAGER AS DRIVER
 // ══════════════════════════════════
+function initSwipeDriverBtn() {
+  const btn=document.getElementById('swipeDriverBtn');
+  const h=document.getElementById('stdHandle');
+  const fill=document.getElementById('stdFill');
+  const txt=document.getElementById('stdTxt');
+  const done=document.getElementById('stdDone');
+  if(!btn||!h) return;
+  let sx=0,drag=false,cx=0;
+  const max=()=>btn.offsetWidth-h.offsetWidth-10;
+  function set(x){
+    const c=Math.max(0,Math.min(x,max())),p=c/max();
+    h.style.right=(5+(max()-c))+'px';
+    fill.style.transform=`translateX(${(1-p)*100}%)`;
+    txt.style.opacity=Math.max(0,1-p*2);
+  }
+  function finish(ok){
+    h.style.transition='right .35s cubic-bezier(.4,0,.2,1)';
+    fill.style.transition='transform .35s cubic-bezier(.4,0,.2,1)';
+    if(ok){
+      set(max()); txt.style.display='none'; done.style.opacity=1;
+      if(navigator.vibrate) navigator.vibrate([20,40,20]);
+      setTimeout(()=>{ closeModal(); switchToDriverMode(); },400);
+    } else { set(0); }
+    cx=0;
+  }
+  h.addEventListener('touchstart',e=>{ e.stopPropagation(); sx=e.touches[0].clientX; drag=true; h.style.transition='none'; fill.style.transition='none'; },{passive:true});
+  document.addEventListener('touchmove',e=>{ if(!drag)return; cx=sx-e.touches[0].clientX; set(cx); },{passive:true});
+  document.addEventListener('touchend',()=>{ if(!drag)return; drag=false; finish(cx>=max()*.6); },{passive:true});
+  h.addEventListener('mousedown',e=>{ sx=e.clientX; drag=true; h.style.transition='none'; fill.style.transition='none';
+    const mv=e2=>{ cx=sx-e2.clientX; set(cx); };
+    const up=()=>{ drag=false; finish(cx>=max()*.6); document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); };
+    document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+  });
+}
+
 function showMgrSettings() {
   const curTheme = themeMode==='auto'?'تلقائي':themeMode==='light'?'فاتح':'داكن';
   showModal('⚙️ الإعدادات', `
@@ -1762,10 +1828,16 @@ function showMgrSettings() {
       </div>
     </div>
     <div class="settings-group" style="margin-bottom:12px">
-      <div class="settings-item" onclick="closeModal();switchToDriverMode()">
-        <div class="settings-item-icon" style="background:var(--orange-bg)">🛵</div>
-        <div class="settings-item-label" style="color:var(--orange)">وضع المندوب</div>
-        <div class="settings-item-val">←</div>
+      <div style="padding:4px 0 8px">
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:14px">🛵</span> وضع المندوب
+        </div>
+        <div class="swipe-to-driver" id="swipeDriverBtn">
+          <div class="std-fill" id="stdFill"></div>
+          <div class="std-handle" id="stdHandle">🛵</div>
+          <div class="std-txt" id="stdTxt"><span class="std-arr">←</span> اسحب للتحويل</div>
+          <div class="std-done" id="stdDone">🛵 تم التحويل!</div>
+        </div>
       </div>
     </div>
     <div class="settings-group">
@@ -1775,6 +1847,7 @@ function showMgrSettings() {
       </div>
     </div>`,
     [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+  setTimeout(initSwipeDriverBtn, 50);
 }
 
 function editMgrName() {

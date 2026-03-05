@@ -20,7 +20,14 @@ async function registerSW() {
 }
 
 async function subscribeFCM() {
+  // المديرين فقط يستقبلوا إشعارات
   if (!swRegistration || !currentUser) return;
+  const actualRole = userProfile?._savedRole || userProfile?.role;
+  if (actualRole !== 'manager') {
+    // لو مندوب - امسح التوكن لو موجود
+    try { await db.collection('fcm_tokens').doc(currentUser.uid).delete(); } catch(e) {}
+    return;
+  }
   try {
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return;
@@ -29,13 +36,16 @@ async function subscribeFCM() {
     if (fcmToken) {
       await db.collection('fcm_tokens').doc(currentUser.uid).set({
         token: fcmToken, uid: currentUser.uid,
-        role: userProfile?.role || 'driver',
+        role: 'manager',
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     }
     messaging.onTokenRefresh(async () => {
       const t = await messaging.getToken({ vapidKey: VAPID_KEY });
-      await db.collection('fcm_tokens').doc(currentUser.uid).set({ token:t, uid:currentUser.uid, role:userProfile?.role||'driver', updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
+      await db.collection('fcm_tokens').doc(currentUser.uid).set({
+        token:t, uid:currentUser.uid, role:'manager',
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
     });
     messaging.onMessage(payload => {
       const title = payload.notification?.title || 'Nabil Pro';
@@ -1449,8 +1459,7 @@ function initDriverApp() {
   loadRestaurantsDriver();
   listenToDriverOrders();
   showScreen('driverApp');
-  if (Notification.permission === 'granted') { subscribeFCM(); }
-  else { Notification.requestPermission().then(p => { if (p === 'granted') subscribeFCM(); }); }
+  // إشعارات للمديرين فقط — المندوب لا يستقبل
 }
 
 async function loadRestaurantsDriver() {

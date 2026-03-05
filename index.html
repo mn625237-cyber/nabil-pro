@@ -1570,11 +1570,13 @@ function getTodayOrders() {
 function updateDriverStats() {
   const today = getTodayOrders();
   const totalDelivery = today.reduce((s,o)=>s+(o.delivery||0),0);
-  const totalVisa = today.filter(o=>o.payment==='visa').reduce((s,o)=>s+(o.total||0),0);
+  // فيزا: عدد الأوردرات (مش مبلغ — المبلغ اتحصّل أونلاين)
+  const totalVisa = today.filter(o=>o.payment==='visa').length;
+  // كاش: المبلغ الكلي اللي قبضه المندوب من العميل
   const totalCash = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
   document.getElementById('statOrders').textContent = today.length;
   document.getElementById('statDelivery').textContent = 'ج' + totalDelivery;
-  document.getElementById('statVisa').textContent = 'ج' + totalVisa;
+  document.getElementById('statVisa').textContent = totalVisa + ' أوردر';
   document.getElementById('statCash').textContent = 'ج' + totalCash;
 }
 
@@ -1591,26 +1593,48 @@ function renderShiftReport() {
     document.getElementById('shiftReport').innerHTML='<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">لا أوردرات اليوم بعد</div></div>';
     return;
   }
+  // حسابات لكل مطعم
   const byRest = {};
   today.forEach(o => {
-    if (!byRest[o.restName]) byRest[o.restName]={orders:0,delivery:0,cash:0,visa:0};
-    byRest[o.restName].orders++;
-    byRest[o.restName].delivery += o.delivery||0;
-    if (o.payment==='cash') byRest[o.restName].cash += o.total||0;
-    if (o.payment==='visa') byRest[o.restName].visa += o.total||0;
+    const rn = o.restName||'—';
+    if (!byRest[rn]) byRest[rn]={orders:0,cashOrders:0,visaOrders:0,delivery:0,cashCollected:0,visaDelivery:0};
+    byRest[rn].orders++;
+    byRest[rn].delivery += o.delivery||0;
+    if (o.payment==='cash') {
+      byRest[rn].cashOrders++;
+      byRest[rn].cashCollected += o.restAmount||0; // ما على المندوب للمطعم
+    }
+    if (o.payment==='visa') {
+      byRest[rn].visaOrders++;
+      byRest[rn].visaDelivery += o.delivery||0; // ما على المطعم للمندوب
+    }
   });
-  document.getElementById('shiftReport').innerHTML = Object.entries(byRest).map(([name,d])=>`
+
+  document.getElementById('shiftReport').innerHTML = Object.entries(byRest).map(([name,d])=>{
+    // الرصيد الصافي: كاش مجموع - فيزا توصيل
+    // موجب = المندوب مدين للمطعم | سالب = المطعم مدين للمندوب
+    const netBalance = d.cashCollected - d.visaDelivery;
+    const balColor = netBalance>0?'var(--orange)':netBalance<0?'var(--green)':'var(--text3)';
+    const balLabel = netBalance>0?`عليك للمطعم ج${netBalance}`:netBalance<0?`المطعم مدين لك ج${Math.abs(netBalance)}`:'متساويين ✅';
+    return `
     <div class="report-card">
       <div class="report-header" onclick="this.nextElementSibling.classList.toggle('open')">
-        <div><div class="report-rest-name">${sanitize(name)}</div><div class="report-count">${d.orders} أوردر</div></div>
+        <div>
+          <div class="report-rest-name">${sanitize(name)}</div>
+          <div class="report-count">${d.orders} أوردر • <span style="color:${balColor};font-weight:800">${balLabel}</span></div>
+        </div>
         <div class="report-delivery-val">ج ${d.delivery}</div>
       </div>
       <div class="report-body">
-        <div class="report-row-detail"><span>كاش</span><span>ج ${d.cash}</span></div>
-        <div class="report-row-detail"><span>فيزا</span><span>ج ${d.visa}</span></div>
-        <div class="report-row-detail"><span>توصيل</span><span>ج ${d.delivery}</span></div>
+        ${d.cashOrders?`<div class="report-row-detail"><span>💵 كاش (${d.cashOrders} أوردر)</span><span style="color:var(--orange)">تدفع للمطعم ج${d.cashCollected}</span></div>`:''}
+        ${d.visaOrders?`<div class="report-row-detail"><span>💳 فيزا (${d.visaOrders} أوردر)</span><span style="color:var(--green)">المطعم يدفعلك ج${d.visaDelivery}</span></div>`:''}
+        <div class="report-row-detail" style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">
+          <span style="font-weight:800">توصيلي</span>
+          <span style="color:var(--green);font-weight:900">ج ${d.delivery}</span>
+        </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderOrdersList() {
@@ -1676,12 +1700,18 @@ async function addOrder() {
   const delivery = parseFloat(document.getElementById('deliveryInput').value)||0;
   if (!address) { showToast('ادخل العنوان'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='✅ حفظ الأوردر';} return; }
   if (!selectedPayment) { showToast('اختر طريقة الدفع'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='✅ حفظ الأوردر';} return; }
+  if (!delivery) { showToast('ادخل رسوم التوصيل'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='✅ حفظ الأوردر';} return; }
   const rest = restaurantsCache.find(r=>r.id===selectedRest);
-  const total = restAmt + delivery;
+  const total = restAmt + delivery; // الإجمالي اللي بيدفعه العميل
+  // المبلغ المستحق للمطعم = تمن الأوردر بدون توصيل
+  // كاش: المندوب بيقبض total، يدي المطعم restAmt، يخلي delivery
+  // فيزا: العميل دفع total للمطعم أونلاين، المطعم مدين للمندوب بـ delivery
+  const restOwed = selectedPayment==='cash' ? restAmt : -delivery; // ما على المندوب للمطعم (سالب = المطعم مدين)
   const orderData = {
     driverId:currentUser.uid, driverName:userProfile.name||'مندوب',
     restId:selectedRest, restName:rest?.name||'—',
     restAmount:restAmt, delivery, total, payment:selectedPayment, address, phone,
+    restOwed, // كاش: ما يدفعه المندوب للمطعم | فيزا: سالب = المطعم مدين
     timestamp:firebase.firestore.FieldValue.serverTimestamp()
   };
   if (editingOrderId) {
@@ -1950,6 +1980,7 @@ function updateMgrOverview() {
   });
   const driverIds=[...new Set(today.map(o=>o.driverId))];
   const totalDelivery=today.reduce((s,o)=>s+(o.delivery||0),0);
+  // كاش = ما قبضه المناديب من العملاء (الكاش الفعلي المتداول)
   const totalCash=today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
   document.getElementById('mgrStatDrivers').textContent=driverIds.length;
   document.getElementById('mgrStatOrders').textContent=today.length;
@@ -2200,22 +2231,40 @@ function setReportPeriod(p,el) {
   el.classList.add('active'); renderMgrReports();
 }
 
+let mgrReportView = 'drivers'; // drivers | restaurants
+
 function renderMgrReports() {
   const now=new Date(); let startDate;
   if (reportPeriod==='today') startDate=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   else if (reportPeriod==='week') {startDate=new Date(now);startDate.setDate(now.getDate()-7);}
   else startDate=new Date(now.getFullYear(),now.getMonth(),1);
   const filtered=allOrders.filter(o=>{const t=o.timestamp?.toDate?.()??new Date(o.timestamp);return t>=startDate;});
+  const totalDelivery=filtered.reduce((s,o)=>s+(o.delivery||0),0);
+
+  // حسابات المناديب
   const byDriver={};
   filtered.forEach(o=>{
-    if (!byDriver[o.driverId]) byDriver[o.driverId]={name:o.driverName||'—',orders:0,delivery:0,cash:0};
+    if (!byDriver[o.driverId]) byDriver[o.driverId]={name:o.driverName||'—',orders:0,delivery:0,cashCollected:0};
     byDriver[o.driverId].orders++;
     byDriver[o.driverId].delivery+=o.delivery||0;
-    if (o.payment==='cash') byDriver[o.driverId].cash+=o.total||0;
+    if (o.payment==='cash') byDriver[o.driverId].cashCollected+=o.total||0;
   });
-  const entries=Object.entries(byDriver).sort((a,b)=>b[1].delivery-a[1].delivery);
-  const totalDelivery=filtered.reduce((s,o)=>s+(o.delivery||0),0);
+
+  // حسابات المطاعم
+  const byRest={};
+  filtered.forEach(o=>{
+    const rn=o.restName||'—';
+    if (!byRest[rn]) byRest[rn]={orders:0,cashOwed:0,visaDelivery:0,delivery:0};
+    byRest[rn].orders++;
+    byRest[rn].delivery+=o.delivery||0;
+    if (o.payment==='cash') byRest[rn].cashOwed+=o.restAmount||0;
+    if (o.payment==='visa') byRest[rn].visaDelivery+=o.delivery||0;
+  });
+
+  const driverEntries=Object.entries(byDriver).sort((a,b)=>b[1].delivery-a[1].delivery);
+  const restEntries=Object.entries(byRest).sort((a,b)=>b[1].orders-a[1].orders);
   const rankClasses=['gold','silver','bronze'];
+
   document.getElementById('reportsContent').innerHTML=`
     <div class="report-stat-big">
       <div class="report-stat-icon">📊</div>
@@ -2224,12 +2273,57 @@ function renderMgrReports() {
         <div class="report-stat-num">ج ${totalDelivery}</div>
       </div>
     </div>
-    ${entries.map(([uid,d],i)=>`
-      <div class="rank-card">
-        <div class="rank-num ${rankClasses[i]||'default'}">${i+1}</div>
-        <div><div class="rank-name">${sanitize(d.name)}</div><div class="rank-orders">${d.orders} أوردر</div></div>
-        <div class="rank-earn">ج ${d.delivery}</div>
-      </div>`).join('')||'<div class="empty-state"><div class="empty-text">لا بيانات</div></div>'}`;
+
+    <!-- تبويبات -->
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button onclick="mgrReportView='drivers';renderMgrReports()" 
+        style="flex:1;padding:9px;border-radius:12px;border:1px solid ${mgrReportView==='drivers'?'var(--orange)':'var(--border)'};
+        background:${mgrReportView==='drivers'?'var(--orange-bg)':'var(--card)'};
+        color:${mgrReportView==='drivers'?'var(--orange)':'var(--text2)'};
+        font-family:'Cairo',sans-serif;font-weight:800;font-size:12px;cursor:pointer">
+        👥 المناديب
+      </button>
+      <button onclick="mgrReportView='restaurants';renderMgrReports()"
+        style="flex:1;padding:9px;border-radius:12px;border:1px solid ${mgrReportView==='restaurants'?'var(--orange)':'var(--border)'};
+        background:${mgrReportView==='restaurants'?'var(--orange-bg)':'var(--card)'};
+        color:${mgrReportView==='restaurants'?'var(--orange)':'var(--text2)'};
+        font-family:'Cairo',sans-serif;font-weight:800;font-size:12px;cursor:pointer">
+        🏪 المطاعم
+      </button>
+    </div>
+
+    ${mgrReportView==='drivers' ? `
+      ${driverEntries.map(([uid,d],i)=>`
+        <div class="rank-card">
+          <div class="rank-num ${rankClasses[i]||'default'}">${i+1}</div>
+          <div>
+            <div class="rank-name">${sanitize(d.name)}</div>
+            <div class="rank-orders">${d.orders} أوردر • كاش محصّل ج${d.cashCollected}</div>
+          </div>
+          <div class="rank-earn">ج ${d.delivery}</div>
+        </div>`).join('')||'<div class="empty-state"><div class="empty-text">لا بيانات</div></div>'}
+    ` : `
+      ${restEntries.map(([name,d])=>{
+        const net = d.cashOwed - d.visaDelivery;
+        const netColor = net>0?'var(--orange)':net<0?'var(--green)':'var(--text3)';
+        const netLabel = net>0?`المناديب مدينين ج${net}`:net<0?`المطعم مدين ج${Math.abs(net)}`:'متساوي';
+        return `
+        <div class="report-card" style="margin-bottom:10px">
+          <div class="report-header" onclick="this.nextElementSibling.classList.toggle('open')">
+            <div>
+              <div class="report-rest-name">${sanitize(name)}</div>
+              <div class="report-count">${d.orders} أوردر</div>
+            </div>
+            <div style="text-align:left;font-size:12px;font-weight:800;color:${netColor}">${netLabel}</div>
+          </div>
+          <div class="report-body">
+            <div class="report-row-detail"><span>💵 كاش على المناديب للمطعم</span><span style="color:var(--orange)">ج${d.cashOwed}</span></div>
+            <div class="report-row-detail"><span>💳 فيزا توصيل على المطعم</span><span style="color:var(--green)">ج${d.visaDelivery}</span></div>
+            <div class="report-row-detail" style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><span>🛵 إجمالي التوصيل</span><span style="color:var(--green);font-weight:900">ج${d.delivery}</span></div>
+          </div>
+        </div>`;
+      }).join('')||'<div class="empty-state"><div class="empty-text">لا بيانات</div></div>'}
+    `}`;
 }
 
 // ══════════════════════════════════

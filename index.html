@@ -397,6 +397,46 @@ body[data-theme=light] .splash-icon-box {
 
 /* ── STATS GRID ── */
 .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+
+/* ── BIG STATS 2x2 ── */
+.big-stats-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:8px; margin-bottom:14px;
+}
+.big-stat {
+  border-radius:14px; padding:12px 14px;
+  display:flex; flex-direction:column; gap:6px;
+  position:relative; overflow:hidden;
+  transition:transform .15s;
+}
+.big-stat:active { transform:scale(0.97); }
+.bs1 { background:linear-gradient(135deg,rgba(0,200,81,0.18),rgba(0,200,81,0.06)); border:1px solid rgba(0,200,81,0.25); }
+.bs2 { background:linear-gradient(135deg,rgba(255,184,0,0.18),rgba(255,184,0,0.06)); border:1px solid rgba(255,184,0,0.25); }
+.bs3 { background:linear-gradient(135deg,rgba(255,108,47,0.18),rgba(255,108,47,0.06)); border:1px solid rgba(255,108,47,0.25); }
+.bs4 { background:linear-gradient(135deg,rgba(75,159,255,0.18),rgba(75,159,255,0.06)); border:1px solid rgba(75,159,255,0.25); }
+.bs-icon { font-size:20px; }
+.bs-label { font-size:10px; font-weight:700; color:var(--text3); }
+.bs-val { font-size:22px; font-weight:900; letter-spacing:-0.5px; }
+.bs1 .bs-val { color:var(--green); }
+.bs2 .bs-val { color:var(--gold); }
+.bs3 .bs-val { color:var(--orange); }
+.bs4 .bs-val { color:var(--blue); }
+
+/* ── SHIFT BUTTONS ── */
+.shift-btns { display:flex; gap:6px; margin-right:auto; }
+.shift-btn {
+  padding:7px 14px; border-radius:20px; border:none;
+  font-family:'Cairo',sans-serif; font-size:12px; font-weight:800;
+  cursor:pointer; transition:all .2s;
+}
+.shift-btn.start {
+  background:linear-gradient(135deg,var(--green),#00a844);
+  color:#fff; box-shadow:0 3px 12px rgba(0,200,81,0.4);
+}
+.shift-btn.end {
+  background:linear-gradient(135deg,var(--red),#cc2020);
+  color:#fff; box-shadow:0 3px 12px rgba(255,59,59,0.4);
+}
 .stat-card {
   background:var(--card); border:1px solid var(--border);
   border-radius:var(--radius-sm); padding:16px; position:relative; overflow:hidden;
@@ -1024,10 +1064,14 @@ body[data-theme=light] .splash-icon-box {
 
 <!-- DRIVER APP -->
 <div class="screen" id="driverApp">
+  <!-- DRIVER HEADER -->
   <div class="drv-header">
     <div class="drv-header-logo">🛵</div>
     <div class="drv-header-title">Nabil <span>Pro</span></div>
-
+    <div class="shift-btns">
+      <button class="shift-btn start" id="shiftStartBtn" onclick="startShift()">▶ بدء</button>
+      <button class="shift-btn end" id="shiftEndBtn" onclick="endShift()" style="display:none">■ نهاية</button>
+    </div>
   </div>
   <div class="status-pill ok" id="driverStatus">
     <div class="status-dot pulse" id="statusDot"></div>
@@ -1037,34 +1081,28 @@ body[data-theme=light] .splash-icon-box {
   <div class="pages-wrapper" id="pagesWrapper">
     <!-- Page 0: Home -->
     <div class="page" id="homePage">
-      <div class="welcome-card">
-        <div class="welcome-greeting" id="greeting">صباح الخير 👋</div>
-        <div class="welcome-name" id="driverNameDisplay">مندوب</div>
-        <div class="welcome-time-row">
-          <div class="welcome-time" id="clockDisplay">00:00</div>
-          <div class="welcome-date" id="dateDisplay"></div>
+
+      <!-- 4 مربعات بحجم كبير 2×2 -->
+      <div class="big-stats-grid">
+        <div class="big-stat bs1" onclick="goPage(1)" style="cursor:pointer">
+          <div class="bs-icon">📦</div>
+          <div class="bs-label">أوردرات اليوم</div>
+          <div class="bs-val" id="statOrders">0</div>
         </div>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card s1" onclick="goPage(1);setFilter(document.querySelector('.filter-btn[onclick*=today]'),'today')" style="cursor:pointer">
-          <div class="stat-icon-wrap">📦</div>
-          <div class="stat-label">أوردرات اليوم</div>
-          <div class="stat-val" id="statOrders">0</div>
+        <div class="big-stat bs2" onclick="showDriverStatDetail('delivery')" style="cursor:pointer">
+          <div class="bs-icon">💰</div>
+          <div class="bs-label">إجمالي التحصيل</div>
+          <div class="bs-val" id="statCash">ج0</div>
         </div>
-        <div class="stat-card s2" onclick="showDriverStatDetail('delivery')" style="cursor:pointer">
-          <div class="stat-icon-wrap">💰</div>
-          <div class="stat-label">دخل التوصيل</div>
-          <div class="stat-val" id="statDelivery">ج٠</div>
+        <div class="big-stat bs3" onclick="showRestBalance()" style="cursor:pointer">
+          <div class="bs-icon">🏪</div>
+          <div class="bs-label">ادفع للمطاعم</div>
+          <div class="bs-val" id="statRestOwed">ج0</div>
         </div>
-        <div class="stat-card s3" onclick="goPage(1);setFilter(document.querySelector('.filter-btn[onclick*=visa]'),'visa')" style="cursor:pointer">
-          <div class="stat-icon-wrap">💳</div>
-          <div class="stat-label">فيزا</div>
-          <div class="stat-val" id="statVisa">ج٠</div>
-        </div>
-        <div class="stat-card s4" onclick="goPage(1);setFilter(document.querySelector('.filter-btn[onclick*=cash]'),'cash')" style="cursor:pointer">
-          <div class="stat-icon-wrap">💵</div>
-          <div class="stat-label">كاش محصّل</div>
-          <div class="stat-val" id="statCash">ج٠</div>
+        <div class="big-stat bs4" onclick="showDriverStatDetail('delivery')" style="cursor:pointer">
+          <div class="bs-icon">🤑</div>
+          <div class="bs-label">ربحك اليوم</div>
+          <div class="bs-val" id="statDelivery">ج0</div>
         </div>
       </div>
       <div class="sec-title">تقرير الشيفت</div>
@@ -1558,6 +1596,70 @@ function listenToDriverOrders() {
     });
 }
 
+// ── SHIFT ──
+let shiftActive = false;
+let shiftStart = null;
+
+function startShift() {
+  shiftActive = true;
+  shiftStart = new Date();
+  document.getElementById('shiftStartBtn').style.display = 'none';
+  document.getElementById('shiftEndBtn').style.display = '';
+  showToast('✅ بدأ الشيفت — ' + shiftStart.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}));
+}
+
+function endShift() {
+  if (!shiftStart) return;
+  const now = new Date();
+  const diff = Math.round((now-shiftStart)/60000);
+  const hrs = Math.floor(diff/60), mins = diff%60;
+  const today = getTodayOrders();
+  const totalDelivery = today.reduce((s,o)=>s+(o.delivery||0),0);
+  const totalCollected = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
+  const totalRestOwed = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.restAmount||0),0);
+  showModal('📋 ملخص الشيفت',`
+    <div style="text-align:center;padding:8px 0 16px">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:4px">مدة الشيفت</div>
+      <div style="font-size:28px;font-weight:900;color:var(--orange)">${hrs}س ${mins}د</div>
+    </div>
+    <div class="settings-group" style="margin-bottom:0">
+      <div class="report-row-detail" style="padding:10px 0"><span>📦 الأوردرات</span><span style="font-weight:900">${today.length} أوردر</span></div>
+      <div class="report-row-detail" style="padding:10px 0"><span>🤑 ربحك</span><span style="color:var(--blue);font-weight:900">ج${totalDelivery}</span></div>
+      <div class="report-row-detail" style="padding:10px 0"><span>💰 كاش محصّل</span><span style="color:var(--gold);font-weight:900">ج${totalCollected}</span></div>
+      <div class="report-row-detail" style="padding:10px 0;border-bottom:none"><span>🏪 ادفع للمطاعم</span><span style="color:var(--orange);font-weight:900">ج${totalRestOwed}</span></div>
+    </div>`,
+    [{label:'إنهاء الشيفت',cls:'danger',action:()=>{
+      closeModal();
+      shiftActive=false; shiftStart=null;
+      document.getElementById('shiftStartBtn').style.display='';
+      document.getElementById('shiftEndBtn').style.display='none';
+      showToast('✅ انتهى الشيفت');
+    }},{label:'رجوع',cls:'cancel',action:closeModal}]);
+}
+
+function showRestBalance() {
+  const today = getTodayOrders();
+  const byRest = {};
+  today.forEach(o=>{
+    const rn=o.restName||'—';
+    if(!byRest[rn]) byRest[rn]={cashOwed:0,visaDelivery:0};
+    if(o.payment==='cash') byRest[rn].cashOwed+=o.restAmount||0;
+    if(o.payment==='visa') byRest[rn].visaDelivery+=o.delivery||0;
+  });
+  const rows = Object.entries(byRest).map(([name,d])=>{
+    const net = d.cashOwed - d.visaDelivery;
+    const color = net>0?'var(--orange)':net<0?'var(--green)':'var(--text3)';
+    const label = net>0?`ج${net} عليك`:net<0?`ج${Math.abs(net)} عليهم`:'متساوي';
+    return `<div class="report-row-detail" style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-weight:800">${sanitize(name)}</span>
+      <span style="color:${color};font-weight:900">${label}</span>
+    </div>`;
+  }).join('');
+  showModal('🏪 حساب المطاعم',
+    rows||'<div class="empty-state"><div class="empty-text">لا أوردرات بعد</div></div>',
+    [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+}
+
 function getTodayOrders() {
   const start = new Date(); start.setHours(0,0,0,0);
   return ordersCache.filter(o => {
@@ -1574,10 +1676,14 @@ function updateDriverStats() {
   const totalVisa = today.filter(o=>o.payment==='visa').length;
   // كاش: المبلغ الكلي اللي قبضه المندوب من العميل
   const totalCash = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
+  // إجمالي ما على المندوب للمطاعم (كاش أوردرات بدون توصيل)
+  const totalRestOwed = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.restAmount||0),0);
+  // إجمالي التحصيل (كل كاش + فيزا توصيل راجع)
+  const totalCollected = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
   document.getElementById('statOrders').textContent = today.length;
   document.getElementById('statDelivery').textContent = 'ج' + totalDelivery;
-  document.getElementById('statVisa').textContent = totalVisa + ' أوردر';
-  document.getElementById('statCash').textContent = 'ج' + totalCash;
+  document.getElementById('statCash').textContent = 'ج' + totalCollected;
+  document.getElementById('statRestOwed').textContent = 'ج' + totalRestOwed;
 }
 
 function updateStatusBar() {

@@ -189,8 +189,17 @@ body[data-theme=light] .splash-icon-box {
   flex:1; background:transparent; border:none; outline:none;
   padding:0 16px; height:54px; font-size:16px; color:var(--text);
   direction:ltr; text-align:right;
+  -webkit-text-fill-color:var(--text);
 }
 .field-wrap input::placeholder { color:var(--text3); direction:rtl; text-align:right; }
+/* منع المتصفح من تلوين خلفية الإدخال */
+.field-wrap input:-webkit-autofill,
+.field-wrap input:-webkit-autofill:hover,
+.field-wrap input:-webkit-autofill:focus {
+  -webkit-box-shadow:0 0 0 100px var(--bg3) inset !important;
+  -webkit-text-fill-color:var(--text) !important;
+  caret-color:var(--text);
+}
 
 .pin-field {
   background:var(--bg3); border:1.5px solid var(--border);
@@ -198,10 +207,16 @@ body[data-theme=light] .splash-icon-box {
   font-size:26px; font-weight:700; text-align:center;
   color:var(--orange); width:100%; letter-spacing:10px;
   direction:ltr; outline:none; transition:border-color .2s, box-shadow .2s;
+  -webkit-text-fill-color:var(--orange);
 }
 .pin-field:focus {
   border-color:var(--orange);
   box-shadow:0 0 0 3px var(--orange-bg);
+}
+.pin-field:-webkit-autofill,
+.pin-field:-webkit-autofill:focus {
+  -webkit-box-shadow:0 0 0 100px var(--bg3) inset !important;
+  -webkit-text-fill-color:var(--orange) !important;
 }
 .pin-hint {
   text-align:center; font-size:12px; color:var(--text3);
@@ -929,3 +944,13 @@ body[data-theme=light] .splash-icon-box {
 [data-theme="light"] .welcome-card { background:linear-gradient(135deg,#fff4f0,#ffe8de); border-color:rgba(255,108,47,0.2); }
 [data-theme="light"] .welcome-name { color:#111; }
 [data-theme="light"] .mgr-stat-label { color:rgba(0,0,0,0.4); }
+/* Light mode auth inputs */
+[data-theme="light"] .field-wrap { background:#f0f0f0; border-color:rgba(0,0,0,0.12); }
+[data-theme="light"] .field-wrap input:-webkit-autofill,
+[data-theme="light"] .field-wrap input:-webkit-autofill:focus {
+  -webkit-box-shadow:0 0 0 100px #f0f0f0 inset !important;
+}
+[data-theme="light"] .pin-field { background:#f0f0f0; border-color:rgba(0,0,0,0.12); }
+[data-theme="light"] .pin-field:-webkit-autofill {
+  -webkit-box-shadow:0 0 0 100px #f0f0f0 inset !important;
+}

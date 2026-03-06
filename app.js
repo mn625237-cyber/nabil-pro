@@ -189,9 +189,12 @@ function initDriverApp() {
   const backWrap = document.getElementById('backToMgrWrap');
   if (backWrap) backWrap.style.display = userProfile._savedRole === 'manager' ? 'block' : 'none';
   const name = userProfile.name || 'مندوب دليفري';
-  document.getElementById('driverNameDisplay').textContent = name;
-  document.getElementById('settingsNameVal').textContent = name;
-  document.getElementById('settingsPhone').textContent = userProfile.phone || '—';
+  const dnEl = document.getElementById('driverNameDisplay');
+  if (dnEl) dnEl.textContent = name;
+  const snEl = document.getElementById('settingsNameVal');
+  if (snEl) snEl.textContent = name;
+  const spEl = document.getElementById('settingsPhone');
+  if (spEl) spEl.textContent = userProfile.phone || '—';
   updateClock(); setInterval(updateClock, 30000);
   loadRestaurantsDriver();
   listenToDriverOrders();

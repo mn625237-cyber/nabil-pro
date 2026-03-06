@@ -856,7 +856,7 @@ async function addUser(role) {
     const secondaryAuth=secondaryApp.auth();
     const result=await secondaryAuth.createUserWithEmailAndPassword(email,pin);
     const uid=result.user.uid; await secondaryAuth.signOut();
-    await db.collection('users').doc(uid).set({uid,name,phone:p,email,role,createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:currentUser.uid});
+    await db.collection('users').doc(uid).set({uid,name,phone:p,email,role,pin,createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:currentUser.uid});
     allDrivers.push({uid,name,phone:p,email,role}); renderDriversList(); closeModal();
     showToast('✅ تم إنشاء حساب '+name);
   } catch(err) {
@@ -913,20 +913,69 @@ async function toggleDriverRole() {
 
 async function changeDriverPin() {
   if (!selectedDriverUid) return;
-  const driver=allDrivers.find(d=>d.uid===selectedDriverUid);
-  showModal('🔑 تغيير كود الدخول',`
-    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">المندوب: <strong>${sanitize(driver?.name||'')}</strong></div>
+  const driver = allDrivers.find(d => d.uid === selectedDriverUid);
+  if (!driver) return;
+
+  showModal('🔑 تغيير كود الدخول', `
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">
+      المندوب: <strong>${sanitize(driver.name||'')}</strong>
+    </div>
     <div class="field-label">كود جديد (6 أرقام)</div>
-    <input class="form-field" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric">`,
+    <input class="form-field" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">`,
     [{label:'تغيير',cls:'confirm',action:async()=>{
-      const newPin=document.getElementById('newPinInput').value.trim();
-      if (newPin.length!==6){showToast('الكود لازم 6 أرقام');return;}
-      const btn=document.getElementById('mBtn0');
-      if(btn){btn.disabled=true;btn.textContent='جاري...';}
+      const newPin = document.getElementById('newPinInput').value.trim();
+      if (newPin.length !== 6) { showToast('الكود لازم 6 أرقام'); return; }
+      const btn = document.getElementById('mBtn0');
+      if (btn) { btn.disabled=true; btn.textContent='جاري...'; }
       try {
-        await db.collection('users').doc(selectedDriverUid).update({pendingPin:newPin,pendingPinSetAt:firebase.firestore.FieldValue.serverTimestamp()});
-        closeModal(); showToast(`✅ كود ${driver?.name} الجديد: ${newPin}`);
-      } catch(e){if(btn){btn.disabled=false;btn.textContent='تغيير';}showToast('خطأ');}
+        // 1. سجّل دخول المندوب بكلمة السر القديمة عبر secondary app
+        let secondaryApp;
+        try { secondaryApp = firebase.app('secondary2'); }
+        catch(e) { secondaryApp = firebase.initializeApp(FIREBASE_CONFIG, 'secondary2'); }
+        const secondaryAuth = secondaryApp.auth();
+
+        // جيب الإيميل من بيانات المندوب
+        const driverEmail = driver.email || driver.phone + '@nabilpro.app';
+
+        // 2. غيّر كلمة السر في Firebase Auth بالطريقة الصح
+        // نحتاج نسجّل دخول المندوب مؤقتاً بالكود القديم أو نستخدم admin reset
+        // الطريقة: احفظ newPin في Firestore، وعند دخول المندوب الجديد بيتم التحديث
+        await db.collection('users').doc(selectedDriverUid).update({
+          pendingPin: newPin,
+          pendingPinSetAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // 3. حاول تغيير كلمة السر مباشرة في Auth عبر secondary app
+        try {
+          const pinDoc = await db.collection('users').doc(selectedDriverUid).get();
+          const oldPin = pinDoc.data()?.pin;
+          if (oldPin) {
+            const cred = await secondaryAuth.signInWithEmailAndPassword(driverEmail, oldPin);
+            await cred.user.updatePassword(newPin);
+            await secondaryAuth.signOut();
+            // حدّث الـ pin في Firestore وامسح pendingPin
+            await db.collection('users').doc(selectedDriverUid).update({
+              pin: newPin,
+              pendingPin: firebase.firestore.FieldValue.delete(),
+              pendingPinSetAt: firebase.firestore.FieldValue.delete()
+            });
+            closeModal();
+            showToast(`✅ تم تغيير كود ${driver.name} بنجاح`);
+            return;
+          }
+        } catch(authErr) {
+          // لو فشل login بالكود القديم - اعتمد على pendingPin
+          await secondaryAuth.signOut().catch(()=>{});
+        }
+
+        // fallback: الكود هيتطبق عند أول دخول للمندوب
+        closeModal();
+        showToast(`✅ الكود الجديد لـ ${driver.name}: ${newPin} — هيتفعل عند أول دخول`);
+
+      } catch(e) {
+        if (btn) { btn.disabled=false; btn.textContent='تغيير'; }
+        showToast('❌ خطأ: ' + (e.message||'تحقق من الاتصال'));
+      }
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 

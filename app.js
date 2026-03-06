@@ -102,7 +102,11 @@ async function loadUserProfile(uid) {
     }
     if (userProfile.role === 'manager') initManagerApp();
     else initDriverApp();
-  } catch(e) { showToast('خطأ في تحميل البيانات'); showScreen('authScreen'); }
+  } catch(e) { 
+    console.error('loadUserProfile error:', e);
+    showToast('خطأ في تحميل البيانات: ' + (e.code||e.message||''));
+    showScreen('authScreen'); 
+  }
 }
 
 // ══════════════════════════════════
@@ -126,6 +130,19 @@ async function doLogin() {
     const result = await auth.signInWithEmailAndPassword(email, pin);
     currentUser = result.user;
     showScreen('loadingScreen');
+    // تحقق من pendingPin وطبّقه بشكل آمن
+    try {
+      const uDoc = await db.collection('users').doc(currentUser.uid).get();
+      const pending = uDoc.data()?.pendingPin;
+      if (pending) {
+        await currentUser.updatePassword(pending);
+        await db.collection('users').doc(currentUser.uid).update({
+          pin: pending,
+          pendingPin: firebase.firestore.FieldValue.delete(),
+          pendingPinSetAt: firebase.firestore.FieldValue.delete()
+        });
+      }
+    } catch(pe) { /* تجاهل أخطاء pendingPin */ }
     loadUserProfile(currentUser.uid);
   } catch(err) {
     btn.disabled = false; btn.innerHTML = '<span>دخول</span><span>←</span>';

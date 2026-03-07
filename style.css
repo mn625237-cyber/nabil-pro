@@ -480,6 +480,7 @@ body[data-theme=light] .splash-icon-box {
 .action-btn:active { opacity:0.7; }
 .action-btn.edit { background:var(--orange-bg); color:var(--orange); border:1px solid rgba(255,108,47,0.2); }
 .action-btn.del { background:var(--red-bg); color:var(--red); border:1px solid rgba(255,59,59,0.2); }
+.action-btn.wa { background:rgba(37,211,102,0.12); color:#25D366; border:1px solid rgba(37,211,102,0.25); text-decoration:none; }
 
 /* ── ADD ORDER FORM ── */
 .form-group { margin-bottom:16px; }

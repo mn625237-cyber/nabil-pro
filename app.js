@@ -9,6 +9,10 @@ function sanitize(str) {
 // ══════════════════════════════════
 // FIREBASE CONFIG
 // ══════════════════════════════════
+// ══ Railway Backend URL ══
+// غيّر ده برقم السيرفر بتاعك من Railway
+const RAILWAY_URL = 'https://nabil-pro-production.up.railway.app';
+
 const FIREBASE_CONFIG = {
   apiKey:"AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
   authDomain:"nabil-pro.firebaseapp.com",
@@ -203,8 +207,26 @@ function initDriverApp() {
 }
 
 async function loadRestaurantsDriver() {
+  // كاش المطاعم في LocalStorage — بيوفر Firestore reads
+  const CACHE_KEY = 'nabilpro_restaurants';
+  const DATE_KEY  = 'nabilpro_rest_date';
+  const today = new Date().toDateString();
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    const cachedDate = localStorage.getItem(DATE_KEY);
+    if (cached && cachedDate === today) {
+      restaurantsCache = JSON.parse(cached);
+      renderRestChips(); renderRestSettings();
+      return; // ← من الذاكرة بدون Firebase
+    }
+  } catch(e) {}
+  // جلب من Firebase مرة واحدة اليوم
   const snap = await restaurantsRef.orderBy('name').get();
   restaurantsCache = snap.docs.map(d => ({id:d.id,...d.data()}));
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(restaurantsCache));
+    localStorage.setItem(DATE_KEY, today);
+  } catch(e) {}
   renderRestChips(); renderRestSettings();
 }
 
@@ -261,7 +283,12 @@ async function deleteRestaurant(id, name) {
 // ── ORDERS ──
 function listenToDriverOrders() {
   if (ordersUnsubscribe) ordersUnsubscribe();
-  ordersUnsubscribe = ordersRef.where('driverId','==',currentUser.uid).orderBy('timestamp','desc')
+  // بس أوردرات النهارده — يحمي من استهلاك Firestore quota
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  ordersUnsubscribe = ordersRef
+    .where('driverId','==',currentUser.uid)
+    .where('timestamp','>=', firebase.firestore.Timestamp.fromDate(todayStart))
+    .orderBy('timestamp','desc')
     .onSnapshot(snap => {
       ordersCache = snap.docs.map(d=>({id:d.id,...d.data()}));
       updateDriverStats(); renderShiftReport(); renderOrdersList(); updateStatusBar();
@@ -452,6 +479,7 @@ function renderOrdersList() {
         </div>
       </div>
       <div class="order-actions">
+        ${o.phone?`<a class="action-btn wa" href="https://wa.me/2${o.phone.replace(/^0/,'')}" target="_blank">📱 واتساب</a>`:''}
         <button class="action-btn edit" onclick="editOrder('${o.id}')">✏️ تعديل</button>
         <button class="action-btn del" onclick="deleteOrder('${o.id}')">🗑 حذف</button>
       </div>
@@ -746,11 +774,15 @@ function initManagerApp() {
 
 function listenAllOrders() {
   if (allOrdersUnsubscribe) allOrdersUnsubscribe();
-  allOrdersUnsubscribe = db.collection('orders').orderBy('timestamp','desc')
+  // بس أوردرات النهارده — يحمي من استهلاك Firestore quota
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  allOrdersUnsubscribe = db.collection('orders')
+    .where('timestamp','>=', firebase.firestore.Timestamp.fromDate(todayStart))
+    .orderBy('timestamp','desc')
     .onSnapshot(snap=>{
-      allOrders=snap.docs.map(d=>({id:d.id,...d.data()}));
+      allOrders = snap.docs.map(d=>({id:d.id,...d.data()}));
       updateMgrOverview(); renderMgrRecentOrders(); renderMgrReports();
-    },()=>{});
+    }, ()=>{});
 }
 
 function updateMgrOverview() {
@@ -948,53 +980,23 @@ async function changeDriverPin() {
       const btn = document.getElementById('mBtn0');
       if (btn) { btn.disabled=true; btn.textContent='جاري...'; }
       try {
-        // 1. سجّل دخول المندوب بكلمة السر القديمة عبر secondary app
-        let secondaryApp;
-        try { secondaryApp = firebase.app('secondary2'); }
-        catch(e) { secondaryApp = firebase.initializeApp(FIREBASE_CONFIG, 'secondary2'); }
-        const secondaryAuth = secondaryApp.auth();
-
-        // جيب الإيميل من بيانات المندوب
-        const driverEmail = driver.email || driver.phone + '@nabilpro.app';
-
-        // 2. غيّر كلمة السر في Firebase Auth بالطريقة الصح
-        // نحتاج نسجّل دخول المندوب مؤقتاً بالكود القديم أو نستخدم admin reset
-        // الطريقة: احفظ newPin في Firestore، وعند دخول المندوب الجديد بيتم التحديث
-        await db.collection('users').doc(selectedDriverUid).update({
-          pendingPin: newPin,
-          pendingPinSetAt: firebase.firestore.FieldValue.serverTimestamp()
+        // استخدام Railway Admin API — الأكثر موثوقية
+        const RAILWAY_URL = window.RAILWAY_URL || '';
+        if (!RAILWAY_URL) throw new Error('RAILWAY_URL غير محدد');
+        
+        const res = await fetch(RAILWAY_URL + '/update-pin', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ uid: selectedDriverUid, pin: newPin })
         });
-
-        // 3. حاول تغيير كلمة السر مباشرة في Auth عبر secondary app
-        try {
-          const pinDoc = await db.collection('users').doc(selectedDriverUid).get();
-          const oldPin = pinDoc.data()?.pin;
-          if (oldPin) {
-            const cred = await secondaryAuth.signInWithEmailAndPassword(driverEmail, oldPin);
-            await cred.user.updatePassword(newPin);
-            await secondaryAuth.signOut();
-            // حدّث الـ pin في Firestore وامسح pendingPin
-            await db.collection('users').doc(selectedDriverUid).update({
-              pin: newPin,
-              pendingPin: firebase.firestore.FieldValue.delete(),
-              pendingPinSetAt: firebase.firestore.FieldValue.delete()
-            });
-            closeModal();
-            showToast(`✅ تم تغيير كود ${driver.name} بنجاح`);
-            return;
-          }
-        } catch(authErr) {
-          // لو فشل login بالكود القديم - اعتمد على pendingPin
-          await secondaryAuth.signOut().catch(()=>{});
-        }
-
-        // fallback: الكود هيتطبق عند أول دخول للمندوب
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'خطأ في السيرفر');
+        
         closeModal();
-        showToast(`✅ الكود الجديد لـ ${driver.name}: ${newPin} — هيتفعل عند أول دخول`);
-
+        showToast(`✅ تم تغيير كود ${driver.name} بنجاح`);
       } catch(e) {
         if (btn) { btn.disabled=false; btn.textContent='تغيير'; }
-        showToast('❌ خطأ: ' + (e.message||'تحقق من الاتصال'));
+        showToast('❌ ' + (e.message||'تحقق من الاتصال'));
       }
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }

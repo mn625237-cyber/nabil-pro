@@ -220,22 +220,32 @@ async function doLogout() {
 // ══════════════════════════════════
 async function subscribeFCM() {
   try {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    if (!('serviceWorker' in navigator)) { showToast('SW غير مدعوم'); return; }
+    if (!('PushManager' in window))      { showToast('Push غير مدعوم'); return; }
+    showToast('جاري تسجيل الاشعارات...');
     const reg = await navigator.serviceWorker.ready;
+    showToast('SW جاهز');
+    const permission = Notification.permission;
+    showToast('اذن الاشعارات: ' + permission);
+    if (permission !== 'granted') {
+      const p = await Notification.requestPermission();
+      if (p !== 'granted') { showToast('الاذن مرفوض'); return; }
+    }
     const msg = firebase.messaging();
-    // ✅ Firebase 10 — بدون useServiceWorker، بنمرر reg في getToken مباشرة
+    showToast('جاري الحصول على Token...');
     const token = await msg.getToken({
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: reg
     });
-    if (!token) { console.log('لا توكن FCM'); return; }
+    if (!token) { showToast('Token فارغ!'); return; }
+    showToast('Token تمام - جاري الحفظ...');
     await db.collection('fcm_tokens').doc(currentUser.uid).set({
       uid: currentUser.uid,
       token,
       role: userProfile.role || 'manager',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    console.log('✅ FCM Token محفوظ:', token.substring(0,20)+'...');
+    showToast('Token محفوظ! الاشعارات شغالة');
     msg.onTokenRefresh(async () => {
       const newToken = await msg.getToken({
         vapidKey: VAPID_KEY,
@@ -247,9 +257,12 @@ async function subscribeFCM() {
       });
     });
   } catch(e) {
-    console.error('خطأ FCM Subscribe:', e);
+    showToast('خطا FCM: ' + (e.message || e.code || String(e)));
+    console.error('خطأ FCM:', e);
   }
 }
+
+function testFCM() { subscribeFCM(); }
 
 async function sendPushNotification(title, body, type) {
   console.log('📬 إشعار سيُرسل من Railway:', title);

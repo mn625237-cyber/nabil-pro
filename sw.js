@@ -1,17 +1,16 @@
 // ══════════════════════════════════════════════════════
-// Nabil Pro - Service Worker v6
+// Nabil Pro - Service Worker v7
 // ══════════════════════════════════════════════════════
 
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'nabil-pro-v6';
+const CACHE_NAME = 'nabil-pro-v7';
 const CACHE_FILES = ['/', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
-// ── تحديث فوري ──
 self.addEventListener('install', e => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(CACHE_FILES)).catch(()=>{}));
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(CACHE_FILES)).catch(() => {}));
 });
 
 self.addEventListener('activate', e => {
@@ -22,7 +21,6 @@ self.addEventListener('activate', e => {
   );
 });
 
-// ── Network first, fallback to cache ──
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
@@ -34,7 +32,6 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// ── Firebase Config ──
 firebase.initializeApp({
   apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
   authDomain:        "nabil-pro.firebaseapp.com",
@@ -48,20 +45,26 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(payload => {
   const title = payload.notification?.title || 'Nabil Pro 🛵';
-  const body  = payload.notification?.body  || 'أوردر جديد';
+  const body  = payload.notification?.body  || 'إشعار جديد';
   return self.registration.showNotification(title, {
-    body, icon:'https://mn625237-cyber.github.io/nabil-pro/icon-192.png',
-    badge:'https://mn625237-cyber.github.io/nabil-pro/icon-192.png',
-    tag:'nabil-order', renotify:true, vibrate:[200,100,200], data:{url:'/'}
+    body,
+    icon:    'https://mn625237-cyber.github.io/nabil-pro/icon-192.png',
+    badge:   'https://mn625237-cyber.github.io/nabil-pro/icon-192.png',
+    tag:     'nabil-order',
+    renotify: true,
+    vibrate: [200, 100, 200],
+    requireInteraction: true,
+    data:    { url: 'https://nabil-pro.vercel.app' }
   });
 });
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(
-    clients.matchAll({type:'window',includeUncontrolled:true}).then(list => {
-      for (const c of list) if (c.url.includes('nabil-pro') && 'focus' in c) return c.focus();
-      if (clients.openWindow) return clients.openWindow('https://mn625237-cyber.github.io/nabil-pro/');
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list)
+        if (c.url.includes('nabil-pro') && 'focus' in c) return c.focus();
+      if (clients.openWindow) return clients.openWindow('https://nabil-pro.vercel.app');
     })
   );
 });

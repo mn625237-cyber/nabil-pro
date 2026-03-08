@@ -222,42 +222,48 @@ async function subscribeFCM() {
   try {
     if (!('serviceWorker' in navigator)) { showToast('SW غير مدعوم'); return; }
     if (!('PushManager' in window))      { showToast('Push غير مدعوم'); return; }
-    showToast('جاري تسجيل الاشعارات...');
-    const reg = await navigator.serviceWorker.ready;
-    showToast('SW جاهز');
-    const permission = Notification.permission;
-    showToast('اذن الاشعارات: ' + permission);
-    if (permission !== 'granted') {
+
+    // خطوة 1: permission
+    if (Notification.permission !== 'granted') {
       const p = await Notification.requestPermission();
       if (p !== 'granted') { showToast('الاذن مرفوض'); return; }
     }
+
+    // خطوة 2: SW
+    const reg = await navigator.serviceWorker.ready;
+
+    // خطوة 3: امسح اي subscription قديمة
+    const existingSub = await reg.pushManager.getSubscription();
+    if (existingSub) {
+      await existingSub.unsubscribe();
+      showToast('تم مسح الاشتراك القديم...');
+    }
+
+    // خطوة 4: deleteToken اولا
     const msg = firebase.messaging();
+    try { await msg.deleteToken(); } catch(e) {}
+
+    // خطوة 5: احصل على token جديد
     showToast('جاري الحصول على Token...');
+    await new Promise(r => setTimeout(r, 1000));
     const token = await msg.getToken({
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: reg
     });
-    if (!token) { showToast('Token فارغ!'); return; }
-    showToast('Token تمام - جاري الحفظ...');
+
+    if (!token) { showToast('Token فارغ - حاول تاني'); return; }
+
+    // خطوة 6: احفظ في Firestore
     await db.collection('fcm_tokens').doc(currentUser.uid).set({
       uid: currentUser.uid,
       token,
       role: userProfile.role || 'manager',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    showToast('Token محفوظ! الاشعارات شغالة');
-    msg.onTokenRefresh(async () => {
-      const newToken = await msg.getToken({
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: reg
-      });
-      await db.collection('fcm_tokens').doc(currentUser.uid).update({
-        token: newToken,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    });
+    showToast('الاشعارات شغالة الان!');
+
   } catch(e) {
-    showToast('خطا FCM: ' + (e.message || e.code || String(e)));
+    showToast('خطا: ' + (e.message || e.code || String(e)));
     console.error('خطأ FCM:', e);
   }
 }

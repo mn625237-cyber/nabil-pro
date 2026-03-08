@@ -11,57 +11,19 @@
 <link rel="manifest" href="./manifest.json">
 
 <script>
-const VAPID_KEY = 'BKX2GMWVcMyv2iKtOGYlUncelQya3PQV-gdJATLpVsB9OuhcqszVLE8ObleVs3eo0oykGAA7DNpQukV077keZz0';
-let swRegistration = null, fcmToken = null;
+let swRegistration = null;
 
 async function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  try { swRegistration = await navigator.serviceWorker.register('./sw.js'); } catch(e) {}
-}
-
-async function subscribeFCM() {
-  // المديرين فقط يستقبلوا إشعارات
-  if (!swRegistration || !currentUser) return;
-  const actualRole = userProfile?._savedRole || userProfile?.role;
-  if (actualRole !== 'manager') {
-    // لو مندوب - امسح التوكن لو موجود
-    try { await db.collection('fcm_tokens').doc(currentUser.uid).delete(); } catch(e) {}
-    return;
-  }
   try {
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') return;
-    const messaging = firebase.messaging();
-    fcmToken = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swRegistration });
-    if (fcmToken) {
-      await db.collection('fcm_tokens').doc(currentUser.uid).set({
-        token: fcmToken, uid: currentUser.uid,
-        role: 'manager',
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-    messaging.onTokenRefresh(async () => {
-      const t = await messaging.getToken({ vapidKey: VAPID_KEY });
-      await db.collection('fcm_tokens').doc(currentUser.uid).set({
-        token:t, uid:currentUser.uid, role:'manager',
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      });
-    });
-    messaging.onMessage(payload => {
-      const title = payload.notification?.title || 'Nabil Pro';
-      const body = payload.notification?.body || '';
-      showToast('🔔 ' + title + ': ' + body);
-      if (navigator.vibrate) navigator.vibrate([200,100,200]);
-    });
+    swRegistration = await navigator.serviceWorker.register('./sw.js');
   } catch(e) {}
 }
 
-function sendPushNotification() {}
-function subscribeToNtfy() {}
 window.addEventListener('load', () => { registerSW(); });
 </script>
 
-<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEqklEQVR4nO3VTapcZwxFUbdDwL00M5eMyTP0rNxzIFAxGPu9d/VzJJ0Nu13UlRb6Pv3x+W+ix32S/wNaHYAoFIAoFIDe6Os/f8r/w+R8Af0rIzf5F0lyAZTOBVL/dRmQBI0bpoOA5FasJN0BJJfhKWk9ILkDc0lbAcm3jqStgORrhtFWQPLVwmgrIPk6YbQVkHyFE5JvYSUg+dqmJd/IGkDyVU1Ovp3pgOQbmp98R0MByRezK/m+ZgGS7+NXffvyl/w/TDakB6TFkZUtIzGgvWJGeTIFdAyNFpMXIAc3EkkWgNzcNEs6DsicTg+js4Cg08boICDoNDO6Awg6hxmVA4KOnNFiQNAZwmglIPQ4GKoCBJ2BjBwByfc3ITtA0BnLaAEg9FgZSgaEHjdDmYCgs4jROEDo8TQ0BZB8Hxu7Awg9toYSAKHH2VAUEHomJDSkBCSf+6VWAkLPqCSGngNCz8D6DQkAyad8ux2AOD9jaz5CTwChZ3idhloBySfr01xA6NlSjyEAnW0iIPTsqsFQByD5HJ0bBIjzs7HqI1QOSD5BGgEIPaurMwQgi8SA0HOgIkMAckkGCD1nqjAEIKPWAJJPin5VNyDOz7HSj1A+IPmM6PcBiEL1AULP1RINAcixoYDkc6H3Vw6I83O7rCMEINPGAZJPhD5aISDOj0MpRwhAvg0CJJ8FPQtAFKoEEO+XT/FXDEDWjQAknwJFAhCFAhCFAhCFSgb00Z8D0PYebDwTkPz7KR6AKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKFQaIPTY9tgQF4h4wigWgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCiUEhCGtvdg478DxBFyK6IHQAQgigUgCqUHhKG9Pdg1gOj/SgDxivkU1AMg96YAwtDG4u8XgKwrBMQr5lBcTyYgDO0q5fwAyLdyQLxit0vRkwwIQ1vKOj8AMq0JEIZOlqgHQI5NB4ShyT1b6HNAHKFj5eqpAoShmaWfHwB5pQGEoRtV6AGQUUpAGNpekR4AuaQHhKG91enpAIShjXpKAHGENlaqpwkQhnbpKQSEoUU16AHQ5YYCwtCKevR0A8LQcD1NgDA0uU49zwHxkI2tU48GEIYG6hEAwtC0+vVEAWFoThI9YkAYmqBHDAhD8oR6cgBhyFZPGiAMeeoZBAhDzXrGAcKQoZ5kQCmGYFRNJ1FPPiAMWekpAYQhHz1VgLIMwSiRToWeBYAwlDjJTYByDXkyyh1g0ZYLAWHovJ5yQOmGHBilT6x0v+WAKgxdZVQxqOrldgCC0Uk63YCKDG1nVDSTtp22AqoztJFR3Sg6F9oNqNTQFkalE2jepgBQtaGxkhq+un+VGkBtjCZI6vlM1RKVgNoM9WNq/i7hBsWA+g0VeRJ+hXZ9ekByRm8ik/+HmXRmAZpsaGbyfY0DBKNddIYCwtAiPUMBwWgFnemAYDSczg5A5ozkkz8CyJCRfNoHAZkwkk/4OKDDjORTNQJ0SZJ8htaAXskdWLl5dQfQK7kMBzevDgJ6Jbdy2M2ry4B+DDRFuQD6Obik5AvondnKeGcAolAAolAAolDfAYOGVRpMJjD1AAAAAElFTkSuQmCC">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEqklEQVR4nO3VTapcZwxFUbdDwL00M5eMyTP0rNxzIFAxGPu9d/VzJJ0Nu13UlRb6Pv3x+W+ix32S/wNaHYAoFIAoFIDe6Os/f8r/w+R8Af0rIzf5F0lyAZTOBVL/dRmQBI0bpoOA5FasJN0BJJfhKWk9ILkDc0lbAcm3jqStgORrhtFWQPLVwmgrIPk6YbQVkHyFE5JvYSUg+dqmJd/IGkDyVU1Ovp3pgOQbmp98R0MByRezK/m+ZgGS7+NXffvyl/w/TDakB6TFkZUtIzGgvWJGeTIFdAyNFpMXIAc3EkkWgNzcNEs6DsicTg+js4Cg08boICDoNDO6Awg6hxmVA4KOnNFiQNAZwmglIPQ4GKoCBJ2BjBwByfc3ITtA0BnLaAEg9FgZSgaEHjdDmYCgs4jROEDo8TQ0BZB8Hxu7Awg9toYSAKHH2VAUEHomJDSkBCSf+6VWAkLPqCSGngNCz8D6DQkAyad8ux2AOD9jaz5CTwChZ3idhloBySfr01xA6NlSjyEAnW0iIPTsqsFQByD5HJ0bBIjzs7HqI1QOSD5BGgEIPaurMwQgi8SA0HOgIkMAckkGCD1nqjAEIKPWAJJPin5VNyDOz7HSj1A+IPmM6PcBiEL1AULP1RINAcixoYDkc6H3Vw6I83O7rCMEINPGAZJPhD5aISDOj0MpRwhAvg0CJJ8FPQtAFKoEEO+XT/FXDEDWjQAknwJFAhCFAhCFAhCFSgb00Z8D0PYebDwTkPz7KR6AKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKFQaIPTY9tgQF4h4wigWgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCiUEhCGtvdg478DxBFyK6IHQAQgigUgCqUHhKG9Pdg1gOj/SgDxivkU1AMg96YAwtDG4u8XgKwrBMQr5lBcTyYgDO0q5fwAyLdyQLxit0vRkwwIQ1vKOj8AMq0JEIZOlqgHQI5NB4ShyT1b6HNAHKFj5eqpAoShmaWfHwB5pQGEoRtV6AGQUUpAGNpekR4AuaQHhKG91enpAIShjXpKAHGENlaqpwkQhnbpKQSEoUU16AHQ5YYCwtCKevR0A8LQcD1NgDA0uU49zwHxkI2tU48GEIYG6hEAwtC0+vVEAWFoThI9YkAYmqBHDAhD8oR6cgBhyFZPGiAMeeoZBAhDzXrGAcKQoZ5kQCmGYFRNJ1FPPiAMWeoZBAhDzXrGAcKQoZ5kQCmGYFRNJ1FPPiAMWeqpAYQhHz1VgLIMwSiRToWeBYAwlDjJTYByDXkyyh1g0ZYLAWHovJ5yQOmGHBilT6x0v+WAKgxdZVQxqOrldgCC0Uk63YCKDG1nVDSTtp22AqoztJFR3Sg6F9oNqNTQFkalE2jepgBQtaGxkhq+un+VGkBtjCZI6vlM1RKVgNoM9WNq/i7hBsWA+g0VeRJ+hXZ9ekByRm8ik/+HmXRmAZpsaGbyfY0DBKNddIYCwtAiPUMBwWgFnemAYDSczg5A5ozkkz8CyJCRfNoHAZkwkk/4OKDDjORTNQJ0SZJ8htaAXskdWLl5dQfQK7kMBzevDgJ6Jbdy2M2ry4B+DDRFuQD6Obik5AvondnKeGcAolAAolAAolDfAYOGVRpMJjD1AAAAAElFTkSuQmCC">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
@@ -75,12 +37,13 @@ window.addEventListener('load', () => { registerSW(); });
 </head>
 <body>
 
-<!-- OFFLINE -->
+<!-- PTR Indicator -->
 <div id="ptrIndicator" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9999;
   background:var(--orange);color:#fff;border-radius:50%;width:36px;height:36px;
   display:flex;align-items:center;justify-content:center;font-size:18px;
   opacity:0;transition:opacity .2s,transform .3s;pointer-events:none;">🔄</div>
 
+<!-- OFFLINE -->
 <div class="screen" id="offlineScreen">
   <div class="offline-blob">📡</div>
   <div class="offline-title">لا يوجد اتصال</div>
@@ -132,7 +95,6 @@ window.addEventListener('load', () => { registerSW(); });
 
 <!-- DRIVER APP -->
 <div class="screen" id="driverApp">
-  <!-- DRIVER HEADER -->
   <div class="drv-header">
     <div class="drv-header-logo">🛵</div>
     <div class="drv-header-title">Nabil <span>Pro</span></div>
@@ -145,16 +107,14 @@ window.addEventListener('load', () => { registerSW(); });
     <div class="status-dot pulse" id="statusDot"></div>
     <span id="statusText">متصل • 0 أوردر</span>
   </div>
-  <!-- عناصر مخفية للكود -->
   <span id="driverNameDisplay" style="display:none"></span>
   <span id="clockDisplay" style="display:none"></span>
   <span id="dateDisplay" style="display:none"></span>
 
   <div class="pages-wrapper" id="pagesWrapper">
+
     <!-- Page 0: Home -->
     <div class="page" id="homePage">
-
-      <!-- 4 مربعات بحجم كبير 2×2 -->
       <div class="big-stats-grid">
         <div class="big-stat bs1" onclick="goPage(1)" style="cursor:pointer">
           <div class="bs-icon">📦</div>
@@ -192,7 +152,9 @@ window.addEventListener('load', () => { registerSW(); });
         <button class="filter-btn" onclick="setFilter(this,'cash')">كاش</button>
         <button class="filter-btn" onclick="setFilter(this,'visa')">فيزا</button>
       </div>
-      <div id="ordersList"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد أوردرات</div></div></div>
+      <div id="ordersList">
+        <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد أوردرات</div></div>
+      </div>
     </div>
 
     <!-- Page 2: Add Order -->
@@ -266,7 +228,7 @@ window.addEventListener('load', () => { registerSW(); });
       <button class="add-btn" onclick="addRestaurant()">➕ إضافة مطعم</button>
       <div id="backToMgrWrap" style="display:none;margin-bottom:12px">
         <div class="settings-group">
-          <div class="settings-item" onclick="switchBackToManager()" style="color:var(--purple)">
+          <div class="settings-item" onclick="switchBackToManager()">
             <div class="settings-item-icon" style="background:var(--purple-bg)">👑</div>
             <div class="settings-item-label" style="color:var(--purple)">العودة للوحة المدير</div>
           </div>
@@ -279,7 +241,8 @@ window.addEventListener('load', () => { registerSW(); });
         </div>
       </div>
     </div>
-  </div>
+
+  </div><!-- end pages-wrapper -->
 
   <!-- Bottom Nav -->
   <div class="bottom-nav">
@@ -299,7 +262,7 @@ window.addEventListener('load', () => { registerSW(); });
       <span>الإعدادات</span>
     </button>
   </div>
-</div>
+</div><!-- end driverApp -->
 
 <!-- MANAGER APP -->
 <div class="screen" id="managerApp">
@@ -310,10 +273,10 @@ window.addEventListener('load', () => { registerSW(); });
     </div>
     <span class="mgr-badge" id="managerBadge">مدير</span>
     <button class="hdr-btn" onclick="showMgrSettings()" style="background:var(--bg3);">⚙️</button>
-
   </div>
 
   <div class="mgr-content">
+
     <!-- Panel 0: Overview -->
     <div class="mgr-panel active" id="mgrPanel0">
       <div class="mgr-stats-grid">
@@ -338,8 +301,19 @@ window.addEventListener('load', () => { registerSW(); });
           <div class="mgr-stat-val" id="mgrStatCash">ج٠</div>
         </div>
       </div>
+
+      <!-- بحث في الأوردرات -->
+      <div style="padding:0 0 8px">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" placeholder="بحث في الأوردرات..." id="orderSearchInput" oninput="searchOrders(this.value)">
+        </div>
+      </div>
+
       <div class="feed-header"><div class="live-dot"></div> آخر الأوردرات</div>
-      <div id="mgrRecentOrders"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا أوردرات بعد</div></div></div>
+      <div id="mgrRecentOrders">
+        <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا أوردرات بعد</div></div>
+      </div>
     </div>
 
     <!-- Panel 1: Team -->
@@ -366,7 +340,8 @@ window.addEventListener('load', () => { registerSW(); });
       </div>
       <div id="reportsContent"></div>
     </div>
-  </div>
+
+  </div><!-- end mgr-content -->
 
   <div class="mgr-tabs">
     <button class="mgr-tab active" onclick="mgrTab(0,this)"><span class="t-icon">📊</span>عامة</button>
@@ -374,9 +349,9 @@ window.addEventListener('load', () => { registerSW(); });
     <button class="mgr-tab" onclick="mgrTab(2,this)"><span class="t-icon">🏪</span>مطاعم</button>
     <button class="mgr-tab" onclick="mgrTab(3,this)"><span class="t-icon">📈</span>تقارير</button>
   </div>
-</div>
+</div><!-- end managerApp -->
 
-<!-- Driver Detail -->
+<!-- Driver Detail Overlay -->
 <div class="detail-overlay" id="driverDetailOverlay">
   <div class="detail-header">
     <button class="back-btn" onclick="closeDriverDetail()">←</button>
@@ -386,7 +361,7 @@ window.addEventListener('load', () => { registerSW(); });
     </div>
     <div class="detail-actions">
       <button class="detail-action-btn" style="background:var(--orange-bg);color:var(--orange);" onclick="changeDriverPin()">🔑</button>
-      <button class="detail-action-btn" style="background:var(--purple-bg);color:var(--purple);" onclick="toggleDriverRole()" id="roleBtn">👑</button>
+      <button class="detail-action-btn" style="background:var(--purple-bg);color:var(--purple);" onclick="toggleDriverRole()">👑</button>
       <button class="detail-action-btn" style="background:var(--red-bg);color:var(--red);" onclick="removeDriver()">🗑</button>
     </div>
   </div>
@@ -396,6 +371,10 @@ window.addEventListener('load', () => { registerSW(); });
       <div class="detail-stat"><div class="detail-stat-val" id="detailDelivery">0</div><div class="detail-stat-lbl">دخل التوصيل</div></div>
       <div class="detail-stat"><div class="detail-stat-val" id="detailTotal">0</div><div class="detail-stat-lbl">إجمالي كاش</div></div>
     </div>
+
+    <!-- أزرار تصفية الحساب والإحصائيات -->
+    <div id="detailExtraBtns" style="padding:0 0 8px"></div>
+
     <div class="sec-title">أوردرات اليوم</div>
     <div id="detailOrdersList"></div>
   </div>

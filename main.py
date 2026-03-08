@@ -1,10 +1,9 @@
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging, auth
-import os, json, time, threading
+import os, json, time, threading, re
 from datetime import datetime, timezone
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
-import re
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 # ══════════════════════════════════
 # FIREBASE INIT
@@ -18,7 +17,13 @@ db = firestore.client()
 print('🚀 Nabil Pro FCM Listener شغال...')
 
 # ══════════════════════════════════
-# TOKEN CACHE — بدل ما يجيب من Firestore كل مرة
+# FLASK APP
+# ══════════════════════════════════
+app = Flask(__name__)
+CORS(app)
+
+# ══════════════════════════════════
+# TOKEN CACHE
 # ══════════════════════════════════
 _tokens_cache = []
 _tokens_last_updated = None
@@ -28,10 +33,8 @@ def get_manager_tokens():
     global _tokens_cache, _tokens_last_updated
     now = datetime.now()
     with _tokens_lock:
-        # لو الكاش أقل من 5 دقائق — استخدمه مباشرة (بدون Firestore read)
         if _tokens_last_updated and (now - _tokens_last_updated).seconds < 300:
             return list(_tokens_cache)
-        # لو أكبر أو أول مرة — حدّث من Firestore
         try:
             docs = db.collection('fcm_tokens').stream()
             token_list = []
@@ -67,108 +70,21 @@ def get_manager_tokens():
         return list(_tokens_cache)
 
 def invalidate_token_cache():
-    """امسح الكاش فوراً عند أي تغيير في التوكنز"""
     global _tokens_last_updated
     with _tokens_lock:
         _tokens_last_updated = None
 
 # ══════════════════════════════════
-# HTTP SERVER — KeepAlive + PIN API
-# ══════════════════════════════════
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        parsed = urlparse(self.path)
-        
-        if parsed.path == '/ping' or parsed.path == '/':
-            # KeepAlive endpoint — cron-job.org بيضربه كل 10 دقائق
-            self.send_response(200)
-            self.send_header('Content-type', 'text/plain')
-            self.end_headers()
-            self.wfile.write(b'Nabil Pro - Alive! ' + str(datetime.now()).encode())
-        else:
-            self.send_response(404)
-            self.end_headers()
-
-    def do_POST(self):
-        parsed = urlparse(self.path)
-        
-        if parsed.path == '/update-pin':
-            # PIN Update API — المدير يغير كود المندوب
-            try:
-                length = int(self.headers.get('Content-Length', 0))
-                body = json.loads(self.rfile.read(length))
-                uid = body.get('uid', '').strip()
-                new_pin = str(body.get('pin', '')).strip()
-                
-                # تحقق من صحة البيانات
-                if not uid or not re.match(r'^\d{6}$', new_pin):
-                    self._json(400, {'error': 'uid وpin مطلوبان (6 أرقام)'})
-                    return
-                
-                # تحديث Firebase Auth مباشرة بـ Admin SDK
-                auth.update_user(uid, password=new_pin)
-                
-                # تحديث Firestore
-                db.collection('users').document(uid).update({
-                    'pin': new_pin,
-                    'pinUpdatedAt': firestore.SERVER_TIMESTAMP
-                })
-                
-                print(f'✅ PIN محدث للمستخدم: {uid}')
-                self._json(200, {'success': True})
-                
-            except auth.UserNotFoundError:
-                self._json(404, {'error': 'المستخدم مش موجود'})
-            except Exception as e:
-                print(f'خطأ في تحديث PIN: {e}')
-                self._json(500, {'error': str(e)})
-        
-        elif parsed.path == '/invalidate-tokens':
-            # endpoint لإخبار السيرفر إن التوكنز اتغيرت
-            invalidate_token_cache()
-            self._json(200, {'success': True, 'message': 'Cache cleared'})
-        
-        else:
-            self.send_response(404)
-            self.end_headers()
-
-    def _json(self, code, data):
-        self.send_response(code)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.end_headers()
-        self.wfile.write(json.dumps(data, ensure_ascii=False).encode())
-
-    def do_OPTIONS(self):
-        # CORS preflight
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
-
-    def log_message(self, format, *args):
-        pass  # بلاش logs مزعجة
-
-def run_http_server():
-    port = int(os.environ.get('PORT', 8080))
-    server = HTTPServer(('0.0.0.0', port), Handler)
-    print(f'🌐 HTTP Server على port {port}')
-    server.serve_forever()
-
-http_thread = threading.Thread(target=run_http_server, daemon=True)
-http_thread.start()
-
-# ══════════════════════════════════
 # FCM
 # ══════════════════════════════════
-def send_fcm(title, body):
+def send_fcm(title, body, data=None):
     tokens = get_manager_tokens()
     if not tokens:
         print('مفيش مديرين مسجلين')
         return
     msg = messaging.MulticastMessage(
         notification=messaging.Notification(title=title, body=body),
+        data=data or {},
         tokens=tokens,
         android=messaging.AndroidConfig(priority='high'),
         apns=messaging.APNSConfig(headers={'apns-priority': '10'})
@@ -183,9 +99,99 @@ def send_fcm(title, body):
                         bad_docs = db.collection('fcm_tokens').where('token','==',tokens[i]).stream()
                         for d in bad_docs: d.reference.delete()
                     except: pass
-            invalidate_token_cache()  # امسح الكاش لو في توكنز باظت
+            invalidate_token_cache()
     except Exception as e:
         print(f'خطأ FCM: {e}')
+
+def send_fcm_to_user(uid, title, body):
+    """إرسال إشعار لمستخدم معين (مندوب)"""
+    try:
+        token_doc = db.collection('fcm_tokens').document(uid).get()
+        if not token_doc.exists:
+            return
+        token = token_doc.to_dict().get('token')
+        if not token:
+            return
+        msg = messaging.Message(
+            notification=messaging.Notification(title=title, body=body),
+            token=token,
+            android=messaging.AndroidConfig(priority='high'),
+        )
+        messaging.send(msg)
+        print(f'✅ إشعار لـ {uid}')
+    except Exception as e:
+        print(f'خطأ إشعار مندوب: {e}')
+
+# ══════════════════════════════════
+# ROUTES
+# ══════════════════════════════════
+
+@app.route('/ping', methods=['GET'])
+@app.route('/', methods=['GET'])
+def ping():
+    return f'Nabil Pro - Alive! {datetime.now()}', 200
+
+@app.route('/update-pin', methods=['POST'])
+def update_pin():
+    try:
+        body = request.get_json()
+        uid = body.get('uid', '').strip()
+        new_pin = str(body.get('pin', '')).strip()
+
+        if not uid or not re.match(r'^\d{6}$', new_pin):
+            return jsonify({'error': 'uid وpin مطلوبان (6 أرقام)'}), 400
+
+        auth.update_user(uid, password=new_pin)
+        db.collection('users').document(uid).update({
+            'pin': new_pin,
+            'pinUpdatedAt': firestore.SERVER_TIMESTAMP
+        })
+
+        # إشعار للمندوب إن الـ PIN اتغير
+        driver_doc = db.collection('users').document(uid).get()
+        if driver_doc.exists:
+            driver_name = driver_doc.to_dict().get('name', 'المندوب')
+            send_fcm_to_user(uid, '🔑 تم تغيير كودك', 'تم تغيير كود الدخول بتاعك من قِبل المدير')
+
+        print(f'✅ PIN محدث للمستخدم: {uid}')
+        return jsonify({'success': True})
+
+    except auth.UserNotFoundError:
+        return jsonify({'error': 'المستخدم مش موجود'}), 404
+    except Exception as e:
+        print(f'خطأ في تحديث PIN: {e}')
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/invalidate-tokens', methods=['POST'])
+def invalidate_tokens():
+    invalidate_token_cache()
+    return jsonify({'success': True, 'message': 'Cache cleared'})
+
+@app.route('/notify-driver', methods=['POST'])
+def notify_driver():
+    """إرسال إشعار لمندوب معين"""
+    try:
+        body = request.get_json()
+        uid = body.get('uid', '').strip()
+        title = body.get('title', '')
+        message = body.get('body', '')
+        if not uid or not title:
+            return jsonify({'error': 'uid و title مطلوبان'}), 400
+        send_fcm_to_user(uid, title, message)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/status', methods=['GET'])
+def status():
+    """صفحة حالة السيرفر"""
+    tokens = get_manager_tokens()
+    return jsonify({
+        'status': 'running',
+        'time': str(datetime.now()),
+        'managers_with_tokens': len(tokens),
+        'listener_active': startup_done
+    })
 
 # ══════════════════════════════════
 # FIRESTORE LISTENER
@@ -216,5 +222,10 @@ def on_snapshot(col_snapshot, changes, read_time):
 col_watch = db.collection('orders').on_snapshot(on_snapshot)
 print('👂 بيسمع على Firestore...')
 
-while True:
-    time.sleep(60)
+# ══════════════════════════════════
+# START SERVER
+# ══════════════════════════════════
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8080))
+    print(f'🌐 Flask Server على port {port}')
+    app.run(host='0.0.0.0', port=port, threaded=True)

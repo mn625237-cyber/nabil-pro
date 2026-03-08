@@ -223,8 +223,11 @@ async function subscribeFCM() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     const reg = await navigator.serviceWorker.ready;
     const msg = firebase.messaging();
-    msg.useServiceWorker(reg);
-    const token = await msg.getToken({ vapidKey: VAPID_KEY });
+    // ✅ Firebase 10 — بدون useServiceWorker، بنمرر reg في getToken مباشرة
+    const token = await msg.getToken({
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: reg
+    });
     if (!token) { console.log('لا توكن FCM'); return; }
     await db.collection('fcm_tokens').doc(currentUser.uid).set({
       uid: currentUser.uid,
@@ -234,7 +237,10 @@ async function subscribeFCM() {
     });
     console.log('✅ FCM Token محفوظ:', token.substring(0,20)+'...');
     msg.onTokenRefresh(async () => {
-      const newToken = await msg.getToken({ vapidKey: VAPID_KEY });
+      const newToken = await msg.getToken({
+        vapidKey: VAPID_KEY,
+        serviceWorkerRegistration: reg
+      });
       await db.collection('fcm_tokens').doc(currentUser.uid).update({
         token: newToken,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()

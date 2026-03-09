@@ -232,13 +232,12 @@ async function subscribeFCM() {
     // خطوة 2: SW
     const reg = await navigator.serviceWorker.ready;
     
-    // انتظر حتى يصبح SW active ويتحكم في الصفحة
+    // لو الـ SW مسجل بس مش مفعّل بعد
     if (!navigator.serviceWorker.controller) {
-      await new Promise(resolve => {
-        navigator.serviceWorker.addEventListener('controllerchange', resolve, {once: true});
-        // لو ما جاش خلال 3 ثواني، كمّل
-        setTimeout(resolve, 3000);
-      });
+      showToast('جاري تفعيل الخدمة - سيتم تحديث الصفحة...');
+      await new Promise(r => setTimeout(r, 1500));
+      window.location.reload();
+      return;
     }
 
     // خطوة 3: امسح اي subscription قديمة

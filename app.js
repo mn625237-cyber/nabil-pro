@@ -231,6 +231,15 @@ async function subscribeFCM() {
 
     // خطوة 2: SW
     const reg = await navigator.serviceWorker.ready;
+    
+    // انتظر حتى يصبح SW active ويتحكم في الصفحة
+    if (!navigator.serviceWorker.controller) {
+      await new Promise(resolve => {
+        navigator.serviceWorker.addEventListener('controllerchange', resolve, {once: true});
+        // لو ما جاش خلال 3 ثواني، كمّل
+        setTimeout(resolve, 3000);
+      });
+    }
 
     // خطوة 3: امسح اي subscription قديمة
     const existingSub = await reg.pushManager.getSubscription();

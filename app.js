@@ -263,7 +263,7 @@ async function subscribeFCM() {
     showToast('الاشعارات شغالة الان!');
 
   } catch(e) {
-    showToast('خطا: ' + (e.message || e.code || String(e)));
+    alert('FCM Error Full: ' + e.message + ' | code: ' + e.code + ' | ' + String(e));
     console.error('خطأ FCM:', e);
   }
 }

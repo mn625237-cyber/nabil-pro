@@ -2,8 +2,8 @@
 // Nabil Pro - Service Worker v7
 // ══════════════════════════════════════════════════════
 
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/11.4.0/firebase-messaging-compat.js');
 
 const CACHE_NAME = 'nabil-pro-v7';
 const CACHE_FILES = ['/', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
@@ -33,7 +33,7 @@ self.addEventListener('fetch', e => {
 });
 
 firebase.initializeApp({
-  apiKey:            "AIzaSyDpgMDU6DfzBK_TbqM0dARskUBdugMeDPA",
+  apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
   authDomain:        "nabil-pro.firebaseapp.com",
   projectId:         "nabil-pro",
   storageBucket:     "nabil-pro.firebasestorage.app",

@@ -247,11 +247,26 @@ async function subscribeFCM() {
       showToast('تم مسح الاشتراك القديم...');
     }
 
-    // خطوة 4: deleteToken اولا
+    // خطوة 4: امسح Firebase Installations cache
+    try {
+      const dbsToDelete = [
+        'firebase-installations-database',
+        `firebase-installations-idb-store-${FIREBASE_CONFIG.appId}-db`
+      ];
+      for (const db of dbsToDelete) {
+        await new Promise(r => {
+          const req = indexedDB.deleteDatabase(db);
+          req.onsuccess = req.onerror = r;
+        });
+      }
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 500));
+
+    // خطوة 5: deleteToken
     const msg = firebase.messaging();
     try { await msg.deleteToken(); } catch(e) {}
 
-    // خطوة 5: احصل على token جديد
+    // خطوة 6: احصل على token جديد
     showToast('جاري الحصول على Token...');
     await new Promise(r => setTimeout(r, 1000));
     const token = await msg.getToken({

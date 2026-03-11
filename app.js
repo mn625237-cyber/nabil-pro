@@ -12,7 +12,7 @@ function sanitize(str) {
 const RAILWAY_URL = 'https://nabil-pro-production.up.railway.app';
 
 const FIREBASE_CONFIG = {
-  apiKey:"AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
+  apiKey:"AIzaSyDpgMDU6DfzBK_TbqM0dARskUBdugMeDPA",
   authDomain:"nabil-pro.firebaseapp.com",
   projectId:"nabil-pro",
   storageBucket:"nabil-pro.firebasestorage.app",
@@ -276,7 +276,7 @@ async function subscribeFCM() {
 
     if (!token) { showToast('Token فارغ - حاول تاني'); return; }
 
-    // خطوة 6: احفظ في Firestore
+    // خطوة 7: احفظ في Firestore
     await db.collection('fcm_tokens').doc(currentUser.uid).set({
       uid: currentUser.uid,
       token,
@@ -622,7 +622,6 @@ async function addOrder() {
   if (editingOrderId) {
     const prevOrder = ordersCache.find(o=>o.id===editingOrderId);
     await ordersRef.doc(editingOrderId).update(orderData);
-    // إشعار للمندوب لو المدير عدّل أوردره
     if (prevOrder && prevOrder.driverId !== currentUser.uid) {
       await notifyDriverOrderEdited({...prevOrder, ...orderData});
     }
@@ -1074,7 +1073,6 @@ function showDriverDetail(uid) {
     }).join('')
     :'<div class="empty-state"><div class="empty-text">لا أوردرات اليوم</div></div>';
 
-  // أزرار إضافية في التفاصيل
   const extraBtns = document.getElementById('detailExtraBtns');
   if (extraBtns) {
     extraBtns.innerHTML = `
@@ -1152,9 +1150,6 @@ async function removeDriver() {
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
-// ══════════════════════════════════
-// #5 — تصفية حساب المندوب
-// ══════════════════════════════════
 async function settleDriverAccount(driverUid) {
   if (!driverUid) driverUid = selectedDriverUid;
   if (!driverUid) return;
@@ -1222,9 +1217,6 @@ async function settleDriverAccount(driverUid) {
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
-// ══════════════════════════════════
-// #6 — إشعار للمندوب عند تعديل أوردره
-// ══════════════════════════════════
 async function notifyDriverOrderEdited(order) {
   if (!order || !order.driverId) return;
   try {
@@ -1371,9 +1363,6 @@ function renderMgrReports() {
     </div>`;
 }
 
-// ══════════════════════════════════
-// #8 — تصدير التقرير
-// ══════════════════════════════════
 function exportDailyReport() {
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
   const today = allOrders.filter(o => {
@@ -1416,9 +1405,6 @@ function showExportModal(text) {
     }},{label:'إغلاق',cls:'cancel',action:closeModal}]);
 }
 
-// ══════════════════════════════════
-// #9 — إحصائيات المندوب الشهرية
-// ══════════════════════════════════
 async function showDriverMonthlyStats(driverUid) {
   if (!driverUid) driverUid = selectedDriverUid;
   const driver = allDrivers.find(d=>d.uid===driverUid);
@@ -1467,9 +1453,6 @@ async function showDriverMonthlyStats(driverUid) {
   } catch(e) { showToast('❌ خطأ في التحميل'); }
 }
 
-// ══════════════════════════════════
-// #10 — أرشيف الأوردرات
-// ══════════════════════════════════
 function showOrdersArchive() {
   showModal('📂 أرشيف الأوردرات', `
     <div style="margin-bottom:12px">
@@ -1551,9 +1534,6 @@ function showToast(msg) {
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-// ══════════════════════════════════
-// STAT DETAIL MODALS
-// ══════════════════════════════════
 function showStatDetail(type) {
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
   const today = allOrders.filter(o=>{const t=o.timestamp?.toDate?.()??new Date(o.timestamp);return t>=todayStart;});

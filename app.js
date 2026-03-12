@@ -17,7 +17,7 @@ const FIREBASE_CONFIG = {
   projectId:         "nabil-pro",
   storageBucket:     "nabil-pro.firebasestorage.app",
   messagingSenderId: "82099030853",
-  appId:             "1:82099030853:web:491031fe51ce877b17cc2c"
+  appId:             "1:82099030853:web:89de9eabad2cc53817cc2c"
 };
 
 // ══════════════════════════════════

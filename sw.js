@@ -1,7 +1,7 @@
-importScripts('https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/11.4.0/firebase-messaging-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'nabil-pro-v8';
+const CACHE_NAME = 'nabil-pro-v9';
 const CACHE_FILES = ['/', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

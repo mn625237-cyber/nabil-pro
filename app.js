@@ -12,18 +12,18 @@ function sanitize(str) {
 const RAILWAY_URL = 'https://nabil-pro-production.up.railway.app';
 
 const FIREBASE_CONFIG = {
-  apiKey:"AIzaSyDpgMDU6DfzBK_TbqM0dARskUBdugMeDPA",
-  authDomain:"nabil-pro.firebaseapp.com",
-  projectId:"nabil-pro",
-  storageBucket:"nabil-pro.firebasestorage.app",
-  messagingSenderId:"82099030853",
-  appId:"1:82099030853:web:491031fe51ce877b17cc2c"
+  apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
+  authDomain:        "nabil-pro.firebaseapp.com",
+  projectId:         "nabil-pro",
+  storageBucket:     "nabil-pro.firebasestorage.app",
+  messagingSenderId: "82099030853",
+  appId:             "1:82099030853:web:89de9eabad2cc53817cc2c"
 };
 
 // ══════════════════════════════════
 // FCM VAPID KEY
 // ══════════════════════════════════
-const VAPID_KEY = 'BGQdguh-kuLCvh7V45cnVsUwWuUGsXvgQ68MwmNwn8r-tiZ8C1lIOWazdPYG93yrK9QUQu7BqTWg0mbzqXOClzO';
+const VAPID_KEY = 'BHSALbCEq1izArwDiwM7Ao_lbpBw9IYsncUW9ajUuGRR5rnJZfVGhOACBVNxRbaBTZJfZonQ9tE7AkHOypjp2pg';
 
 let auth, db;
 let currentUser=null, userProfile=null, ordersCache=[], restaurantsCache=[];
@@ -115,7 +115,7 @@ async function loadUserProfile(uid) {
 }
 
 // ══════════════════════════════════
-// AUTH — مع حماية محاولات الدخول
+// AUTH
 // ══════════════════════════════════
 function phoneToEmail(phone) {
   let p = phone.replace(/\D/g,'');
@@ -223,16 +223,13 @@ async function subscribeFCM() {
     if (!('serviceWorker' in navigator)) { showToast('SW غير مدعوم'); return; }
     if (!('PushManager' in window))      { showToast('Push غير مدعوم'); return; }
 
-    // خطوة 1: permission
     if (Notification.permission !== 'granted') {
       const p = await Notification.requestPermission();
       if (p !== 'granted') { showToast('الاذن مرفوض'); return; }
     }
 
-    // خطوة 2: SW
     const reg = await navigator.serviceWorker.ready;
-    
-    // لو الـ SW مسجل بس مش مفعّل بعد
+
     if (!navigator.serviceWorker.controller) {
       showToast('جاري تفعيل الخدمة - سيتم تحديث الصفحة...');
       await new Promise(r => setTimeout(r, 1500));
@@ -240,35 +237,29 @@ async function subscribeFCM() {
       return;
     }
 
-    // خطوة 3: امسح اي subscription قديمة
     const existingSub = await reg.pushManager.getSubscription();
-    if (existingSub) {
-      await existingSub.unsubscribe();
-      showToast('تم مسح الاشتراك القديم...');
-    }
+    if (existingSub) await existingSub.unsubscribe();
 
-    // خطوة 4: امسح Firebase Installations cache
     try {
       const dbsToDelete = [
         'firebase-installations-database',
         `firebase-installations-idb-store-${FIREBASE_CONFIG.appId}-db`
       ];
-      for (const db of dbsToDelete) {
+      for (const dbName of dbsToDelete) {
         await new Promise(r => {
-          const req = indexedDB.deleteDatabase(db);
+          const req = indexedDB.deleteDatabase(dbName);
           req.onsuccess = req.onerror = r;
         });
       }
     } catch(e) {}
     await new Promise(r => setTimeout(r, 500));
 
-    // خطوة 5: deleteToken
     const msg = firebase.messaging();
     try { await msg.deleteToken(); } catch(e) {}
 
-    // خطوة 6: احصل على token جديد
     showToast('جاري الحصول على Token...');
     await new Promise(r => setTimeout(r, 1000));
+
     const token = await msg.getToken({
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: reg
@@ -276,14 +267,13 @@ async function subscribeFCM() {
 
     if (!token) { showToast('Token فارغ - حاول تاني'); return; }
 
-    // خطوة 7: احفظ في Firestore
     await db.collection('fcm_tokens').doc(currentUser.uid).set({
       uid: currentUser.uid,
       token,
       role: userProfile.role || 'manager',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    showToast('الاشعارات شغالة الان!');
+    showToast('✅ الاشعارات شغالة الان!');
 
   } catch(e) {
     alert('FCM Error Full: ' + e.message + ' | code: ' + e.code + ' | ' + String(e));
@@ -591,7 +581,6 @@ function setFilter(el, filter) {
   el.classList.add('active'); renderOrdersList();
 }
 
-// ── ADD ORDER ──
 function selectPayment(type) {
   selectedPayment = type;
   document.getElementById('payCash').className='pay-card'+(type==='cash'?' active-cash':'');
@@ -658,14 +647,12 @@ async function deleteOrder(id) {
      {label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
-// ── NAV ──
 function goPage(n) {
   currentPage=n;
   document.getElementById('pagesWrapper').style.transform=`translateX(${n*25}%)`;
   document.querySelectorAll('.nav-btn').forEach((el,i)=>el.classList.toggle('active',i===n));
 }
 
-// ── SETTINGS ──
 function editDriverName() {
   showModal('تغيير الاسم',`<input class="form-field" id="newNameInput" value="${userProfile.name||''}" placeholder="اسمك...">`,
     [{label:'حفظ',cls:'confirm',action:async()=>{
@@ -710,7 +697,6 @@ function applyTheme(mode) {
 }
 window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{ if (themeMode==='auto'||!themeMode) applyTheme('auto'); });
 
-// ── CLOCK ──
 function updateClock() {
   const now=new Date();
   const h=now.getHours(),m=now.getMinutes();
@@ -729,7 +715,6 @@ function updateClock() {
   }
 }
 
-// ── VOICE ──
 function startVoice(inputId, btnId) {
   if (!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)) { showToast('المتصفح لا يدعم الصوت'); return; }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -919,7 +904,6 @@ function renderMgrRecentOrders() {
   }).join('');
 }
 
-// ── SEARCH ORDERS ──
 function searchOrders(query) {
   if (!query || query.length < 2) { renderMgrRecentOrders(); return; }
   const q = query.toLowerCase();
@@ -949,7 +933,6 @@ function searchOrders(query) {
   }).join('');
 }
 
-// ── DRIVERS ──
 async function loadAllDrivers() {
   const snap=await db.collection('users').get();
   allDrivers=snap.docs.map(d=>({uid:d.id,...d.data()}));
@@ -1072,18 +1055,12 @@ function showDriverDetail(uid) {
       </div>`;
     }).join('')
     :'<div class="empty-state"><div class="empty-text">لا أوردرات اليوم</div></div>';
-
   const extraBtns = document.getElementById('detailExtraBtns');
   if (extraBtns) {
     extraBtns.innerHTML = `
-      <button class="modal-btn confirm" onclick="settleDriverAccount('${uid}')" style="width:100%;margin-bottom:8px">
-        💰 تصفية حساب اليوم
-      </button>
-      <button class="modal-btn cancel" onclick="showDriverMonthlyStats('${uid}')" style="width:100%">
-        📅 إحصائيات الشهر
-      </button>`;
+      <button class="modal-btn confirm" onclick="settleDriverAccount('${uid}')" style="width:100%;margin-bottom:8px">💰 تصفية حساب اليوم</button>
+      <button class="modal-btn cancel" onclick="showDriverMonthlyStats('${uid}')" style="width:100%">📅 إحصائيات الشهر</button>`;
   }
-
   document.getElementById('driverDetailOverlay').classList.add('show');
 }
 
@@ -1106,9 +1083,7 @@ async function changeDriverPin() {
   const driver = allDrivers.find(d => d.uid === selectedDriverUid);
   if (!driver) return;
   showModal('🔑 تغيير كود الدخول', `
-    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">
-      المندوب: <strong>${sanitize(driver.name||'')}</strong>
-    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">المندوب: <strong>${sanitize(driver.name||'')}</strong></div>
     <div class="field-label">كود جديد (6 أرقام)</div>
     <input class="form-field" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">`,
     [{label:'تغيير',cls:'confirm',action:async()=>{
@@ -1118,14 +1093,12 @@ async function changeDriverPin() {
       if (btn) { btn.disabled=true; btn.textContent='جاري...'; }
       try {
         const res = await fetch(RAILWAY_URL + '/update-pin', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ uid: selectedDriverUid, pin: newPin })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'خطأ في السيرفر');
-        closeModal();
-        showToast(`✅ تم تغيير كود ${driver.name} بنجاح`);
+        closeModal(); showToast(`✅ تم تغيير كود ${driver.name} بنجاح`);
       } catch(e) {
         if (btn) { btn.disabled=false; btn.textContent='تغيير'; }
         showToast('❌ ' + (e.message||'تحقق من الاتصال'));
@@ -1166,11 +1139,11 @@ async function settleDriverAccount(driverUid) {
     showModal('تصفية الحساب','<p style="color:var(--text2)">لا أوردرات غير مسوّاة اليوم.</p>',
       [{label:'إغلاق',cls:'cancel',action:closeModal}]); return;
   }
-  const totalCash     = dOrders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
-  const totalRestOwed = dOrders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.restAmount||0),0);
-  const totalDelivery = dOrders.reduce((s,o)=>s+(o.delivery||0),0);
-  const netCash       = totalCash - totalRestOwed;
-  showModal('💰 تصفية حساب ' + sanitize(driver.name), `
+  const totalCash=dOrders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
+  const totalRestOwed=dOrders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.restAmount||0),0);
+  const totalDelivery=dOrders.reduce((s,o)=>s+(o.delivery||0),0);
+  const netCash=totalCash-totalRestOwed;
+  showModal('💰 تصفية حساب '+sanitize(driver.name),`
     <div style="text-align:center;padding:8px 0 16px">
       <div style="font-size:12px;color:var(--text3)">أوردرات اليوم غير المسوّاة</div>
       <div style="font-size:32px;font-weight:900;color:var(--orange)">${dOrders.length} أوردر</div>
@@ -1179,8 +1152,7 @@ async function settleDriverAccount(driverUid) {
       <div class="report-row-detail" style="padding:10px 0"><span>💵 إجمالي كاش محصّل</span><span style="color:var(--gold);font-weight:900">ج${totalCash}</span></div>
       <div class="report-row-detail" style="padding:10px 0"><span>🏪 منه للمطاعم</span><span style="color:var(--orange);font-weight:900">ج${totalRestOwed}</span></div>
       <div class="report-row-detail" style="padding:10px 0;border-top:2px solid var(--border);margin-top:4px">
-        <span style="font-weight:900">💰 يسلّم للمدير</span>
-        <span style="color:var(--green);font-weight:900;font-size:18px">ج${netCash}</span>
+        <span style="font-weight:900">💰 يسلّم للمدير</span><span style="color:var(--green);font-weight:900;font-size:18px">ج${netCash}</span>
       </div>
       <div class="report-row-detail" style="padding:10px 0"><span>🛵 رسوم توصيله</span><span style="color:var(--blue);font-weight:900">ج${totalDelivery}</span></div>
     </div>
@@ -1189,46 +1161,35 @@ async function settleDriverAccount(driverUid) {
       const btn=document.getElementById('mBtn0');
       if(btn){btn.disabled=true;btn.textContent='جاري...';}
       try {
-        const batch = db.batch();
-        dOrders.forEach(o => {
-          batch.update(db.collection('orders').doc(o.id), {
-            settled:true,
-            settledAt:firebase.firestore.FieldValue.serverTimestamp(),
-            settledBy:currentUser.uid
-          });
+        const batch=db.batch();
+        dOrders.forEach(o=>{
+          batch.update(db.collection('orders').doc(o.id),{settled:true,settledAt:firebase.firestore.FieldValue.serverTimestamp(),settledBy:currentUser.uid});
         });
-        batch.set(db.collection('settlements').doc(), {
-          driverId:driverUid, driverName:driver.name, managerId:currentUser.uid,
-          totalCash, totalRestOwed, netCash, totalDelivery,
-          ordersCount:dOrders.length,
+        batch.set(db.collection('settlements').doc(),{
+          driverId:driverUid,driverName:driver.name,managerId:currentUser.uid,
+          totalCash,totalRestOwed,netCash,totalDelivery,ordersCount:dOrders.length,
           date:firebase.firestore.FieldValue.serverTimestamp()
         });
         await batch.commit();
-        await fetch(RAILWAY_URL + '/notify-driver', {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({uid:driverUid, title:'✅ تمت تصفية حسابك',
-            body:`المدير سوّى حسابك — ${dOrders.length} أوردر، توصيلك ج${totalDelivery}`})
+        await fetch(RAILWAY_URL+'/notify-driver',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({uid:driverUid,title:'✅ تمت تصفية حسابك',body:`المدير سوّى حسابك — ${dOrders.length} أوردر، توصيلك ج${totalDelivery}`})
         }).catch(()=>{});
         closeModal(); showToast(`✅ تمت تصفية حساب ${driver.name}`);
-      } catch(e){
-        if(btn){btn.disabled=false;btn.textContent='✅ تأكيد التصفية';}
-        showToast('❌ خطأ: '+e.message);
-      }
+      } catch(e){if(btn){btn.disabled=false;btn.textContent='✅ تأكيد التصفية';}showToast('❌ خطأ: '+e.message);}
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
 async function notifyDriverOrderEdited(order) {
   if (!order || !order.driverId) return;
   try {
-    await fetch(RAILWAY_URL + '/notify-driver', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({uid:order.driverId, title:'📝 تم تعديل أوردرك',
-        body:`${order.restName||''} — ${order.address||''}`})
+    await fetch(RAILWAY_URL+'/notify-driver',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({uid:order.driverId,title:'📝 تم تعديل أوردرك',body:`${order.restName||''} — ${order.address||''}`})
     });
   } catch(e){}
 }
 
-// ── RESTAURANTS ──
 async function loadMgrRestaurants() {
   const snap=await db.collection('restaurants').orderBy('name').get();
   const rests=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -1258,7 +1219,6 @@ async function deleteMgrRest(id,name) {
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
-// ── REPORTS ──
 function mgrTab(n,el) {
   document.querySelectorAll('.mgr-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.mgr-panel').forEach(p=>p.classList.remove('active'));
@@ -1352,230 +1312,143 @@ function renderMgrReports() {
     <div style="margin-top:16px">
       <button onclick="exportDailyReport()" style="width:100%;padding:12px;border-radius:12px;
         background:var(--orange-bg);border:1px solid var(--orange);color:var(--orange);
-        font-family:'Cairo',sans-serif;font-weight:800;font-size:13px;cursor:pointer">
-        📊 تصدير تقرير اليوم
-      </button>
+        font-family:'Cairo',sans-serif;font-weight:800;font-size:13px;cursor:pointer">📊 تصدير تقرير اليوم</button>
       <button onclick="showOrdersArchive()" style="width:100%;padding:12px;border-radius:12px;margin-top:8px;
         background:var(--card);border:1px solid var(--border);color:var(--text2);
-        font-family:'Cairo',sans-serif;font-weight:800;font-size:13px;cursor:pointer">
-        📂 أرشيف الأوردرات
-      </button>
+        font-family:'Cairo',sans-serif;font-weight:800;font-size:13px;cursor:pointer">📂 أرشيف الأوردرات</button>
     </div>`;
 }
 
 function exportDailyReport() {
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  const today = allOrders.filter(o => {
-    if (!o.timestamp) return false;
-    const t = o.timestamp.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
-    return t >= todayStart;
-  });
+  const todayStart=new Date(); todayStart.setHours(0,0,0,0);
+  const today=allOrders.filter(o=>{if(!o.timestamp)return false;const t=o.timestamp.toDate?o.timestamp.toDate():new Date(o.timestamp);return t>=todayStart;});
   if (!today.length) { showToast('لا أوردرات اليوم'); return; }
-  const dateStr = new Date().toLocaleDateString('ar-EG');
-  const totalDelivery = today.reduce((s,o)=>s+(o.delivery||0),0);
-  const totalCash = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
-  const byDriver = {};
-  today.forEach(o => {
+  const dateStr=new Date().toLocaleDateString('ar-EG');
+  const totalDelivery=today.reduce((s,o)=>s+(o.delivery||0),0);
+  const totalCash=today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
+  const byDriver={};
+  today.forEach(o=>{
     if (!byDriver[o.driverId]) byDriver[o.driverId]={name:o.driverName||'؟',orders:0,delivery:0,cash:0};
     byDriver[o.driverId].orders++; byDriver[o.driverId].delivery+=o.delivery||0;
     if (o.payment==='cash') byDriver[o.driverId].cash+=o.total||0;
   });
-  let report = `📊 تقرير Nabil Pro\n📅 ${dateStr}\n${'─'.repeat(25)}\n`;
-  report += `📦 إجمالي الأوردرات: ${today.length}\n`;
-  report += `🛵 إجمالي التوصيل: ج${totalDelivery}\n`;
-  report += `💵 إجمالي الكاش: ج${totalCash}\n${'─'.repeat(25)}\n👥 تفاصيل المناديب:\n`;
-  Object.values(byDriver).sort((a,b)=>b.delivery-a.delivery).forEach(d => {
-    report += `• ${d.name}: ${d.orders} أوردر | ج${d.delivery} توصيل | ج${d.cash} كاش\n`;
-  });
+  let report=`📊 تقرير Nabil Pro\n📅 ${dateStr}\n${'─'.repeat(25)}\n`;
+  report+=`📦 إجمالي الأوردرات: ${today.length}\n🛵 إجمالي التوصيل: ج${totalDelivery}\n💵 إجمالي الكاش: ج${totalCash}\n${'─'.repeat(25)}\n👥 تفاصيل المناديب:\n`;
+  Object.values(byDriver).sort((a,b)=>b.delivery-a.delivery).forEach(d=>{report+=`• ${d.name}: ${d.orders} أوردر | ج${d.delivery} توصيل | ج${d.cash} كاش\n`;});
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(report).then(() => {
-      showToast('✅ التقرير اتنسخ — افتح واتساب والصق');
-    }).catch(() => showExportModal(report));
-  } else { showExportModal(report); }
+    navigator.clipboard.writeText(report).then(()=>showToast('✅ التقرير اتنسخ — افتح واتساب والصق')).catch(()=>showExportModal(report));
+  } else showExportModal(report);
 }
 
 function showExportModal(text) {
   showModal('📊 تقرير اليوم',
-    `<textarea style="width:100%;height:200px;background:var(--bg2);color:var(--text1);
-      border:1px solid var(--border);border-radius:8px;padding:10px;
-      font-family:monospace;font-size:11px;resize:none" readonly>${text}</textarea>`,
-    [{label:'📋 نسخ',cls:'confirm',action:()=>{
-      const ta=document.querySelector('#modalBody textarea');
-      ta.select(); document.execCommand('copy'); showToast('✅ تم النسخ');
-    }},{label:'إغلاق',cls:'cancel',action:closeModal}]);
+    `<textarea style="width:100%;height:200px;background:var(--bg2);color:var(--text1);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none" readonly>${text}</textarea>`,
+    [{label:'📋 نسخ',cls:'confirm',action:()=>{const ta=document.querySelector('#modalBody textarea');ta.select();document.execCommand('copy');showToast('✅ تم النسخ');}},
+     {label:'إغلاق',cls:'cancel',action:closeModal}]);
 }
 
 async function showDriverMonthlyStats(driverUid) {
-  if (!driverUid) driverUid = selectedDriverUid;
-  const driver = allDrivers.find(d=>d.uid===driverUid);
-  if (!driver) return;
+  if (!driverUid) driverUid=selectedDriverUid;
+  const driver=allDrivers.find(d=>d.uid===driverUid); if(!driver)return;
   showToast('⏳ جاري التحميل...');
-  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const monthStart=new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
   try {
-    const snap = await db.collection('orders')
-      .where('driverId','==',driverUid)
-      .where('timestamp','>=', firebase.firestore.Timestamp.fromDate(monthStart))
-      .orderBy('timestamp','desc').get();
-    const orders = snap.docs.map(d=>({id:d.id,...d.data()}));
-    const totalOrders   = orders.length;
-    const totalDelivery = orders.reduce((s,o)=>s+(o.delivery||0),0);
-    const totalCash     = orders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
-    const cashOrders    = orders.filter(o=>o.payment==='cash').length;
-    const visaOrders    = orders.filter(o=>o.payment==='visa').length;
-    const byRest = {};
-    orders.forEach(o=>{ byRest[o.restName||'؟']=(byRest[o.restName||'؟']||0)+1; });
-    const topRest = Object.entries(byRest).sort((a,b)=>b[1]-a[1])[0];
-    const monthName = new Date().toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
+    const snap=await db.collection('orders').where('driverId','==',driverUid).where('timestamp','>=',firebase.firestore.Timestamp.fromDate(monthStart)).orderBy('timestamp','desc').get();
+    const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const totalOrders=orders.length;
+    const totalDelivery=orders.reduce((s,o)=>s+(o.delivery||0),0);
+    const totalCash=orders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
+    const cashOrders=orders.filter(o=>o.payment==='cash').length;
+    const visaOrders=orders.filter(o=>o.payment==='visa').length;
+    const byRest={};
+    orders.forEach(o=>{byRest[o.restName||'؟']=(byRest[o.restName||'؟']||0)+1;});
+    const topRest=Object.entries(byRest).sort((a,b)=>b[1]-a[1])[0];
+    const monthName=new Date().toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
     showModal(`📅 ${sanitize(driver.name)} — ${monthName}`,`
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-        <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center">
-          <div style="font-size:28px;font-weight:900;color:var(--orange)">${totalOrders}</div>
-          <div style="font-size:11px;color:var(--text3)">📦 أوردر</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center">
-          <div style="font-size:28px;font-weight:900;color:var(--green)">ج${totalDelivery}</div>
-          <div style="font-size:11px;color:var(--text3)">🛵 توصيل</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center">
-          <div style="font-size:22px;font-weight:900;color:var(--gold)">ج${totalCash}</div>
-          <div style="font-size:11px;color:var(--text3)">💵 كاش</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center">
-          <div style="font-size:22px;font-weight:900;color:var(--blue)">${cashOrders}/${visaOrders}</div>
-          <div style="font-size:11px;color:var(--text3)">كاش/فيزا</div>
-        </div>
+        <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center"><div style="font-size:28px;font-weight:900;color:var(--orange)">${totalOrders}</div><div style="font-size:11px;color:var(--text3)">📦 أوردر</div></div>
+        <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center"><div style="font-size:28px;font-weight:900;color:var(--green)">ج${totalDelivery}</div><div style="font-size:11px;color:var(--text3)">🛵 توصيل</div></div>
+        <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--gold)">ج${totalCash}</div><div style="font-size:11px;color:var(--text3)">💵 كاش</div></div>
+        <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--blue)">${cashOrders}/${visaOrders}</div><div style="font-size:11px;color:var(--text3)">كاش/فيزا</div></div>
       </div>
-      ${topRest?`<div style="background:var(--orange-bg);border-radius:12px;padding:12px;text-align:center">
-        <div style="font-size:11px;color:var(--text3)">🏆 أكثر مطعم</div>
-        <div style="font-weight:900;color:var(--orange)">${sanitize(topRest[0])} — ${topRest[1]} أوردر</div>
-      </div>`:''}`,
+      ${topRest?`<div style="background:var(--orange-bg);border-radius:12px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--text3)">🏆 أكثر مطعم</div><div style="font-weight:900;color:var(--orange)">${sanitize(topRest[0])} — ${topRest[1]} أوردر</div></div>`:''}`,
       [{label:'إغلاق',cls:'cancel',action:closeModal}]);
-  } catch(e) { showToast('❌ خطأ في التحميل'); }
+  } catch(e){showToast('❌ خطأ في التحميل');}
 }
 
 function showOrdersArchive() {
-  showModal('📂 أرشيف الأوردرات', `
-    <div style="margin-bottom:12px">
-      <div class="field-label">اختر الفترة</div>
+  showModal('📂 أرشيف الأوردرات',`
+    <div style="margin-bottom:12px"><div class="field-label">اختر الفترة</div>
       <div style="display:flex;gap:8px">
         <button onclick="loadArchive('yesterday')" class="modal-btn cancel" style="flex:1;font-size:12px">أمس</button>
         <button onclick="loadArchive('week')" class="modal-btn cancel" style="flex:1;font-size:12px">آخر 7 أيام</button>
         <button onclick="loadArchive('month')" class="modal-btn cancel" style="flex:1;font-size:12px">الشهر</button>
       </div>
     </div>
-    <div id="archiveResults" style="max-height:300px;overflow-y:auto">
-      <div class="empty-state"><div class="empty-text">اختر فترة</div></div>
-    </div>`,
+    <div id="archiveResults" style="max-height:300px;overflow-y:auto"><div class="empty-state"><div class="empty-text">اختر فترة</div></div></div>`,
     [{label:'إغلاق',cls:'cancel',action:closeModal}]);
 }
 
 async function loadArchive(period) {
-  const el = document.getElementById('archiveResults');
-  if (!el) return;
-  el.innerHTML = '<div class="empty-state"><div class="empty-text">⏳ جاري التحميل...</div></div>';
-  const now = new Date();
-  let startDate, endDate;
-  if (period==='yesterday') {
-    startDate=new Date(now); startDate.setDate(now.getDate()-1); startDate.setHours(0,0,0,0);
-    endDate=new Date(now); endDate.setHours(0,0,0,0);
-  } else if (period==='week') {
-    startDate=new Date(now); startDate.setDate(now.getDate()-7); startDate.setHours(0,0,0,0);
-    endDate=now;
-  } else {
-    startDate=new Date(now.getFullYear(),now.getMonth(),1); endDate=now;
-  }
+  const el=document.getElementById('archiveResults'); if(!el)return;
+  el.innerHTML='<div class="empty-state"><div class="empty-text">⏳ جاري التحميل...</div></div>';
+  const now=new Date(); let startDate,endDate;
+  if (period==='yesterday'){startDate=new Date(now);startDate.setDate(now.getDate()-1);startDate.setHours(0,0,0,0);endDate=new Date(now);endDate.setHours(0,0,0,0);}
+  else if (period==='week'){startDate=new Date(now);startDate.setDate(now.getDate()-7);startDate.setHours(0,0,0,0);endDate=now;}
+  else {startDate=new Date(now.getFullYear(),now.getMonth(),1);endDate=now;}
   try {
-    const snap = await db.collection('orders')
-      .where('timestamp','>=', firebase.firestore.Timestamp.fromDate(startDate))
-      .where('timestamp','<=', firebase.firestore.Timestamp.fromDate(endDate))
-      .orderBy('timestamp','desc').limit(50).get();
-    const orders = snap.docs.map(d=>({id:d.id,...d.data()}));
-    if (!orders.length) { el.innerHTML='<div class="empty-state"><div class="empty-text">لا أوردرات</div></div>'; return; }
-    const total = orders.reduce((s,o)=>s+(o.delivery||0),0);
-    el.innerHTML = `<div style="text-align:center;padding:8px;background:var(--bg2);border-radius:8px;margin-bottom:10px">
-      <strong>${orders.length} أوردر</strong> — توصيل <strong style="color:var(--green)">ج${total}</strong>
-    </div>` + orders.map(o=>{
-      const t=o.timestamp?.toDate?.()??new Date();
-      const timeStr=t.toLocaleDateString('ar-EG',{day:'2-digit',month:'2-digit'})+' '+t.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
-      return `<div class="feed-card ${o.payment==='visa'?'visa':'cash'}" style="margin-bottom:6px">
-        <div class="feed-pay">${o.payment==='visa'?'💳':'💵'}</div>
-        <div class="feed-body">
-          <div class="feed-rest-name">${sanitize(o.restName||'—')}</div>
-          <div class="feed-driver-info">👤 ${sanitize(o.driverName||'—')} • 📍 ${sanitize(o.address||'—')}</div>
-          <div class="feed-time-txt">⏰ ${timeStr}</div>
-        </div>
-        <div class="feed-amt">ج${o.delivery||0}</div>
-      </div>`;
-    }).join('');
-  } catch(e) { el.innerHTML=`<div class="empty-state"><div class="empty-text">❌ ${e.message}</div></div>`; }
+    const snap=await db.collection('orders').where('timestamp','>=',firebase.firestore.Timestamp.fromDate(startDate)).where('timestamp','<=',firebase.firestore.Timestamp.fromDate(endDate)).orderBy('timestamp','desc').limit(50).get();
+    const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if (!orders.length){el.innerHTML='<div class="empty-state"><div class="empty-text">لا أوردرات</div></div>';return;}
+    const total=orders.reduce((s,o)=>s+(o.delivery||0),0);
+    el.innerHTML=`<div style="text-align:center;padding:8px;background:var(--bg2);border-radius:8px;margin-bottom:10px"><strong>${orders.length} أوردر</strong> — توصيل <strong style="color:var(--green)">ج${total}</strong></div>`+
+      orders.map(o=>{const t=o.timestamp?.toDate?.()??new Date();const timeStr=t.toLocaleDateString('ar-EG',{day:'2-digit',month:'2-digit'})+' '+t.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+        return `<div class="feed-card ${o.payment==='visa'?'visa':'cash'}" style="margin-bottom:6px"><div class="feed-pay">${o.payment==='visa'?'💳':'💵'}</div><div class="feed-body"><div class="feed-rest-name">${sanitize(o.restName||'—')}</div><div class="feed-driver-info">👤 ${sanitize(o.driverName||'—')} • 📍 ${sanitize(o.address||'—')}</div><div class="feed-time-txt">⏰ ${timeStr}</div></div><div class="feed-amt">ج${o.delivery||0}</div></div>`;
+      }).join('');
+  } catch(e){el.innerHTML=`<div class="empty-state"><div class="empty-text">❌ ${e.message}</div></div>`;}
 }
 
-// ══════════════════════════════════
-// MODAL
-// ══════════════════════════════════
 function showModal(title,bodyHTML,buttons) {
   document.getElementById('modalTitle').textContent=title;
   document.getElementById('modalBody').innerHTML=bodyHTML;
-  document.getElementById('modalActions').innerHTML=buttons.map((b,i)=>
-    `<button class="modal-btn ${b.cls}" id="mBtn${i}">${b.label}</button>`).join('');
+  document.getElementById('modalActions').innerHTML=buttons.map((b,i)=>`<button class="modal-btn ${b.cls}" id="mBtn${i}">${b.label}</button>`).join('');
   buttons.forEach((b,i)=>document.getElementById('mBtn'+i).onclick=b.action);
   document.getElementById('modalOverlay').classList.add('show');
 }
-function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
 document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
-// ══════════════════════════════════
-// TOAST
-// ══════════════════════════════════
 let toastTimer;
-function showToast(msg) {
+function showToast(msg){
   const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
 }
 
 function showStatDetail(type) {
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  const today = allOrders.filter(o=>{const t=o.timestamp?.toDate?.()??new Date(o.timestamp);return t>=todayStart;});
-  if (type==='drivers') {
+  const todayStart=new Date();todayStart.setHours(0,0,0,0);
+  const today=allOrders.filter(o=>{const t=o.timestamp?.toDate?.()??new Date(o.timestamp);return t>=todayStart;});
+  if (type==='drivers'){
     const byDriver={};
-    today.forEach(o=>{
-      if (!byDriver[o.driverId]) byDriver[o.driverId]={name:o.driverName||'؟',orders:0,delivery:0};
-      byDriver[o.driverId].orders++; byDriver[o.driverId].delivery+=o.delivery||0;
-    });
-    const rows=Object.values(byDriver).sort((a,b)=>b.delivery-a.delivery)
-      .map(d=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(d.name)}</span><span style="color:var(--green);font-weight:800">ج${d.delivery} • ${d.orders} أوردر</span></div>`).join('');
-    showModal('👥 المناديب النشطين اليوم',rows||'<div class="empty-state"><div class="empty-text">لا مناديب اليوم</div></div>',
-      [{label:'إغلاق',cls:'cancel',action:closeModal}]);
-  } else if (type==='orders') {
-    const rows=today.slice(0,20).map(o=>{
-      const t=o.timestamp?.toDate?.()??new Date();
-      const time=t.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
-      return `<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)">
-        <span><div style="font-weight:700">${sanitize(o.restName||'؟')}</div><div style="font-size:11px;color:var(--text3)">${sanitize(o.driverName||'؟')} • ${time}</div></span>
-        <span style="color:var(--orange);font-weight:800">ج${o.delivery||0}</span></div>`;
-    }).join('');
-    showModal('📦 أوردرات اليوم',rows||'<div class="empty-state"><div class="empty-text">لا أوردرات</div></div>',
-      [{label:'إغلاق',cls:'cancel',action:closeModal}]);
-  } else if (type==='delivery') {
+    today.forEach(o=>{if(!byDriver[o.driverId])byDriver[o.driverId]={name:o.driverName||'؟',orders:0,delivery:0};byDriver[o.driverId].orders++;byDriver[o.driverId].delivery+=o.delivery||0;});
+    const rows=Object.values(byDriver).sort((a,b)=>b.delivery-a.delivery).map(d=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(d.name)}</span><span style="color:var(--green);font-weight:800">ج${d.delivery} • ${d.orders} أوردر</span></div>`).join('');
+    showModal('👥 المناديب النشطين اليوم',rows||'<div class="empty-state"><div class="empty-text">لا مناديب اليوم</div></div>',[{label:'إغلاق',cls:'cancel',action:closeModal}]);
+  } else if (type==='orders'){
+    const rows=today.slice(0,20).map(o=>{const t=o.timestamp?.toDate?.()??new Date();const time=t.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});return `<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span><div style="font-weight:700">${sanitize(o.restName||'؟')}</div><div style="font-size:11px;color:var(--text3)">${sanitize(o.driverName||'؟')} • ${time}</div></span><span style="color:var(--orange);font-weight:800">ج${o.delivery||0}</span></div>`;}).join('');
+    showModal('📦 أوردرات اليوم',rows||'<div class="empty-state"><div class="empty-text">لا أوردرات</div></div>',[{label:'إغلاق',cls:'cancel',action:closeModal}]);
+  } else if (type==='delivery'){
     const byDriver={};
-    today.forEach(o=>{ if (!byDriver[o.driverId]) byDriver[o.driverId]={name:o.driverName||'؟',delivery:0}; byDriver[o.driverId].delivery+=o.delivery||0; });
+    today.forEach(o=>{if(!byDriver[o.driverId])byDriver[o.driverId]={name:o.driverName||'؟',delivery:0};byDriver[o.driverId].delivery+=o.delivery||0;});
     const total=today.reduce((s,o)=>s+(o.delivery||0),0);
-    const rows=Object.values(byDriver).sort((a,b)=>b.delivery-a.delivery)
-      .map(d=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(d.name)}</span><span style="color:var(--blue);font-weight:800">ج${d.delivery}</span></div>`).join('');
-    showModal('🛵 دخل التوصيل اليوم',
-      `<div style="text-align:center;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px"><div style="font-size:32px;font-weight:900;color:var(--blue)">ج${total}</div><div style="font-size:12px;color:var(--text3)">إجمالي التوصيل</div></div>${rows}`,
-      [{label:'إغلاق',cls:'cancel',action:closeModal}]);
-  } else if (type==='cash') {
+    const rows=Object.values(byDriver).sort((a,b)=>b.delivery-a.delivery).map(d=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(d.name)}</span><span style="color:var(--blue);font-weight:800">ج${d.delivery}</span></div>`).join('');
+    showModal('🛵 دخل التوصيل اليوم',`<div style="text-align:center;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px"><div style="font-size:32px;font-weight:900;color:var(--blue)">ج${total}</div><div style="font-size:12px;color:var(--text3)">إجمالي التوصيل</div></div>${rows}`,[{label:'إغلاق',cls:'cancel',action:closeModal}]);
+  } else if (type==='cash'){
     const cashOrders=today.filter(o=>o.payment==='cash');
     const total=cashOrders.reduce((s,o)=>s+(o.total||0),0);
     const byDriver={};
-    cashOrders.forEach(o=>{ if (!byDriver[o.driverId]) byDriver[o.driverId]={name:o.driverName||'؟',cash:0,count:0}; byDriver[o.driverId].cash+=o.total||0; byDriver[o.driverId].count++; });
-    const rows=Object.values(byDriver).sort((a,b)=>b.cash-a.cash)
-      .map(d=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(d.name)}<br><span style="font-size:11px;color:var(--text3)">${d.count} أوردر</span></span><span style="color:var(--gold);font-weight:800">ج${d.cash}</span></div>`).join('');
-    showModal('💵 الكاش المحصّل اليوم',
-      `<div style="text-align:center;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px"><div style="font-size:32px;font-weight:900;color:var(--gold)">ج${total}</div><div style="font-size:12px;color:var(--text3)">إجمالي الكاش</div></div>${rows}`,
-      [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+    cashOrders.forEach(o=>{if(!byDriver[o.driverId])byDriver[o.driverId]={name:o.driverName||'؟',cash:0,count:0};byDriver[o.driverId].cash+=o.total||0;byDriver[o.driverId].count++;});
+    const rows=Object.values(byDriver).sort((a,b)=>b.cash-a.cash).map(d=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(d.name)}<br><span style="font-size:11px;color:var(--text3)">${d.count} أوردر</span></span><span style="color:var(--gold);font-weight:800">ج${d.cash}</span></div>`).join('');
+    showModal('💵 الكاش المحصّل اليوم',`<div style="text-align:center;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px"><div style="font-size:32px;font-weight:900;color:var(--gold)">ج${total}</div><div style="font-size:12px;color:var(--text3)">إجمالي الكاش</div></div>${rows}`,[{label:'إغلاق',cls:'cancel',action:closeModal}]);
   }
 }
 
@@ -1583,47 +1456,25 @@ function showDriverStatDetail(type) {
   const today=getTodayOrders();
   const delivery=today.reduce((s,o)=>s+(o.delivery||0),0);
   const byRest={};
-  today.forEach(o=>{ if (!byRest[o.restName]) byRest[o.restName]={orders:0,delivery:0}; byRest[o.restName].orders++; byRest[o.restName].delivery+=o.delivery||0; });
-  const rows=Object.entries(byRest).sort((a,b)=>b[1].delivery-a[1].delivery)
-    .map(([name,d])=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(name)}<br><span style="font-size:11px;color:var(--text3)">${d.orders} أوردر</span></span><span style="color:var(--orange);font-weight:800">ج${d.delivery}</span></div>`).join('');
-  showModal('💰 دخل التوصيل اليوم',
-    `<div style="text-align:center;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px"><div style="font-size:36px;font-weight:900;color:var(--orange)">ج${delivery}</div><div style="font-size:12px;color:var(--text3)">إجمالي التوصيل</div></div>${rows}`,
-    [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+  today.forEach(o=>{if(!byRest[o.restName])byRest[o.restName]={orders:0,delivery:0};byRest[o.restName].orders++;byRest[o.restName].delivery+=o.delivery||0;});
+  const rows=Object.entries(byRest).sort((a,b)=>b[1].delivery-a[1].delivery).map(([name,d])=>`<div class="report-row-detail" style="padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700">${sanitize(name)}<br><span style="font-size:11px;color:var(--text3)">${d.orders} أوردر</span></span><span style="color:var(--orange);font-weight:800">ج${d.delivery}</span></div>`).join('');
+  showModal('💰 دخل التوصيل اليوم',`<div style="text-align:center;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px"><div style="font-size:36px;font-weight:900;color:var(--orange)">ج${delivery}</div><div style="font-size:12px;color:var(--text3)">إجمالي التوصيل</div></div>${rows}`,[{label:'إغلاق',cls:'cancel',action:closeModal}]);
 }
 
 // ══════════════════════════════════
 // PULL TO REFRESH
 // ══════════════════════════════════
-let ptrStartY = 0, ptrActive = false;
-const PTR_THRESHOLD = 70;
-document.addEventListener('touchstart', e => {
-  const el = e.target.closest('.page,.mgr-content');
-  if (!el) return;
-  if (el.scrollTop === 0) { ptrStartY = e.touches[0].clientY; ptrActive = true; }
-}, {passive:true});
-document.addEventListener('touchmove', e => {
-  if (!ptrActive) return;
-  const dy = e.touches[0].clientY - ptrStartY;
-  if (dy > 20) {
-    const ind = document.getElementById('ptrIndicator');
-    if (ind) { ind.style.opacity = Math.min(1, dy/PTR_THRESHOLD); ind.style.transform = `translateY(${Math.min(dy*0.4,28)}px)`; }
-  }
-}, {passive:true});
-document.addEventListener('touchend', e => {
-  if (!ptrActive) return;
-  const dy = e.changedTouches[0].clientY - ptrStartY;
-  ptrActive = false;
-  const ind = document.getElementById('ptrIndicator');
-  if (ind) { ind.style.opacity = 0; ind.style.transform = ''; }
-  if (dy > PTR_THRESHOLD) { showToast('🔄 جاري التحديث...'); setTimeout(() => location.reload(), 400); }
-}, {passive:true});
+let ptrStartY=0,ptrActive=false;
+const PTR_THRESHOLD=70;
+document.addEventListener('touchstart',e=>{const el=e.target.closest('.page,.mgr-content');if(!el)return;if(el.scrollTop===0){ptrStartY=e.touches[0].clientY;ptrActive=true;}},{passive:true});
+document.addEventListener('touchmove',e=>{if(!ptrActive)return;const dy=e.touches[0].clientY-ptrStartY;if(dy>20){const ind=document.getElementById('ptrIndicator');if(ind){ind.style.opacity=Math.min(1,dy/PTR_THRESHOLD);ind.style.transform=`translateY(${Math.min(dy*0.4,28)}px)`;}}},{passive:true});
+document.addEventListener('touchend',e=>{if(!ptrActive)return;const dy=e.changedTouches[0].clientY-ptrStartY;ptrActive=false;const ind=document.getElementById('ptrIndicator');if(ind){ind.style.opacity=0;ind.style.transform='';}if(dy>PTR_THRESHOLD){showToast('🔄 جاري التحديث...');setTimeout(()=>location.reload(),400);}},{passive:true});
 
-// ── تطبيق المظهر فوراً ──
-(function() {
-  const h = new Date().getHours();
-  const isDark = h < 6 || h >= 18;
-  if (!isDark) document.body.dataset.theme = 'light';
-  themeMode = isDark ? 'dark' : 'light';
+(function(){
+  const h=new Date().getHours();
+  const isDark=h<6||h>=18;
+  if(!isDark)document.body.dataset.theme='light';
+  themeMode=isDark?'dark':'light';
 })();
 
-window.addEventListener('load', initApp);
+window.addEventListener('load',initApp);

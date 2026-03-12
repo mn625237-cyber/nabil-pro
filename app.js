@@ -221,63 +221,36 @@ async function doLogout() {
 async function subscribeFCM() {
   try {
     if (!('serviceWorker' in navigator)) { showToast('SW غير مدعوم'); return; }
-    if (!('PushManager' in window))      { showToast('Push غير مدعوم'); return; }
+    if (!('PushManager' in window)) { showToast('Push غير مدعوم'); return; }
 
     if (Notification.permission !== 'granted') {
       const p = await Notification.requestPermission();
       if (p !== 'granted') { showToast('الاذن مرفوض'); return; }
     }
 
-    const reg = await navigator.serviceWorker.ready;
-
-    if (!navigator.serviceWorker.controller) {
-      showToast('جاري تفعيل الخدمة - سيتم تحديث الصفحة...');
-      await new Promise(r => setTimeout(r, 1500));
-      window.location.reload();
-      return;
-    }
-
-    const existingSub = await reg.pushManager.getSubscription();
-    if (existingSub) await existingSub.unsubscribe();
-
-    try {
-      const dbsToDelete = [
-        'firebase-installations-database',
-        `firebase-installations-idb-store-${FIREBASE_CONFIG.appId}-db`
-      ];
-      for (const dbName of dbsToDelete) {
-        await new Promise(r => {
-          const req = indexedDB.deleteDatabase(dbName);
-          req.onsuccess = req.onerror = r;
-        });
+    // ── اختبار Firebase Installations API مباشرة ──
+    showToast('🔍 جاري الفحص...');
+    const fisRes = await fetch(
+      `https://firebaseinstallations.googleapis.com/v1/projects/${FIREBASE_CONFIG.projectId}/installations`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': FIREBASE_CONFIG.apiKey
+        },
+        body: JSON.stringify({
+          fid: 'nabiltestfid123456789a',
+          appId: FIREBASE_CONFIG.appId,
+          authVersion: 'FIS_v2',
+          sdkVersion: 'w:11.4.0'
+        })
       }
-    } catch(e) {}
-    await new Promise(r => setTimeout(r, 500));
-
-    const msg = firebase.messaging();
-    try { await msg.deleteToken(); } catch(e) {}
-
-    showToast('جاري الحصول على Token...');
-    await new Promise(r => setTimeout(r, 1000));
-
-    const token = await msg.getToken({
-      vapidKey: VAPID_KEY,
-      serviceWorkerRegistration: reg
-    });
-
-    if (!token) { showToast('Token فارغ - حاول تاني'); return; }
-
-    await db.collection('fcm_tokens').doc(currentUser.uid).set({
-      uid: currentUser.uid,
-      token,
-      role: userProfile.role || 'manager',
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast('✅ الاشعارات شغالة الان!');
+    );
+    const fisData = await fisRes.json();
+    alert('FIS Status: ' + fisRes.status + '\n\n' + JSON.stringify(fisData, null, 2).substring(0, 600));
 
   } catch(e) {
-    alert('FCM Error Full: ' + e.message + ' | code: ' + e.code + ' | ' + String(e));
-    console.error('خطأ FCM:', e);
+    alert('خطأ: ' + e.message);
   }
 }
 

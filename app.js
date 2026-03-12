@@ -12,7 +12,7 @@ function sanitize(str) {
 const RAILWAY_URL = 'https://nabil-pro-production.up.railway.app';
 
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyDpgMDU6DfzBK_TbqM0dARskUBdugMeDPA",
+  apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
   authDomain:        "nabil-pro.firebaseapp.com",
   projectId:         "nabil-pro",
   storageBucket:     "nabil-pro.firebasestorage.app",

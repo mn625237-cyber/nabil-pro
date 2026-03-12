@@ -12,12 +12,12 @@ function sanitize(str) {
 const RAILWAY_URL = 'https://nabil-pro-production.up.railway.app';
 
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
+  apiKey:            "AIzaSyDpgMDU6DfzBK_TbqM0dARskUBdugMeDPA",
   authDomain:        "nabil-pro.firebaseapp.com",
   projectId:         "nabil-pro",
   storageBucket:     "nabil-pro.firebasestorage.app",
   messagingSenderId: "82099030853",
-  appId:             "1:82099030853:web:89de9eabad2cc53817cc2c"
+  appId:             "1:82099030853:web:491031fe51ce877b17cc2c"
 };
 
 // ══════════════════════════════════

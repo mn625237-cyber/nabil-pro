@@ -6,23 +6,22 @@ function sanitize(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+// ══════════════════════════════════
+// FIREBASE CONFIG
+// ══════════════════════════════════
 const RAILWAY_URL = 'https://nabil-pro-production.up.railway.app';
 
-// ══════════════════════════════════
-// FIREBASE CONFIG (الجديد - nabil-v2)
-// ══════════════════════════════════
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDpgMDU6DfzBK_TbqM0dARskUBdugMeDPA",
-  authDomain: "nabil-pro.firebaseapp.com",
-  projectId: "nabil-pro",
-  storageBucket: "nabil-pro.firebasestorage.app",
+  apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
+  authDomain:        "nabil-pro.firebaseapp.com",
+  projectId:         "nabil-pro",
+  storageBucket:     "nabil-pro.firebasestorage.app",
   messagingSenderId: "82099030853",
-  appId: "1:82099030853:web:491031fe51ce877b17cc2c",
-  measurementId: "G-LRG20THTKZ"
+  appId:             "1:82099030853:web:89de9eabad2cc53817cc2c"
 };
 
 // ══════════════════════════════════
-// FCM VAPID KEY (السليم)
+// FCM VAPID KEY
 // ══════════════════════════════════
 const VAPID_KEY = 'BOOsl2my43xIsRGF9jW_4ube_oOTcCAR777yVywTEApcjO6-9UVjrChxfKMRzuBHaPtvygCMmJAFIswAzMfHdHo';
 
@@ -39,6 +38,9 @@ let editingOrderId=null, selectedDriverUid=null, reportPeriod='today';
 let ordersUnsubscribe=null, allOrdersUnsubscribe=null;
 let ordersRef, restaurantsRef, usersRef, settingsRef;
 
+// ══════════════════════════════════
+// NETWORK
+// ══════════════════════════════════
 function checkOnline() {
   if (navigator.onLine) { showScreen('loadingScreen'); initApp(); }
   else showScreen('offlineScreen');
@@ -46,6 +48,9 @@ function checkOnline() {
 window.addEventListener('online', () => { if (!currentUser) checkOnline(); });
 window.addEventListener('offline', () => { if (!currentUser) showScreen('offlineScreen'); });
 
+// ══════════════════════════════════
+// SCREEN
+// ══════════════════════════════════
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -67,6 +72,9 @@ window.addEventListener('popstate', function() {
 });
 history.pushState({},'','');
 
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
 async function initApp() {
   if (!navigator.onLine) { showScreen('offlineScreen'); return; }
   showScreen('loadingScreen');
@@ -106,6 +114,9 @@ async function loadUserProfile(uid) {
   }
 }
 
+// ══════════════════════════════════
+// AUTH
+// ══════════════════════════════════
 function phoneToEmail(phone) {
   let p = phone.replace(/\D/g,'');
   if (!p.startsWith('0')) p = '0' + p;
@@ -183,7 +194,8 @@ async function doLogin() {
 }
 
 function confirmLogout() {
-  showModal('تسجيل الخروج','<p style="color:var(--text2);font-size:14px;">هل تريد تسجيل الخروج؟</p>',[{label:'خروج',cls:'danger',action:doLogout},{label:'إلغاء',cls:'cancel',action:closeModal}]);
+  showModal('تسجيل الخروج','<p style="color:var(--text2);font-size:14px;">هل تريد تسجيل الخروج؟</p>',
+    [{label:'خروج',cls:'danger',action:doLogout},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
 async function doLogout() {
@@ -208,50 +220,77 @@ async function doLogout() {
 // ══════════════════════════════════
 async function subscribeFCM() {
   try {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      showToast('⚠️ المتصفح لا يدعم الإشعارات');
+    if (!('serviceWorker' in navigator)) { showToast('SW غير مدعوم'); return; }
+    if (!('PushManager' in window))      { showToast('Push غير مدعوم'); return; }
+
+    if (Notification.permission !== 'granted') {
+      const p = await Notification.requestPermission();
+      if (p !== 'granted') { showToast('الاذن مرفوض'); return; }
+    }
+
+    showToast('⏳ جاري التفعيل...');
+    const reg = await navigator.serviceWorker.ready;
+
+    if (!navigator.serviceWorker.controller) {
+      showToast('جاري تفعيل الخدمة - سيتم تحديث الصفحة...');
+      await new Promise(r => setTimeout(r, 1500));
+      window.location.reload();
       return;
     }
 
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      showToast('❌ الإذن مرفوض من المتصفح');
-      return;
-    }
+    const existingSub = await reg.pushManager.getSubscription();
+    if (existingSub) await existingSub.unsubscribe();
 
-    showToast('⏳ جاري تفعيل الإشعارات...');
-
-    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
-    await navigator.serviceWorker.ready;
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const dbsToDelete = [
+        'firebase-installations-database',
+        `firebase-installations-idb-store-${FIREBASE_CONFIG.appId}-db`
+      ];
+      for (const dbName of dbsToDelete) {
+        await new Promise(r => {
+          const req = indexedDB.deleteDatabase(dbName);
+          req.onsuccess = req.onerror = r;
+        });
+      }
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 500));
 
     const msg = firebase.messaging();
-    const token = await msg.getToken({ 
+    try { await msg.deleteToken(); } catch(e) {}
+
+    showToast('جاري الحصول على Token...');
+    await new Promise(r => setTimeout(r, 1000));
+
+    const token = await msg.getToken({
       vapidKey: VAPID_KEY,
-      serviceWorkerRegistration: registration 
+      serviceWorkerRegistration: reg
     });
 
-    if (token) {
-      await db.collection('fcm_tokens').doc(currentUser.uid).set({
-        uid: currentUser.uid,
-        token: token,
-        role: userProfile.role || 'manager',
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      closeModal(); 
-      showToast('🔔 تم تفعيل الإشعارات بنجاح!');
-    }
+    if (!token) { showToast('Token فارغ - حاول تاني'); return; }
+
+    await db.collection('fcm_tokens').doc(currentUser.uid).set({
+      uid: currentUser.uid,
+      token,
+      role: userProfile.role || 'manager',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✅ الاشعارات شغالة الان!');
+
   } catch(e) {
-    console.error('FCM Error Full:', e);
-    showModal('خطأ تقني', `<p style="font-size:11px;color:var(--text2);direction:ltr;text-align:left;">${e.message || e}</p>`,[{label:'إغلاق',cls:'cancel',action:closeModal}]);
+    alert('FCM Error: ' + e.message + '\ncode: ' + (e.code||''));
+    console.error('خطأ FCM:', e);
   }
 }
+
+function testFCM() { subscribeFCM(); }
 
 async function sendPushNotification(title, body, type) {
   console.log('📬 إشعار سيُرسل من Railway:', title);
 }
 
+// ══════════════════════════════════
+// DRIVER APP
+// ══════════════════════════════════
 function initDriverApp() {
   const uid = currentUser.uid;
   ordersRef = db.collection('orders');
@@ -339,13 +378,15 @@ async function deleteRestaurant(id, name) {
     showModal('تنبيه',`<p style="color:var(--text2);font-size:14px;">لا يمكن حذف "${sanitize(name)}" لأن لديه أوردرات.</p>`,
       [{label:'حسناً',cls:'cancel',action:closeModal}]); return;
   }
-  showModal('حذف المطعم',`<p style="color:var(--text2);font-size:14px;">حذف "${sanitize(name)}"؟</p>`,[{label:'حذف',cls:'danger',action:async()=>{
+  showModal('حذف المطعم',`<p style="color:var(--text2);font-size:14px;">حذف "${sanitize(name)}"؟</p>`,
+    [{label:'حذف',cls:'danger',action:async()=>{
       await restaurantsRef.doc(id).delete();
       if (selectedRest===id) selectedRest=null;
       closeModal(); showToast('تم الحذف'); loadRestaurantsDriver();
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
+// ── ORDERS ──
 function listenToDriverOrders() {
   if (ordersUnsubscribe) ordersUnsubscribe();
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
@@ -363,6 +404,7 @@ function listenToDriverOrders() {
     });
 }
 
+// ── SHIFT ──
 let shiftActive = false;
 let shiftStart = null;
 
@@ -393,7 +435,8 @@ function endShift() {
       <div class="report-row-detail" style="padding:10px 0"><span>🤑 ربحك</span><span style="color:var(--blue);font-weight:900">ج${totalDelivery}</span></div>
       <div class="report-row-detail" style="padding:10px 0"><span>💰 كاش محصّل</span><span style="color:var(--gold);font-weight:900">ج${totalCollected}</span></div>
       <div class="report-row-detail" style="padding:10px 0;border-bottom:none"><span>🏪 ادفع للمطاعم</span><span style="color:var(--orange);font-weight:900">ج${totalRestOwed}</span></div>
-    </div>`,[{label:'إنهاء الشيفت',cls:'danger',action:()=>{
+    </div>`,
+    [{label:'إنهاء الشيفت',cls:'danger',action:()=>{
       closeModal();
       shiftActive=false; shiftStart=null;
       document.getElementById('shiftStartBtn').style.display='';
@@ -600,7 +643,8 @@ async function editOrder(id) {
 }
 
 async function deleteOrder(id) {
-  showModal('حذف الأوردر','<p style="color:var(--text2);font-size:14px;">هل تريد حذف هذا الأوردر نهائياً؟</p>',[{label:'حذف',cls:'danger',action:async()=>{await ordersRef.doc(id).delete();closeModal();showToast('🗑 تم الحذف');}},
+  showModal('حذف الأوردر','<p style="color:var(--text2);font-size:14px;">هل تريد حذف هذا الأوردر نهائياً؟</p>',
+    [{label:'حذف',cls:'danger',action:async()=>{await ordersRef.doc(id).delete();closeModal();showToast('🗑 تم الحذف');}},
      {label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
@@ -611,7 +655,8 @@ function goPage(n) {
 }
 
 function editDriverName() {
-  showModal('تغيير الاسم',`<input class="form-field" id="newNameInput" value="${userProfile.name||''}" placeholder="اسمك...">`,[{label:'حفظ',cls:'confirm',action:async()=>{
+  showModal('تغيير الاسم',`<input class="form-field" id="newNameInput" value="${userProfile.name||''}" placeholder="اسمك...">`,
+    [{label:'حفظ',cls:'confirm',action:async()=>{
       const name=document.getElementById('newNameInput').value.trim()||'مندوب دليفري';
       userProfile.name=name; await db.collection('users').doc(currentUser.uid).update({name});
       document.getElementById('driverNameDisplay').textContent=name;
@@ -682,6 +727,9 @@ function startVoice(inputId, btnId) {
   recognizer.start();
 }
 
+// ══════════════════════════════════
+// MANAGER AS DRIVER
+// ══════════════════════════════════
 function initSwipeDriverBtn() {
   const btn=document.getElementById('swipeDriverBtn');
   const h=document.getElementById('stdHandle');
@@ -757,12 +805,14 @@ function showMgrSettings() {
         <div class="settings-item-icon" style="background:var(--red-bg)">⏏️</div>
         <div class="settings-item-label" style="color:var(--red)">تسجيل الخروج</div>
       </div>
-    </div>`,[{label:'إغلاق',cls:'cancel',action:closeModal}]);
+    </div>`,
+    [{label:'إغلاق',cls:'cancel',action:closeModal}]);
   setTimeout(initSwipeDriverBtn, 50);
 }
 
 function editMgrName() {
-  showModal('تغيير الاسم',`<input class="form-field" id="newMgrName" value="${sanitize(userProfile.name||'')}" placeholder="اسمك...">`,[{label:'حفظ',cls:'confirm',action:async()=>{
+  showModal('تغيير الاسم',`<input class="form-field" id="newMgrName" value="${sanitize(userProfile.name||'')}" placeholder="اسمك...">`,
+    [{label:'حفظ',cls:'confirm',action:async()=>{
       const name=document.getElementById('newMgrName').value.trim()||'مدير';
       userProfile.name=name;
       await db.collection('users').doc(currentUser.uid).update({name});
@@ -785,9 +835,19 @@ function switchBackToManager() {
   }
 }
 
+// ══════════════════════════════════
+// MANAGER APP
+// ══════════════════════════════════
 function initManagerApp() {
   themeMode=userProfile.themeMode||'auto'; applyTheme(themeMode);
   document.getElementById('managerBadge').textContent=userProfile.name||'مدير';
+  setTimeout(()=>{
+    if (Notification.permission==='default') {
+      Notification.requestPermission().then(p=>{
+        if(p==='granted'){ showToast('🔔 تم تفعيل الإشعارات'); subscribeFCM(); }
+      });
+    } else if (Notification.permission==='granted') subscribeFCM();
+  },2000);
   const now=new Date();
   const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
   const months=['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -937,7 +997,8 @@ function showAddUserModal(role='driver') {
     <div style="margin-bottom:12px;"><div class="field-label">📱 رقم الموبايل</div>
       <input class="form-field" type="tel" id="newUserPhone" placeholder="01xxxxxxxxx" inputmode="numeric"></div>
     <div style="margin-bottom:8px;"><div class="field-label">🔑 كود الدخول (6 أرقام)</div>
-      <input class="form-field" type="tel" id="newUserPin" placeholder="123456" maxlength="6" inputmode="numeric"></div>`,[{label:'إنشاء',cls:'confirm',action:()=>addUser(role)},{label:'إلغاء',cls:'cancel',action:closeModal}]);
+      <input class="form-field" type="tel" id="newUserPin" placeholder="123456" maxlength="6" inputmode="numeric"></div>`,
+    [{label:'إنشاء',cls:'confirm',action:()=>addUser(role)},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
 async function addUser(role) {
@@ -1011,7 +1072,8 @@ async function toggleDriverRole() {
   const driver=allDrivers.find(d=>d.uid===selectedDriverUid); if(!driver)return;
   const newRole=driver.role==='manager'?'driver':'manager';
   const label=newRole==='manager'?'ترقية لمدير':'تحويل لمندوب';
-  showModal(label,`<p style="color:var(--text2);font-size:14px;">${label} "${sanitize(driver.name)}"؟</p>`,[{label:label,cls:'confirm',action:async()=>{
+  showModal(label,`<p style="color:var(--text2);font-size:14px;">${label} "${sanitize(driver.name)}"؟</p>`,
+    [{label:label,cls:'confirm',action:async()=>{
       await db.collection('users').doc(selectedDriverUid).update({role:newRole});
       driver.role=newRole; renderDriversList(); closeModal(); showToast('✅ تم '+label);
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
@@ -1024,7 +1086,8 @@ async function changeDriverPin() {
   showModal('🔑 تغيير كود الدخول', `
     <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">المندوب: <strong>${sanitize(driver.name||'')}</strong></div>
     <div class="field-label">كود جديد (6 أرقام)</div>
-    <input class="form-field" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">`,[{label:'تغيير',cls:'confirm',action:async()=>{
+    <input class="form-field" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">`,
+    [{label:'تغيير',cls:'confirm',action:async()=>{
       const newPin = document.getElementById('newPinInput').value.trim();
       if (newPin.length !== 6) { showToast('الكود لازم 6 أرقام'); return; }
       const btn = document.getElementById('mBtn0');
@@ -1049,7 +1112,8 @@ async function removeDriver() {
   const driver=allDrivers.find(d=>d.uid===selectedDriverUid);
   if (selectedDriverUid===currentUser.uid){showToast('❌ مش تقدر تحذف حسابك');return;}
   showModal('حذف المستخدم',`<p style="color:var(--text2);font-size:14px;margin-bottom:8px;">حذف <strong>${sanitize(driver?.name||'المستخدم')}</strong>؟</p>
-    <p style="color:var(--red);font-size:12px;">⚠️ الأوردرات القديمة هتفضل محفوظة</p>`,[{label:'🗑 حذف',cls:'danger',action:async()=>{
+    <p style="color:var(--red);font-size:12px;">⚠️ الأوردرات القديمة هتفضل محفوظة</p>`,
+    [{label:'🗑 حذف',cls:'danger',action:async()=>{
       const btn=document.getElementById('mBtn0');
       if(btn){btn.disabled=true;btn.textContent='جاري...';}
       try {
@@ -1073,7 +1137,8 @@ async function settleDriverAccount(driverUid) {
     return t >= todayStart && !o.settled;
   });
   if (!dOrders.length) {
-    showModal('تصفية الحساب','<p style="color:var(--text2)">لا أوردرات غير مسوّاة اليوم.</p>',[{label:'إغلاق',cls:'cancel',action:closeModal}]); return;
+    showModal('تصفية الحساب','<p style="color:var(--text2)">لا أوردرات غير مسوّاة اليوم.</p>',
+      [{label:'إغلاق',cls:'cancel',action:closeModal}]); return;
   }
   const totalCash=dOrders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
   const totalRestOwed=dOrders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.restAmount||0),0);
@@ -1092,7 +1157,8 @@ async function settleDriverAccount(driverUid) {
       </div>
       <div class="report-row-detail" style="padding:10px 0"><span>🛵 رسوم توصيله</span><span style="color:var(--blue);font-weight:900">ج${totalDelivery}</span></div>
     </div>
-    <p style="color:var(--text3);font-size:11px;text-align:center">بعد التأكيد هتتسجل التصفية وتتبعت إشعار للمندوب</p>`,[{label:'✅ تأكيد التصفية',cls:'confirm',action:async()=>{
+    <p style="color:var(--text3);font-size:11px;text-align:center">بعد التأكيد هتتسجل التصفية وتتبعت إشعار للمندوب</p>`,
+    [{label:'✅ تأكيد التصفية',cls:'confirm',action:async()=>{
       const btn=document.getElementById('mBtn0');
       if(btn){btn.disabled=true;btn.textContent='جاري...';}
       try {
@@ -1138,7 +1204,8 @@ async function loadMgrRestaurants() {
 }
 
 function showAddRestModal() {
-  showModal('إضافة مطعم',`<input class="form-field" id="newRestName" placeholder="اسم المطعم">`,[{label:'إضافة',cls:'confirm',action:async()=>{
+  showModal('إضافة مطعم',`<input class="form-field" id="newRestName" placeholder="اسم المطعم">`,
+    [{label:'إضافة',cls:'confirm',action:async()=>{
       const name=document.getElementById('newRestName').value.trim(); if(!name)return;
       await db.collection('restaurants').add({name,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
       closeModal(); showToast('✅ تم إضافة '+name); loadMgrRestaurants();
@@ -1146,7 +1213,8 @@ function showAddRestModal() {
 }
 
 async function deleteMgrRest(id,name) {
-  showModal('حذف المطعم',`<p style="color:var(--text2);">حذف "${sanitize(name)}"؟</p>`,[{label:'حذف',cls:'danger',action:async()=>{
+  showModal('حذف المطعم',`<p style="color:var(--text2);">حذف "${sanitize(name)}"؟</p>`,
+    [{label:'حذف',cls:'danger',action:async()=>{
       await db.collection('restaurants').doc(id).delete();
       closeModal(); showToast('✅ تم الحذف'); loadMgrRestaurants();
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
@@ -1275,7 +1343,8 @@ function exportDailyReport() {
 
 function showExportModal(text) {
   showModal('📊 تقرير اليوم',
-    `<textarea style="width:100%;height:200px;background:var(--bg2);color:var(--text1);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none" readonly>${text}</textarea>`,[{label:'📋 نسخ',cls:'confirm',action:()=>{const ta=document.querySelector('#modalBody textarea');ta.select();document.execCommand('copy');showToast('✅ تم النسخ');}},
+    `<textarea style="width:100%;height:200px;background:var(--bg2);color:var(--text1);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none" readonly>${text}</textarea>`,
+    [{label:'📋 نسخ',cls:'confirm',action:()=>{const ta=document.querySelector('#modalBody textarea');ta.select();document.execCommand('copy');showToast('✅ تم النسخ');}},
      {label:'إغلاق',cls:'cancel',action:closeModal}]);
 }
 
@@ -1303,7 +1372,8 @@ async function showDriverMonthlyStats(driverUid) {
         <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--gold)">ج${totalCash}</div><div style="font-size:11px;color:var(--text3)">💵 كاش</div></div>
         <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--blue)">${cashOrders}/${visaOrders}</div><div style="font-size:11px;color:var(--text3)">كاش/فيزا</div></div>
       </div>
-      ${topRest?`<div style="background:var(--orange-bg);border-radius:12px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--text3)">🏆 أكثر مطعم</div><div style="font-weight:900;color:var(--orange)">${sanitize(topRest[0])} — ${topRest[1]} أوردر</div></div>`:''}`,[{label:'إغلاق',cls:'cancel',action:closeModal}]);
+      ${topRest?`<div style="background:var(--orange-bg);border-radius:12px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--text3)">🏆 أكثر مطعم</div><div style="font-weight:900;color:var(--orange)">${sanitize(topRest[0])} — ${topRest[1]} أوردر</div></div>`:''}`,
+      [{label:'إغلاق',cls:'cancel',action:closeModal}]);
   } catch(e){showToast('❌ خطأ في التحميل');}
 }
 
@@ -1316,7 +1386,8 @@ function showOrdersArchive() {
         <button onclick="loadArchive('month')" class="modal-btn cancel" style="flex:1;font-size:12px">الشهر</button>
       </div>
     </div>
-    <div id="archiveResults" style="max-height:300px;overflow-y:auto"><div class="empty-state"><div class="empty-text">اختر فترة</div></div></div>`,[{label:'إغلاق',cls:'cancel',action:closeModal}]);
+    <div id="archiveResults" style="max-height:300px;overflow-y:auto"><div class="empty-state"><div class="empty-text">اختر فترة</div></div></div>`,
+    [{label:'إغلاق',cls:'cancel',action:closeModal}]);
 }
 
 async function loadArchive(period) {
@@ -1391,6 +1462,9 @@ function showDriverStatDetail(type) {
   showModal('💰 دخل التوصيل اليوم',`<div style="text-align:center;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px"><div style="font-size:36px;font-weight:900;color:var(--orange)">ج${delivery}</div><div style="font-size:12px;color:var(--text3)">إجمالي التوصيل</div></div>${rows}`,[{label:'إغلاق',cls:'cancel',action:closeModal}]);
 }
 
+// ══════════════════════════════════
+// PULL TO REFRESH
+// ══════════════════════════════════
 let ptrStartY=0,ptrActive=false;
 const PTR_THRESHOLD=70;
 document.addEventListener('touchstart',e=>{const el=e.target.closest('.page,.mgr-content');if(!el)return;if(el.scrollTop===0){ptrStartY=e.touches[0].clientY;ptrActive=true;}},{passive:true});

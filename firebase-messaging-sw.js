@@ -1,8 +1,8 @@
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'nabil-pro-v13';
-const CACHE_FILES =['/', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = 'nabil-pro-v12';
+const CACHE_FILES = ['/', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -28,15 +28,13 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// الكونفيج الجديد nabil-v2
 firebase.initializeApp({
-  apiKey: "AIzaSyDpgMDU6DfzBK_TbqM0dARskUBdugMeDPA",
-  authDomain: "nabil-pro.firebaseapp.com",
-  projectId: "nabil-pro",
-  storageBucket: "nabil-pro.firebasestorage.app",
+  apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
+  authDomain:        "nabil-pro.firebaseapp.com",
+  projectId:         "nabil-pro",
+  storageBucket:     "nabil-pro.firebasestorage.app",
   messagingSenderId: "82099030853",
-  appId: "1:82099030853:web:491031fe51ce877b17cc2c",
-  measurementId: "G-LRG20THTKZ"
+  appId:             "1:82099030853:web:89de9eabad2cc53817cc2c"
 });
 
 const messaging = firebase.messaging();

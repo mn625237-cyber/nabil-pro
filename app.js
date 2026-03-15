@@ -238,29 +238,14 @@ async function subscribeFCM() {
       return;
     }
 
-    const existingSub = await reg.pushManager.getSubscription();
-    if (existingSub) await existingSub.unsubscribe();
-
-    try {
-      const dbsToDelete = [
-        'firebase-installations-database',
-        `firebase-installations-idb-store-${FIREBASE_CONFIG.appId}-db`
-      ];
-      for (const dbName of dbsToDelete) {
-        await new Promise(r => {
-          const req = indexedDB.deleteDatabase(dbName);
-          req.onsuccess = req.onerror = r;
-        });
-      }
-    } catch(e) {}
-    await new Promise(r => setTimeout(r, 500));
-
     const msg = firebase.messaging();
-    try { await msg.deleteToken(); } catch(e) {}
 
+    // تحقق لو عندنا token صالح في Firestore
+    const existingDoc = await db.collection('fcm_tokens').doc(currentUser.uid).get();
+    const existingToken = existingDoc.exists ? existingDoc.data()?.token : null;
+
+    // جيب token جديد
     showToast('جاري الحصول على Token...');
-    await new Promise(r => setTimeout(r, 1000));
-
     const token = await msg.getToken({
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: reg
@@ -268,12 +253,25 @@ async function subscribeFCM() {
 
     if (!token) { showToast('Token فارغ - حاول تاني'); return; }
 
+    // لو نفس الـ token موجود متعملش حاجة
+    if (token === existingToken) {
+      showToast('✅ الاشعارات شغالة الان!');
+      return;
+    }
+
+    // token جديد — احفظه وبطّل الكاش في Railway
     await db.collection('fcm_tokens').doc(currentUser.uid).set({
       uid: currentUser.uid,
       token,
       role: userProfile.role || 'manager',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+
+    // بطّل كاش Railway عشان يشيل الـ token القديم
+    try {
+      await fetch(RAILWAY_URL + '/invalidate-tokens', { method: 'POST' });
+    } catch(e) {}
+
     showToast('✅ الاشعارات شغالة الان!');
 
   } catch(e) {

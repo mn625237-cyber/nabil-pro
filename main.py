@@ -86,7 +86,32 @@ def send_fcm(title, body, data=None):
         notification=messaging.Notification(title=title, body=body),
         data=data or {},
         tokens=tokens,
-        android=messaging.AndroidConfig(priority='high'),
+        android=messaging.AndroidConfig(
+            priority='high',
+            notification=messaging.AndroidNotification(
+                title=title,
+                body=body,
+                icon='https://nabil-pro.vercel.app/icon-192.png',
+                sound='default',
+                priority='high',
+                channel_id='nabil_orders'
+            )
+        ),
+        webpush=messaging.WebpushConfig(
+            headers={'Urgency': 'high'},
+            notification=messaging.WebpushNotification(
+                title=title,
+                body=body,
+                icon='https://nabil-pro.vercel.app/icon-192.png',
+                badge='https://nabil-pro.vercel.app/icon-192.png',
+                require_interaction=True,
+                tag='nabil-order',
+                renotify=True,
+            ),
+            fcm_options=messaging.WebpushFCMOptions(
+                link='https://nabil-pro.vercel.app'
+            )
+        ),
         apns=messaging.APNSConfig(headers={'apns-priority': '10'})
     )
     try:
@@ -95,6 +120,7 @@ def send_fcm(title, body, data=None):
         if r.failure_count > 0:
             for i, resp in enumerate(r.responses):
                 if not resp.success:
+                    print(f'فشل token {i}: {resp.exception}')
                     try:
                         bad_docs = db.collection('fcm_tokens').where('token','==',tokens[i]).stream()
                         for d in bad_docs: d.reference.delete()
@@ -104,7 +130,7 @@ def send_fcm(title, body, data=None):
         print(f'خطأ FCM: {e}')
 
 def send_fcm_to_user(uid, title, body):
-    """إرسال إشعار لمستخدم معين (مندوب)"""
+    """إرسال إشعار لمستخدم معين"""
     try:
         token_doc = db.collection('fcm_tokens').document(uid).get()
         if not token_doc.exists:
@@ -115,12 +141,34 @@ def send_fcm_to_user(uid, title, body):
         msg = messaging.Message(
             notification=messaging.Notification(title=title, body=body),
             token=token,
-            android=messaging.AndroidConfig(priority='high'),
+            android=messaging.AndroidConfig(
+                priority='high',
+                notification=messaging.AndroidNotification(
+                    title=title,
+                    body=body,
+                    icon='https://nabil-pro.vercel.app/icon-192.png',
+                    sound='default',
+                    priority='high',
+                    channel_id='nabil_orders'
+                )
+            ),
+            webpush=messaging.WebpushConfig(
+                headers={'Urgency': 'high'},
+                notification=messaging.WebpushNotification(
+                    title=title,
+                    body=body,
+                    icon='https://nabil-pro.vercel.app/icon-192.png',
+                    require_interaction=True,
+                ),
+                fcm_options=messaging.WebpushFCMOptions(
+                    link='https://nabil-pro.vercel.app'
+                )
+            ),
         )
         messaging.send(msg)
         print(f'✅ إشعار لـ {uid}')
     except Exception as e:
-        print(f'خطأ إشعار مندوب: {e}')
+        print(f'خطأ إشعار مستخدم: {e}')
 
 # ══════════════════════════════════
 # ROUTES
@@ -137,25 +185,16 @@ def update_pin():
         body = request.get_json()
         uid = body.get('uid', '').strip()
         new_pin = str(body.get('pin', '')).strip()
-
         if not uid or not re.match(r'^\d{6}$', new_pin):
             return jsonify({'error': 'uid وpin مطلوبان (6 أرقام)'}), 400
-
         auth.update_user(uid, password=new_pin)
         db.collection('users').document(uid).update({
             'pin': new_pin,
             'pinUpdatedAt': firestore.SERVER_TIMESTAMP
         })
-
-        # إشعار للمندوب إن الـ PIN اتغير
-        driver_doc = db.collection('users').document(uid).get()
-        if driver_doc.exists:
-            driver_name = driver_doc.to_dict().get('name', 'المندوب')
-            send_fcm_to_user(uid, '🔑 تم تغيير كودك', 'تم تغيير كود الدخول بتاعك من قِبل المدير')
-
+        send_fcm_to_user(uid, '🔑 تم تغيير كودك', 'تم تغيير كود الدخول بتاعك من قِبل المدير')
         print(f'✅ PIN محدث للمستخدم: {uid}')
         return jsonify({'success': True})
-
     except auth.UserNotFoundError:
         return jsonify({'error': 'المستخدم مش موجود'}), 404
     except Exception as e:
@@ -169,7 +208,6 @@ def invalidate_tokens():
 
 @app.route('/notify-driver', methods=['POST'])
 def notify_driver():
-    """إرسال إشعار لمندوب معين"""
     try:
         body = request.get_json()
         uid = body.get('uid', '').strip()
@@ -184,7 +222,6 @@ def notify_driver():
 
 @app.route('/status', methods=['GET'])
 def status():
-    """صفحة حالة السيرفر"""
     tokens = get_manager_tokens()
     return jsonify({
         'status': 'running',
@@ -204,7 +241,6 @@ def on_snapshot(col_snapshot, changes, read_time):
         startup_done = True
         print(f'تجاهل {len(col_snapshot)} اوردر قديم عند البداية')
         return
-
     for change in changes:
         if change.type.name == 'ADDED':
             o = change.document.to_dict()
@@ -215,8 +251,8 @@ def on_snapshot(col_snapshot, changes, read_time):
             delivery = o.get('delivery', 0)
             print(f'اوردر جديد: {order_id} | {driver} | {rest}')
             send_fcm(
-                '🛵 اوردر جديد',
-                f'{driver} - {rest}\n{address}\nتوصيل: {delivery} ج'
+                '🛵 أوردر جديد',
+                f'{driver} - {rest} | {address} | توصيل: {delivery} ج'
             )
 
 col_watch = db.collection('orders').on_snapshot(on_snapshot)

@@ -276,6 +276,20 @@ async function subscribeFCM() {
     });
     showToast('✅ الاشعارات شغالة الان!');
 
+    // إشعار لما التطبيق مفتوح (Foreground)
+    const msg = firebase.messaging();
+    msg.onMessage((payload) => {
+      const title = payload.notification?.title || 'Nabil Pro 🛵';
+      const body  = payload.notification?.body  || '';
+      showToast('🔔 ' + title + (body ? ' — ' + body : ''));
+      if (Notification.permission === 'granted') {
+        new Notification(title, {
+          body,
+          icon: 'https://nabil-pro.vercel.app/icon-192.png'
+        });
+      }
+    });
+
   } catch(e) {
     alert('FCM Error: ' + e.message + '\ncode: ' + (e.code||''));
     console.error('خطأ FCM:', e);

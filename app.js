@@ -277,7 +277,6 @@ async function subscribeFCM() {
     showToast('✅ الاشعارات شغالة الان!');
 
     // إشعار لما التطبيق مفتوح (Foreground)
-    const msg = firebase.messaging();
     msg.onMessage((payload) => {
       const title = payload.notification?.title || 'Nabil Pro 🛵';
       const body  = payload.notification?.body  || '';

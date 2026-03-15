@@ -23,7 +23,7 @@ const FIREBASE_CONFIG = {
 // ══════════════════════════════════
 // FCM VAPID KEY
 // ══════════════════════════════════
-const VAPID_KEY = 'BOOsl2my43xIsRGF9jW_4ube_oOTcCAR777yVywTEApcjO6-9UVjrChxfKMRzuBHaPtvygCMmJAFIswAzMfHdHo';
+const VAPID_KEY = 'BK4AWAfsPAotKbQN4JIEKx9xSCNcXSw2uHoTXaU71b_Up7OUa_XQHJcKZFkI9n8V_AVlh_OQPa0cs2eOAyWAwWY';
 
 let auth, db;
 let currentUser=null, userProfile=null, ordersCache=[], restaurantsCache=[];

@@ -82,7 +82,7 @@ async function initApp() {
     firebase.initializeApp(FIREBASE_CONFIG);
     auth = firebase.auth();
     db = firebase.firestore();
-    db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+    try { db.enablePersistence({synchronizeTabs:true}); } catch(e) {}
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
   }
   if (!window.authListenerSet) {

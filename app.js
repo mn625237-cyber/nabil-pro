@@ -311,15 +311,14 @@ function initDriverApp() {
   listenToDriverOrders();
   // إشعار foreground للمندوب
   try {
-    const msgInstance = firebase.messaging();
-    msgInstance.onMessage((payload) => {
-      const title = payload.notification?.title || 'Nabil Pro 🛵';
-      const body  = payload.notification?.body  || '';
-      showToast('🔔 ' + title + (body ? ' — ' + body : ''));
-      if (Notification.permission === 'granted') {
-        new Notification(title, { body, icon: 'https://nabil-pro.vercel.app/icon-192.png' });
-      }
-    });
+    if (firebase.messaging.isSupported()) {
+      const msgInstance = firebase.messaging();
+      msgInstance.onMessage((payload) => {
+        const title = payload.notification?.title || 'Nabil Pro 🛵';
+        const body  = payload.notification?.body  || '';
+        showToast('🔔 ' + title + (body ? ' — ' + body : ''));
+      });
+    }
   } catch(e) {}
 
   showScreen('driverApp');

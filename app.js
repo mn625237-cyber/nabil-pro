@@ -82,6 +82,7 @@ async function initApp() {
     firebase.initializeApp(FIREBASE_CONFIG);
     auth = firebase.auth();
     db = firebase.firestore();
+    db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
   }
   if (!window.authListenerSet) {
@@ -309,7 +310,31 @@ function initDriverApp() {
   updateClock(); setInterval(updateClock, 30000);
   loadRestaurantsDriver();
   listenToDriverOrders();
+  // إشعار foreground للمندوب
+  try {
+    const msgInstance = firebase.messaging();
+    msgInstance.onMessage((payload) => {
+      const title = payload.notification?.title || 'Nabil Pro 🛵';
+      const body  = payload.notification?.body  || '';
+      showToast('🔔 ' + title + (body ? ' — ' + body : ''));
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body, icon: 'https://nabil-pro.vercel.app/icon-192.png' });
+      }
+    });
+  } catch(e) {}
+
   showScreen('driverApp');
+
+  // تفعيل إشعارات المندوب تلقائياً
+  setTimeout(()=>{
+    if (Notification.permission === 'default') {
+      Notification.requestPermission().then(p => {
+        if (p === 'granted') subscribeFCM();
+      });
+    } else if (Notification.permission === 'granted') {
+      subscribeFCM();
+    }
+  }, 2000);
 }
 
 async function loadRestaurantsDriver() {
@@ -348,15 +373,18 @@ function selectRest(id) { selectedRest = selectedRest===id?null:id; renderRestCh
 function renderRestSettings() {
   const el = document.getElementById('restSettingsList');
   if (!restaurantsCache.length) { el.innerHTML='<div class="empty-state"><div class="empty-text">لا مطاعم بعد</div></div>'; return; }
+  const isManager = userProfile.role === 'manager' || userProfile._savedRole === 'manager';
   el.innerHTML = restaurantsCache.map(r=>`
     <div class="rest-row">
       <div class="rest-row-icon">🏪</div>
       <span class="rest-row-name">${sanitize(r.name)}</span>
-      <button class="rest-del-btn" onclick="deleteRestaurant('${sanitize(r.id)}','${sanitize(r.name)}')">حذف</button>
+      ${isManager ? `<button class="rest-del-btn" onclick="deleteRestaurant('${sanitize(r.id)}','${sanitize(r.name)}')">حذف</button>` : ''}
     </div>`).join('');
 }
 
 async function addRestaurant() {
+  const isManager = userProfile.role === 'manager' || userProfile._savedRole === 'manager';
+  if (!isManager) { showToast('❌ المدير فقط يقدر يضيف مطاعم'); return; }
   const name = prompt('اسم المطعم الجديد:');
   if (!name) return;
   await restaurantsRef.add({name:name.trim(),active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
@@ -567,6 +595,7 @@ function renderOrdersList() {
       </div>
       <div class="order-actions">
         ${o.phone?`<a class="action-btn wa" href="https://wa.me/2${o.phone.replace(/^0/,'')}" target="_blank">📱 واتساب</a>`:''}
+        ${o.address?`<a class="action-btn" href="https://maps.google.com/?q=${encodeURIComponent(o.address)}" target="_blank" style="background:rgba(66,133,244,0.12);color:#4285F4;border:1px solid rgba(66,133,244,0.25);flex:1;padding:9px;border-radius:10px;font-size:12px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🗺️ خريطة</a>`:''}
         <button class="action-btn edit" onclick="editOrder('${o.id}')">✏️ تعديل</button>
         <button class="action-btn del" onclick="deleteOrder('${o.id}')">🗑 حذف</button>
       </div>
@@ -1000,7 +1029,31 @@ function renderDriversList(filter='') {
 
 function filterDrivers() { renderDriversList(document.getElementById('driverSearch').value.trim()); }
 
-function showAddUserModal(role='driver') {
+function showAddNoteModal(driverUid) {
+  const driver = allDrivers.find(d => d.uid === driverUid);
+  if (!driver) return;
+  showModal('📝 إضافة ملاحظة', `
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">إلى: <strong>${sanitize(driver.name||'')}</strong></div>
+    <textarea class="form-field" id="noteText" placeholder="اكتب ملاحظتك هنا..." style="height:100px;resize:none;" maxlength="300"></textarea>`,
+    [{label:'إرسال',cls:'confirm',action:async()=>{
+      const note = document.getElementById('noteText').value.trim();
+      if (!note) { showToast('اكتب الملاحظة'); return; }
+      const btn = document.getElementById('mBtn0');
+      if (btn) { btn.disabled=true; btn.textContent='جاري...'; }
+      try {
+        await fetch(RAILWAY_URL+'/notify-driver',{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({uid:driverUid, title:'📝 ملاحظة من المدير', body:note})
+        });
+        await db.collection('notes').add({
+          driverId: driverUid, driverName: driver.name,
+          managerId: currentUser.uid, text: note,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        closeModal(); showToast('✅ تم إرسال الملاحظة');
+      } catch(e) { if(btn){btn.disabled=false;btn.textContent='إرسال';} showToast('❌ خطأ'); }
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
+}
   const isDriver=role==='driver';
   showModal((isDriver?'➕ إضافة مندوب':'➕ إضافة مدير'),`
     <div style="margin-bottom:12px;"><div class="field-label">👤 الاسم</div>
@@ -1060,7 +1113,8 @@ function showDriverDetail(uid) {
         <div class="feed-pay">${o.payment==='visa'?'💳':'💵'}</div>
         <div class="feed-body">
           <div class="feed-rest-name">${sanitize(o.restName||'—')}</div>
-          <div class="feed-driver-info">📍 ${sanitize(o.address||'—')}</div>
+          <div class="feed-driver-info">📍 ${sanitize(o.address||'—')} ${o.address?`<a href="https://maps.google.com/?q=${encodeURIComponent(o.address)}" target="_blank" style="color:var(--blue);font-size:10px;margin-right:4px;">🗺️</a>`:''}
+          </div>
           <div class="feed-time-txt">⏰ ${timeStr}</div>
         </div>
         <div class="feed-amt">ج ${o.delivery||0}</div>
@@ -1071,7 +1125,8 @@ function showDriverDetail(uid) {
   if (extraBtns) {
     extraBtns.innerHTML = `
       <button class="modal-btn confirm" onclick="settleDriverAccount('${uid}')" style="width:100%;margin-bottom:8px">💰 تصفية حساب اليوم</button>
-      <button class="modal-btn cancel" onclick="showDriverMonthlyStats('${uid}')" style="width:100%">📅 إحصائيات الشهر</button>`;
+      <button class="modal-btn cancel" onclick="showDriverMonthlyStats('${uid}')" style="width:100%;margin-bottom:8px">📅 إحصائيات الشهر</button>
+      <button class="modal-btn cancel" onclick="showAddNoteModal('${uid}')" style="width:100%;background:var(--blue-bg);color:var(--blue);border-color:var(--blue)">📝 إرسال ملاحظة</button>`;
   }
   document.getElementById('driverDetailOverlay').classList.add('show');
 }

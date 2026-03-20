@@ -274,6 +274,16 @@ async function subscribeFCM() {
 
     showToast('✅ الاشعارات شغالة الان!');
 
+    // استقبال الإشعارات لما التطبيق مفتوح
+    msg.onMessage((payload) => {
+      const title = payload.notification?.title || 'Nabil Pro 🛵';
+      const body  = payload.notification?.body  || '';
+      showToast('🔔 ' + title + (body ? ' — ' + body : ''));
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body, icon: 'https://nabil-pro.vercel.app/icon-192.png' });
+      }
+    });
+
   } catch(e) {
     alert('FCM Error: ' + e.message + '\ncode: ' + (e.code||''));
     console.error('خطأ FCM:', e);
@@ -309,18 +319,6 @@ function initDriverApp() {
   updateClock(); setInterval(updateClock, 30000);
   loadRestaurantsDriver();
   listenToDriverOrders();
-  // إشعار foreground للمندوب
-  try {
-    if (firebase.messaging.isSupported()) {
-      const msgInstance = firebase.messaging();
-      msgInstance.onMessage((payload) => {
-        const title = payload.notification?.title || 'Nabil Pro 🛵';
-        const body  = payload.notification?.body  || '';
-        showToast('🔔 ' + title + (body ? ' — ' + body : ''));
-      });
-    }
-  } catch(e) {}
-
   showScreen('driverApp');
 
   // تفعيل إشعارات المندوب تلقائياً
@@ -879,19 +877,6 @@ function initManagerApp() {
   document.getElementById('mgrHeroDate').textContent=days[now.getDay()]+'، '+now.getDate()+' '+months[now.getMonth()];
   showScreen('managerApp');
   listenAllOrders(); loadAllDrivers(); loadMgrRestaurants();
-
-  // إشعار لما التطبيق مفتوح
-  try {
-    const msgInstance = firebase.messaging();
-    msgInstance.onMessage((payload) => {
-      const title = payload.notification?.title || 'Nabil Pro 🛵';
-      const body  = payload.notification?.body  || '';
-      showToast('🔔 ' + title + (body ? ' — ' + body : ''));
-      if (Notification.permission === 'granted') {
-        new Notification(title, { body, icon: 'https://nabil-pro.vercel.app/icon-192.png' });
-      }
-    });
-  } catch(e) {}
 }
 
 function listenAllOrders() {
@@ -1052,6 +1037,8 @@ function showAddNoteModal(driverUid) {
       } catch(e) { if(btn){btn.disabled=false;btn.textContent='إرسال';} showToast('❌ خطأ'); }
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
+
+function showAddUserModal(role='driver') {
   const isDriver=role==='driver';
   showModal((isDriver?'➕ إضافة مندوب':'➕ إضافة مدير'),`
     <div style="margin-bottom:12px;"><div class="field-label">👤 الاسم</div>

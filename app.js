@@ -11,6 +11,18 @@ function sanitize(str) {
 // ══════════════════════════════════
 const RAILWAY_URL = 'https://nabil-pro-production.up.railway.app';
 
+async function getAuthHeaders() {
+  try {
+    const token = await firebase.auth().currentUser?.getIdToken();
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  } catch(e) {
+    return { 'Content-Type': 'application/json' };
+  }
+}
+
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyAikfw9vS3PJQgaWl6SrpcOSG34B5vyXPc",
   authDomain:        "nabil-pro.firebaseapp.com",
@@ -319,6 +331,13 @@ function initDriverApp() {
   updateClock(); setInterval(updateClock, 30000);
   loadRestaurantsDriver();
   listenToDriverOrders();
+
+  // استرجاع حالة الشيفت لو الصفحة اتحدثت
+  if (shiftActive && shiftStart) {
+    document.getElementById('shiftStartBtn').style.display = 'none';
+    document.getElementById('shiftEndBtn').style.display = '';
+  }
+
   showScreen('driverApp');
 
   // تفعيل إشعارات المندوب تلقائياً
@@ -430,9 +449,27 @@ function listenToDriverOrders() {
 let shiftActive = false;
 let shiftStart = null;
 
+// استرجاع الشيفت من localStorage لو الصفحة اتحدثت
+(function restoreShift() {
+  const saved = localStorage.getItem('nabilpro_shift');
+  if (saved) {
+    const data = JSON.parse(saved);
+    const today = new Date().toDateString();
+    if (data.date === today && data.active) {
+      shiftActive = true;
+      shiftStart = new Date(data.start);
+    } else {
+      localStorage.removeItem('nabilpro_shift');
+    }
+  }
+})();
+
 function startShift() {
   shiftActive = true;
   shiftStart = new Date();
+  localStorage.setItem('nabilpro_shift', JSON.stringify({
+    active: true, start: shiftStart.toISOString(), date: new Date().toDateString()
+  }));
   document.getElementById('shiftStartBtn').style.display = 'none';
   document.getElementById('shiftEndBtn').style.display = '';
   showToast('✅ بدأ الشيفت — ' + shiftStart.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}));
@@ -447,6 +484,7 @@ function endShift() {
   const totalDelivery = today.reduce((s,o)=>s+(o.delivery||0),0);
   const totalCollected = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
   const totalRestOwed = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.restAmount||0),0);
+  const totalVisaDelivery = today.filter(o=>o.payment==='visa').reduce((s,o)=>s+(o.delivery||0),0);
   showModal('📋 ملخص الشيفت',`
     <div style="text-align:center;padding:8px 0 16px">
       <div style="font-size:13px;color:var(--text3);margin-bottom:4px">مدة الشيفت</div>
@@ -456,11 +494,13 @@ function endShift() {
       <div class="report-row-detail" style="padding:10px 0"><span>📦 الأوردرات</span><span style="font-weight:900">${today.length} أوردر</span></div>
       <div class="report-row-detail" style="padding:10px 0"><span>🤑 ربحك</span><span style="color:var(--blue);font-weight:900">ج${totalDelivery}</span></div>
       <div class="report-row-detail" style="padding:10px 0"><span>💰 كاش محصّل</span><span style="color:var(--gold);font-weight:900">ج${totalCollected}</span></div>
-      <div class="report-row-detail" style="padding:10px 0;border-bottom:none"><span>🏪 ادفع للمطاعم</span><span style="color:var(--orange);font-weight:900">ج${totalRestOwed}</span></div>
+      <div class="report-row-detail" style="padding:10px 0"><span>🏪 ادفع للمطاعم (كاش)</span><span style="color:var(--orange);font-weight:900">ج${totalRestOwed}</span></div>
+      <div class="report-row-detail" style="padding:10px 0;border-bottom:none"><span>💳 المطاعم مديناك (فيزا)</span><span style="color:var(--green);font-weight:900">ج${totalVisaDelivery}</span></div>
     </div>`,
     [{label:'إنهاء الشيفت',cls:'danger',action:()=>{
       closeModal();
       shiftActive=false; shiftStart=null;
+      localStorage.removeItem('nabilpro_shift');
       document.getElementById('shiftStartBtn').style.display='';
       document.getElementById('shiftEndBtn').style.display='none';
       showToast('✅ انتهى الشيفت');
@@ -473,16 +513,23 @@ function showRestBalance() {
   today.forEach(o=>{
     const rn=o.restName||'—';
     if(!byRest[rn]) byRest[rn]={cashOwed:0,visaDelivery:0};
-    if(o.payment==='cash') byRest[rn].cashOwed+=o.restAmount||0;
-    if(o.payment==='visa') byRest[rn].visaDelivery+=o.delivery||0;
+    // كاش: المندوب بيدفع للمطعم restAmount
+    if(o.payment==='cash') byRest[rn].cashOwed += o.restAmount||0;
+    // فيزا: المطعم مدين للمندوب بالتوصيل
+    if(o.payment==='visa') byRest[rn].visaDelivery += o.delivery||0;
   });
   const rows = Object.entries(byRest).map(([name,d])=>{
     const net = d.cashOwed - d.visaDelivery;
     const color = net>0?'var(--orange)':net<0?'var(--green)':'var(--text3)';
-    const label = net>0?`ج${net} عليك`:net<0?`ج${Math.abs(net)} عليهم`:'متساوي';
-    return `<div class="report-row-detail" style="padding:10px 0;border-bottom:1px solid var(--border)">
-      <span style="font-weight:800">${sanitize(name)}</span>
-      <span style="color:${color};font-weight:900">${label}</span>
+    const label = net>0?`ج${net} أنت بتدفع`:net<0?`ج${Math.abs(net)} هم بيدفعوا`:'متساوي ✅';
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:800">${sanitize(name)}</span>
+        <span style="color:${color};font-weight:900">${label}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:3px">
+        كاش عليك: ج${d.cashOwed} | فيزا ليك: ج${d.visaDelivery}
+      </div>
     </div>`;
   }).join('');
   showModal('🏪 حساب المطاعم',
@@ -502,12 +549,17 @@ function getTodayOrders() {
 function updateDriverStats() {
   const today = getTodayOrders();
   const totalDelivery = today.reduce((s,o)=>s+(o.delivery||0),0);
-  const totalRestOwed = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.restAmount||0),0);
+  // كاش: المندوب بيدفع للمطعم (restAmount = total - delivery)
+  const totalCashOwed = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.restAmount||0),0);
+  // فيزا: المطعم مدين للمندوب بالتوصيل
+  const totalVisaEarned = today.filter(o=>o.payment==='visa').reduce((s,o)=>s+(o.delivery||0),0);
+  // صافي ما على المندوب للمطاعم
+  const netRestOwed = Math.max(0, totalCashOwed - totalVisaEarned);
   const totalCollected = today.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
   document.getElementById('statOrders').textContent = today.length;
   document.getElementById('statDelivery').textContent = 'ج' + totalDelivery;
   document.getElementById('statCash').textContent = 'ج' + totalCollected;
-  document.getElementById('statRestOwed').textContent = 'ج' + totalRestOwed;
+  document.getElementById('statRestOwed').textContent = 'ج' + netRestOwed;
 }
 
 function updateStatusBar() {
@@ -617,18 +669,19 @@ async function addOrder() {
   if (submitBtn) { submitBtn.disabled=true; submitBtn.innerHTML='⏳ جاري الحفظ...'; }
   const address = document.getElementById('addressInput').value.trim();
   const phone = document.getElementById('phoneOrderInput').value.trim();
-  const restAmt = parseFloat(document.getElementById('restAmountInput').value)||0;
+  const total = parseFloat(document.getElementById('restAmountInput').value)||0;
   const delivery = parseFloat(document.getElementById('deliveryInput').value)||0;
   if (!address) { showToast('ادخل العنوان'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='✅ حفظ الأوردر';} return; }
   if (!selectedPayment) { showToast('اختر طريقة الدفع'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='✅ حفظ الأوردر';} return; }
+  if (!total) { showToast('ادخل إجمالي الأوردر'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='✅ حفظ الأوردر';} return; }
   if (!delivery) { showToast('ادخل رسوم التوصيل'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='✅ حفظ الأوردر';} return; }
   const rest = restaurantsCache.find(r=>r.id===selectedRest);
-  const total = restAmt + delivery;
-  const restOwed = selectedPayment==='cash' ? restAmt : -delivery;
+  const restAmount = total - delivery;  // ما يستحقه المطعم
+  const restOwed = selectedPayment==='cash' ? restAmount : -delivery;
   const orderData = {
     driverId:currentUser.uid, driverName:userProfile.name||'مندوب',
     restId:selectedRest, restName:rest?.name||'—',
-    restAmount:restAmt, delivery, total, payment:selectedPayment, address, phone,
+    restAmount, delivery, total, payment:selectedPayment, address, phone,
     restOwed,
     timestamp:firebase.firestore.FieldValue.serverTimestamp()
   };
@@ -1025,7 +1078,7 @@ function showAddNoteModal(driverUid) {
       if (btn) { btn.disabled=true; btn.textContent='جاري...'; }
       try {
         await fetch(RAILWAY_URL+'/notify-driver',{
-          method:'POST', headers:{'Content-Type':'application/json'},
+          method:'POST', headers: await getAuthHeaders(),
           body:JSON.stringify({uid:driverUid, title:'📝 ملاحظة من المدير', body:note})
         });
         await db.collection('notes').add({
@@ -1145,7 +1198,7 @@ async function changeDriverPin() {
       if (btn) { btn.disabled=true; btn.textContent='جاري...'; }
       try {
         const res = await fetch(RAILWAY_URL + '/update-pin', {
-          method: 'POST', headers: {'Content-Type': 'application/json'},
+          method: 'POST', headers: await getAuthHeaders(),
           body: JSON.stringify({ uid: selectedDriverUid, pin: newPin })
         });
         const data = await res.json();

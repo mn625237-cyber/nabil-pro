@@ -16,7 +16,7 @@ let swRegistration = null;
 async function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   try {
-    swRegistration = await navigator.serviceWorker.register('./sw.js');
+    swRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
   } catch(e) {}
 }
 

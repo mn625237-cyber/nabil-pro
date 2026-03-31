@@ -917,6 +917,17 @@ function switchBackToManager() {
 // ══════════════════════════════════
 // MANAGER APP
 // ══════════════════════════════════
+function updateNotifBtn() {
+  const btn = document.getElementById('notifBtn');
+  if (!btn) return;
+  if (Notification.permission === 'granted') {
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = '';
+    btn.title = Notification.permission === 'denied' ? 'الإشعارات محظورة — فعّلها من إعدادات المتصفح' : 'اضغط لتفعيل الإشعارات';
+  }
+}
+
 function initManagerApp() {
   themeMode=userProfile.themeMode||'auto'; applyTheme(themeMode);
   document.getElementById('managerBadge').textContent=userProfile.name||'مدير';
@@ -924,8 +935,12 @@ function initManagerApp() {
     if (Notification.permission==='default') {
       Notification.requestPermission().then(p=>{
         if(p==='granted'){ showToast('🔔 تم تفعيل الإشعارات'); subscribeFCM(); }
+        updateNotifBtn();
       });
-    } else if (Notification.permission==='granted') subscribeFCM();
+    } else if (Notification.permission==='granted') {
+      subscribeFCM();
+    }
+    updateNotifBtn();
   },2000);
   const now=new Date();
   const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];

@@ -120,7 +120,7 @@ async function loadUserProfile(uid) {
     if (userProfile.role === 'manager') initManagerApp();
     else initDriverApp();
   } catch(e) {
-    console.error('loadUserProfile error:', e);
+    // error logged
     showToast('خطأ في تحميل البيانات: ' + (e.code||e.message||''));
     showScreen('authScreen');
   }
@@ -297,15 +297,15 @@ async function subscribeFCM() {
     });
 
   } catch(e) {
-    alert('FCM Error: ' + e.message + '\ncode: ' + (e.code||''));
-    console.error('خطأ FCM:', e);
+    showToast('❌ خطأ في الإشعارات: ' + (e.message||''));
+
   }
 }
 
 function testFCM() { subscribeFCM(); }
 
 async function sendPushNotification(title, body, type) {
-  console.log('📬 إشعار سيُرسل من Railway:', title);
+
 }
 
 // ══════════════════════════════════
@@ -328,7 +328,7 @@ function initDriverApp() {
   if (snEl) snEl.textContent = name;
   const spEl = document.getElementById('settingsPhone');
   if (spEl) spEl.textContent = userProfile.phone || '—';
-  updateClock(); setInterval(updateClock, 30000);
+  updateClock(); if (!window._clockInterval) window._clockInterval = setInterval(updateClock, 30000);
   loadRestaurantsDriver();
   listenToDriverOrders();
 
@@ -716,7 +716,7 @@ async function editOrder(id) {
   editingOrderId=id; selectedRest=o.restId; selectedPayment=o.payment;
   document.getElementById('addressInput').value=o.address||'';
   document.getElementById('phoneOrderInput').value=o.phone||'';
-  document.getElementById('restAmountInput').value=o.restAmount||'';
+  document.getElementById('restAmountInput').value=o.total||''; // total = ما دفعه العميل
   document.getElementById('deliveryInput').value=o.delivery||'';
   renderRestChips(); selectPayment(o.payment); goPage(2); showToast('📝 جاري التعديل...');
 }
@@ -730,7 +730,11 @@ async function deleteOrder(id) {
 function goPage(n) {
   currentPage=n;
   document.getElementById('pagesWrapper').style.transform=`translateX(${n*25}%)`;
-  document.querySelectorAll('.nav-btn').forEach((el,i)=>el.classList.toggle('active',i===n));
+  // highlight بالـ ID مش بالـ index عشان nav-add-btn مش nav-btn
+  ['nav0','nav1','nav3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active', (n===0&&i===0)||(n===1&&i===1)||(n===3&&i===2));
+  });
 }
 
 function editDriverName() {
@@ -1295,7 +1299,7 @@ async function settleDriverAccount(driverUid) {
         });
         await batch.commit();
         await fetch(RAILWAY_URL+'/notify-driver',{
-          method:'POST',headers:{'Content-Type':'application/json'},
+          method:'POST',headers: await getAuthHeaders(),
           body:JSON.stringify({uid:driverUid,title:'✅ تمت تصفية حسابك',body:`المدير سوّى حسابك — ${dOrders.length} أوردر، توصيلك ج${totalDelivery}`})
         }).catch(()=>{});
         closeModal(); showToast(`✅ تمت تصفية حساب ${driver.name}`);
@@ -1307,7 +1311,7 @@ async function notifyDriverOrderEdited(order) {
   if (!order || !order.driverId) return;
   try {
     await fetch(RAILWAY_URL+'/notify-driver',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+      method:'POST',headers: await getAuthHeaders(),
       body:JSON.stringify({uid:order.driverId,title:'📝 تم تعديل أوردرك',body:`${order.restName||''} — ${order.address||''}`})
     });
   } catch(e){}

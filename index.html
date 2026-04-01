@@ -266,7 +266,7 @@ window.addEventListener('load', () => { registerSW(); });
     <div class="page" id="settingsPage">
       <div class="sec-title">الحساب</div>
       <div class="settings-group">
-        <div class="settings-item" onclick="editDriverName()">
+        <div class="settings-item">
           <div class="settings-item-icon">👤</div>
           <div class="settings-item-label">اسم السائق</div>
           <div class="settings-item-val" id="settingsNameVal">—</div>
@@ -436,6 +436,7 @@ window.addEventListener('load', () => { registerSW(); });
     </div>
     <div class="detail-actions">
       <button class="detail-action-btn" style="background:var(--orange-bg);color:var(--orange);" onclick="changeDriverPin()">🔑</button>
+      <button class="detail-action-btn" style="background:var(--green-bg);color:var(--green);" onclick="editDriverInfo()">✏️</button>
       <button class="detail-action-btn" style="background:var(--purple-bg);color:var(--purple);" onclick="toggleDriverRole()">👑</button>
       <button class="detail-action-btn" style="background:var(--red-bg);color:var(--red);" onclick="removeDriver()">🗑</button>
     </div>

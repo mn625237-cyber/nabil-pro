@@ -214,6 +214,7 @@ async function doLogout() {
   closeModal();
   if (ordersUnsubscribe) { ordersUnsubscribe(); ordersUnsubscribe=null; }
   if (allOrdersUnsubscribe) { allOrdersUnsubscribe(); allOrdersUnsubscribe=null; }
+  if (restaurantsUnsubscribe) { restaurantsUnsubscribe(); restaurantsUnsubscribe=null; }
   try {
     if (currentUser) await db.collection('fcm_tokens').doc(currentUser.uid).delete();
   } catch(e) {}
@@ -316,6 +317,26 @@ function initDriverApp() {
   ordersRef = db.collection('orders');
   restaurantsRef = db.collection('restaurants');
   settingsRef = db.collection('users').doc(uid);
+  // Real-time listener على بيانات المندوب — لو المدير عدّل تظهر فوراً
+  db.collection('users').doc(uid).onSnapshot(snap => {
+    if (!snap.exists) return;
+    const data = snap.data();
+    // تحديث الاسم لو اتغير من المدير
+    if (data.name && data.name !== userProfile.name) {
+      userProfile.name = data.name;
+      const dnEl = document.getElementById('driverNameDisplay');
+      if (dnEl) dnEl.textContent = data.name;
+      const snEl = document.getElementById('settingsNameVal');
+      if (snEl) snEl.textContent = data.name;
+    }
+    // تحديث الهاتف
+    if (data.phone) {
+      userProfile.phone = data.phone;
+      const spEl = document.getElementById('settingsPhone');
+      if (spEl) spEl.textContent = data.phone;
+    }
+  });
+
   db.collection('users').doc(uid).update({ lastSeen:firebase.firestore.FieldValue.serverTimestamp(), online:true }).catch(()=>{});
   themeMode = userProfile.themeMode || 'auto';
   applyTheme(themeMode);
@@ -329,7 +350,7 @@ function initDriverApp() {
   const spEl = document.getElementById('settingsPhone');
   if (spEl) spEl.textContent = userProfile.phone || '—';
   updateClock(); if (!window._clockInterval) window._clockInterval = setInterval(updateClock, 30000);
-  loadRestaurantsDriver();
+  listenToRestaurants();
   listenToDriverOrders();
 
   // استرجاع حالة الشيفت لو الصفحة اتحدثت
@@ -352,36 +373,38 @@ function initDriverApp() {
   }, 2000);
 }
 
-async function loadRestaurantsDriver() {
-  const CACHE_KEY = 'nabilpro_restaurants';
-  const DATE_KEY  = 'nabilpro_rest_date';
-  const today = new Date().toDateString();
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    const cachedDate = localStorage.getItem(DATE_KEY);
-    if (cached && cachedDate === today) {
-      restaurantsCache = JSON.parse(cached);
-      renderRestChips(); renderRestSettings();
-      return;
-    }
-  } catch(e) {}
-  const snap = await restaurantsRef.orderBy('name').get();
-  restaurantsCache = snap.docs.map(d => ({id:d.id,...d.data()}));
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(restaurantsCache));
-    localStorage.setItem(DATE_KEY, today);
-  } catch(e) {}
-  renderRestChips(); renderRestSettings();
+let restaurantsUnsubscribe = null;
+
+function listenToRestaurants() {
+  // إلغاء الـ listener القديم لو موجود
+  if (restaurantsUnsubscribe) { restaurantsUnsubscribe(); restaurantsUnsubscribe = null; }
+  // Real-time listener — أي تعديل من المدير يظهر فوراً
+  restaurantsUnsubscribe = db.collection('restaurants')
+    .orderBy('name')
+    .onSnapshot(snap => {
+      restaurantsCache = snap.docs.map(d => ({id:d.id,...d.data()}));
+      // تحديث الـ localStorage كـ fallback
+      try {
+        localStorage.setItem('nabilpro_restaurants', JSON.stringify(restaurantsCache));
+        localStorage.setItem('nabilpro_rest_date', new Date().toDateString());
+      } catch(e) {}
+      renderRestChips();
+      renderRestSettings();
+    }, () => {
+      // لو فشل الـ listener — ارجع للـ cache
+      try {
+        const cached = localStorage.getItem('nabilpro_restaurants');
+        if (cached) { restaurantsCache = JSON.parse(cached); renderRestChips(); renderRestSettings(); }
+      } catch(e) {}
+    });
 }
 
 function renderRestChips() {
   const active = restaurantsCache.filter(r => r.active !== false);
-  const isManager = userProfile.role === 'manager' || userProfile._savedRole === 'manager';
   const chips = active.map(r =>
     `<button class="rest-chip ${selectedRest===r.id?'sel':''}" onclick="selectRest('${r.id}')">${sanitize(r.name)}</button>`
   ).join('');
-  document.getElementById('restChips').innerHTML = chips +
-    (isManager ? `<button class="rest-chip add" onclick="addRestaurantFromOrder()">＋ جديد</button>` : '');
+  document.getElementById('restChips').innerHTML = chips;
 }
 
 function selectRest(id) { selectedRest = selectedRest===id?null:id; renderRestChips(); }
@@ -413,7 +436,7 @@ async function addRestaurantFromOrder() {
   const name = prompt('اسم المطعم:');
   if (!name) return;
   const docRef = await restaurantsRef.add({name:name.trim(),active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await loadRestaurantsDriver(); selectedRest = docRef.id; renderRestChips();
+  selectedRest = docRef.id; // listener يحدث تلقائياً
 }
 
 async function deleteRestaurant(id, name) {
@@ -952,6 +975,7 @@ function initManagerApp() {
   document.getElementById('mgrHeroDate').textContent=days[now.getDay()]+'، '+now.getDate()+' '+months[now.getMonth()];
   showScreen('managerApp');
   listenAllOrders(); loadAllDrivers(); loadMgrRestaurants();
+  listenToRestaurants(); // real-time sync للمطاعم
 }
 
 function listenAllOrders() {
@@ -1202,6 +1226,45 @@ async function toggleDriverRole() {
     [{label:label,cls:'confirm',action:async()=>{
       await db.collection('users').doc(selectedDriverUid).update({role:newRole});
       driver.role=newRole; renderDriversList(); closeModal(); showToast('✅ تم '+label);
+    }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
+}
+
+async function editDriverInfo() {
+  if (!selectedDriverUid) return;
+  const driver = allDrivers.find(d => d.uid === selectedDriverUid);
+  if (!driver) return;
+  showModal('✏️ تعديل بيانات ' + sanitize(driver.name||''), `
+    <div style="margin-bottom:12px">
+      <div class="field-label">👤 الاسم</div>
+      <input class="form-field" id="editInfoName" value="${sanitize(driver.name||'')}" placeholder="اسم المندوب">
+    </div>
+    <div style="margin-bottom:4px">
+      <div class="field-label">📞 رقم الهاتف</div>
+      <input class="form-field" type="tel" id="editInfoPhone" value="${sanitize(driver.phone||'')}" placeholder="01xxxxxxxxx" inputmode="numeric">
+    </div>`,
+    [{label:'حفظ',cls:'confirm',action:async()=>{
+      const name = document.getElementById('editInfoName').value.trim();
+      const phone = document.getElementById('editInfoPhone').value.trim();
+      if (!name) { showToast('ادخل الاسم'); return; }
+      const btn = document.getElementById('mBtn0');
+      if (btn) { btn.disabled=true; btn.textContent='جاري...'; }
+      try {
+        const updates = { name };
+        if (phone.length >= 10) updates.phone = phone.replace(/\D/g,'');
+        await db.collection('users').doc(selectedDriverUid).update(updates);
+        // تحديث allDrivers محلياً
+        driver.name = name;
+        if (phone.length >= 10) driver.phone = phone.replace(/\D/g,'');
+        // تحديث الـ header في الـ detail overlay
+        document.getElementById('detailDriverName').textContent = name;
+        if (phone.length >= 10) document.getElementById('detailDriverPhone').textContent = updates.phone;
+        renderDriversList();
+        closeModal();
+        showToast('✅ تم تحديث بيانات ' + name);
+      } catch(e) {
+        if (btn) { btn.disabled=false; btn.textContent='حفظ'; }
+        showToast('❌ خطأ: ' + (e.message||''));
+      }
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 

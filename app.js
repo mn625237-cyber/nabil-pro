@@ -268,7 +268,8 @@ async function subscribeFCM() {
 }
 
 // ══════════════════════════════════
-// RICH FCM
+// RICH FCM — إشعار تفصيلي للمدير
+// FIX: timeout + better error handling
 // ══════════════════════════════════
 async function sendPushNotification(title, body, type, orderData) {
   try {
@@ -280,12 +281,23 @@ async function sendPushNotification(title, body, type, orderData) {
       payment:    orderData.payment    || 'cash',
       driverName: orderData.driverName || ''
     } : { title, body };
-    await fetch('/api/notify-managers', {
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch('/api/notify-managers', {
       method: 'POST',
       headers: await getAuthHeaders(),
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
-  } catch(e) {}
+    clearTimeout(timeout);
+    const data = await res.json();
+    console.log('FCM result:', data);
+  } catch(e) {
+    // إشعار فشل بصمت — الأوردر اتحفظ بالفعل
+    console.warn('FCM silent fail:', e.message);
+  }
 }
 
 // ══════════════════════════════════
@@ -572,48 +584,76 @@ function selectPayment(type) {
   document.getElementById('payVisa').className='pay-card'+(type==='visa'?' active-visa':'');
 }
 
+// ══════════════════════════════════
+// ADD ORDER — FIX: button never stays stuck
+// ══════════════════════════════════
 async function addOrder() {
   if (!selectedRest) { showToast('اختر المطعم أولاً'); return; }
+
   const submitBtn = document.querySelector('.submit-order-btn');
-  if (submitBtn) { submitBtn.disabled=true; submitBtn.innerHTML='<span style="pointer-events:none">⏳ جاري الحفظ...</span>'; }
+  const resetBtn = () => {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span style="pointer-events:none">✅ حفظ الأوردر</span>';
+    }
+  };
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span style="pointer-events:none">⏳ جاري الحفظ...</span>';
+  }
+
   const address = document.getElementById('addressInput').value.trim();
   const phone = document.getElementById('phoneOrderInput').value.trim();
   const total = parseFloat(document.getElementById('restAmountInput').value)||0;
   const delivery = parseFloat(document.getElementById('deliveryInput').value)||0;
-  if (!address) { showToast('ادخل العنوان'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='<span style="pointer-events:none">✅ حفظ الأوردر</span>';} return; }
-  if (!selectedPayment) { showToast('اختر طريقة الدفع'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='<span style="pointer-events:none">✅ حفظ الأوردر</span>';} return; }
-  if (!total) { showToast('ادخل إجمالي الأوردر'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='<span style="pointer-events:none">✅ حفظ الأوردر</span>';} return; }
-  if (!delivery) { showToast('ادخل رسوم التوصيل'); if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML='<span style="pointer-events:none">✅ حفظ الأوردر</span>';} return; }
-  const rest = restaurantsCache.find(r=>r.id===selectedRest);
-  const restAmount = total - delivery;
-  const restOwed = selectedPayment==='cash' ? restAmount : -delivery;
-  const orderData = {
-    driverId:currentUser.uid, driverName:userProfile.name||'مندوب',
-    restId:selectedRest, restName:rest?.name||'—',
-    restAmount, delivery, total, payment:selectedPayment, address, phone,
-    restOwed, settled: false,
-    timestamp:firebase.firestore.FieldValue.serverTimestamp()
-  };
-  if (editingOrderId) {
-    await ordersRef.doc(editingOrderId).update(orderData);
-    editingOrderId=null; showToast('✅ تم تعديل الأوردر');
-  } else {
-    await ordersRef.add(orderData);
-    showToast('✅ تم حفظ الأوردر');
-    sendPushNotification('', '', 'new-order', {
-      restName: rest?.name||'—', address, total, delivery,
-      payment: selectedPayment, driverName: userProfile.name||'مندوب'
-    });
+
+  if (!address)        { showToast('ادخل العنوان');          resetBtn(); return; }
+  if (!selectedPayment){ showToast('اختر طريقة الدفع');      resetBtn(); return; }
+  if (!total)          { showToast('ادخل إجمالي الأوردر');   resetBtn(); return; }
+  if (!delivery)       { showToast('ادخل رسوم التوصيل');     resetBtn(); return; }
+
+  try {
+    const rest = restaurantsCache.find(r=>r.id===selectedRest);
+    const restAmount = total - delivery;
+    const restOwed = selectedPayment==='cash' ? restAmount : -delivery;
+    const orderData = {
+      driverId:currentUser.uid, driverName:userProfile.name||'مندوب',
+      restId:selectedRest, restName:rest?.name||'—',
+      restAmount, delivery, total, payment:selectedPayment, address, phone,
+      restOwed, settled: false,
+      timestamp:firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    if (editingOrderId) {
+      await ordersRef.doc(editingOrderId).update(orderData);
+      editingOrderId=null;
+      showToast('✅ تم تعديل الأوردر');
+    } else {
+      await ordersRef.add(orderData);
+      showToast('✅ تم حفظ الأوردر');
+      // إشعار المدير — لا يعلق الزر لو فشل
+      sendPushNotification('', '', 'new-order', {
+        restName: rest?.name||'—', address, total, delivery,
+        payment: selectedPayment, driverName: userProfile.name||'مندوب'
+      });
+    }
+
+    // Reset form
+    document.getElementById('addressInput').value='';
+    document.getElementById('phoneOrderInput').value='';
+    document.getElementById('restAmountInput').value='';
+    document.getElementById('deliveryInput').value='';
+    selectedRest=null; selectedPayment=null; renderRestChips();
+    document.getElementById('payCash').className='pay-card';
+    document.getElementById('payVisa').className='pay-card';
+    resetBtn();
+    goPage(0);
+
+  } catch(e) {
+    showToast('❌ خطأ في الحفظ: ' + (e.message||''));
+    resetBtn();
   }
-  if (submitBtn) { submitBtn.disabled=false; submitBtn.innerHTML='<span style="pointer-events:none">✅ حفظ الأوردر</span>'; }
-  document.getElementById('addressInput').value='';
-  document.getElementById('phoneOrderInput').value='';
-  document.getElementById('restAmountInput').value='';
-  document.getElementById('deliveryInput').value='';
-  selectedRest=null; selectedPayment=null; renderRestChips();
-  document.getElementById('payCash').className='pay-card';
-  document.getElementById('payVisa').className='pay-card';
-  goPage(0);
 }
 
 async function editOrder(id) {

@@ -86,6 +86,21 @@ window.addEventListener('load', () => { registerSW(); });
 }
 .mgr-tab svg { width:20px; height:20px; stroke:currentColor; }
 .mgr-tab.active { color:var(--orange); border-top-color:var(--orange); background:var(--orange-bg); }
+
+/* Ghost Tap Fix */
+.submit-order-btn, .modal-btn, .nav-btn, .mgr-tab, .filter-btn, .action-btn, .rest-del-btn, .mini-add-btn, .add-btn, .period-btn, .shift-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.submit-order-btn *, .modal-btn *, .action-btn * {
+  pointer-events: none;
+}
+/* Select styling */
+select option, select optgroup {
+  background: var(--bg2);
+  color: var(--text);
+}
+
 </style>
 </head>
 <body>
@@ -194,12 +209,24 @@ window.addEventListener('load', () => { registerSW(); });
 
     <!-- Page 1: Records -->
     <div class="page" id="recordsPage">
-      <div class="filter-scroll" id="filterRow">
-        <button class="filter-btn active" onclick="setFilter(this,'all')">الكل</button>
-        <button class="filter-btn" onclick="setFilter(this,'today')">اليوم</button>
-        <button class="filter-btn" onclick="setFilter(this,'week')">الأسبوع</button>
-        <button class="filter-btn" onclick="setFilter(this,'cash')">كاش</button>
-        <button class="filter-btn" onclick="setFilter(this,'visa')">فيزا</button>
+      <div style="margin-bottom:12px;display:flex;gap:8px">
+        <select id="filterTimeSelect" onchange="applyFilters()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+          <optgroup label="⏰ الوقت">
+            <option value="all">الكل</option>
+            <option value="today">اليوم</option>
+            <option value="week">الأسبوع</option>
+          </optgroup>
+        </select>
+        <select id="filterPaySelect" onchange="applyFilters()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+          <optgroup label="💳 الدفع">
+            <option value="all">الكل</option>
+            <option value="cash">💵 كاش</option>
+            <option value="visa">💳 فيزا</option>
+          </optgroup>
+        </select>
+        <select id="filterRestSelect" onchange="applyFilters()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+          <option value="">🏪 المطاعم</option>
+        </select>
       </div>
       <div id="ordersList">
         <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد أوردرات</div></div>
@@ -210,7 +237,9 @@ window.addEventListener('load', () => { registerSW(); });
     <div class="page" id="addPage">
       <div class="form-group">
         <div class="form-lbl">🏪 المطعم</div>
-        <div class="rest-chip-grid" id="restChips"></div>
+        <select id="restSelect" onchange="selectedRest=this.value||null" style="width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;font-size:15px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer;appearance:none;-webkit-appearance:none;">
+          <option value="">اختر المطعم...</option>
+        </select>
       </div>
       <div class="form-group">
         <div class="form-lbl">📍 العنوان</div>
@@ -255,7 +284,7 @@ window.addEventListener('load', () => { registerSW(); });
           </div>
         </div>
       </div>
-      <button class="submit-order-btn" onclick="addOrder()">✅ حفظ الأوردر</button>
+      <button class="submit-order-btn" id="submitOrderBtn" onclick="addOrder()">✅ حفظ الأوردر</button>
     </div>
 
     <!-- Page 3: Settings -->
@@ -362,11 +391,17 @@ window.addEventListener('load', () => { registerSW(); });
         </div>
       </div>
 
-      <div style="padding:0 0 8px">
-        <div class="search-box">
-          <span>🔍</span>
-          <input type="text" placeholder="بحث في الأوردرات..." id="orderSearchInput" oninput="searchOrders(this.value)">
-        </div>
+      <div style="padding:0 0 8px;display:flex;gap:8px;flex-wrap:wrap">
+        <select id="mgrFilterTime" onchange="filterMgrOrders()" style="flex:1;min-width:100px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+          <optgroup label="⏰ الوقت">
+            <option value="today">اليوم</option>
+            <option value="week">الأسبوع</option>
+            <option value="all">الكل</option>
+          </optgroup>
+        </select>
+        <select id="mgrFilterRest" onchange="filterMgrOrders()" style="flex:1;min-width:100px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+          <option value="">🏪 كل المطاعم</option>
+        </select>
       </div>
 
       <div class="feed-header"><div class="live-dot"></div> آخر الأوردرات</div>
@@ -431,10 +466,7 @@ window.addEventListener('load', () => { registerSW(); });
       <div class="detail-phone" id="detailDriverPhone">—</div>
     </div>
     <div class="detail-actions">
-      <button class="detail-action-btn" style="background:var(--orange-bg);color:var(--orange);" onclick="changeDriverPin()">🔑</button>
-      <button class="detail-action-btn" style="background:var(--green-bg);color:var(--green);" onclick="editDriverInfo()">✏️</button>
-      <button class="detail-action-btn" style="background:var(--purple-bg);color:var(--purple);" onclick="toggleDriverRole()">👑</button>
-      <button class="detail-action-btn" style="background:var(--red-bg);color:var(--red);" onclick="removeDriver()">🗑</button>
+      <button class="detail-action-btn" style="background:var(--orange-bg);color:var(--orange);padding:0 14px;width:auto;border-radius:12px;font-size:13px;font-weight:800;" onclick="editDriverFull(selectedDriverUid)">✏️ تعديل</button>
     </div>
   </div>
   <div class="detail-content">

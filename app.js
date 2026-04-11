@@ -1554,8 +1554,18 @@ async function loadArchive(period) {
 function showModal(title,bodyHTML,buttons) {
   document.getElementById('modalTitle').textContent=title;
   document.getElementById('modalBody').innerHTML=bodyHTML;
-  document.getElementById('modalActions').innerHTML=buttons.map((b,i)=>`<button class="modal-btn ${b.cls}" id="mBtn${i}">${b.label}</button>`).join('');
-  buttons.forEach((b,i) => { document.getElementById('mBtn'+i).onclick=b.action; });
+  document.getElementById('modalActions').innerHTML=buttons.map((b,i)=>
+    `<button class="modal-btn ${b.cls}" id="mBtn${i}" style="touch-action:manipulation">${b.label}</button>`
+  ).join('');
+  buttons.forEach((b,i) => {
+    const btn = document.getElementById('mBtn'+i);
+    // FIX: استخدم addEventListener بدل onclick لمنع التكرار
+    btn.addEventListener('click', function handler(e) {
+      btn.removeEventListener('click', handler);
+      btn.disabled = true;
+      b.action();
+    }, { once: true });
+  });
   document.getElementById('modalOverlay').classList.add('show');
 }
 function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}

@@ -232,45 +232,57 @@ async function doLogout() {
 async function subscribeFCM() {
   if (_fcmSubscribed) return;
   try {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-    if (Notification.permission !== 'granted') {
-      const p = await Notification.requestPermission();
-      if (p !== 'granted') return;
+    // خطوة 1: SW موجود؟
+    if (!('serviceWorker' in navigator)) {
+      showToast('❌ FCM: SW غير مدعوم'); return;
+    }
+    if (!('PushManager' in window)) {
+      showToast('❌ FCM: Push غير مدعوم'); return;
     }
 
-    // انتظر الـ SW يكون جاهز — بدون reload
-    const reg = await navigator.serviceWorker.ready;
+    // خطوة 2: إذن الإشعارات
+    if (Notification.permission !== 'granted') {
+      const p = await Notification.requestPermission();
+      if (p !== 'granted') {
+        showToast('❌ FCM: الإذن مرفوض'); return;
+      }
+    }
 
-    // لو مفيش controller انتظر ثانيتين وكمّل
+    // خطوة 3: انتظر الـ SW
+    const reg = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_,reject) => setTimeout(() => reject(new Error('SW timeout')), 10000))
+    ]);
+
     if (!navigator.serviceWorker.controller) {
       await new Promise(r => setTimeout(r, 2000));
     }
 
+    // خطوة 4: احضر الـ token
     const msg = firebase.messaging();
+    const token = await msg.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
 
-    // احضر الـ token الحالي من Firestore
+    if (!token) {
+      showToast('❌ FCM: token فارغ — تحقق من VAPID Key');
+      return;
+    }
+
+    // خطوة 5: احفظ في Firestore
     let existingToken = null;
     try {
       const existingDoc = await db.collection('fcm_tokens').doc(currentUser.uid).get();
       existingToken = existingDoc.exists ? existingDoc.data()?.token : null;
     } catch(e) {}
 
-    // احضر token جديد من FCM
-    const token = await msg.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
-    if (!token) { console.warn('FCM: empty token'); return; }
-
-    _fcmSubscribed = true;
-
-    // احفظ لو اتغير
     if (token !== existingToken) {
       await db.collection('fcm_tokens').doc(currentUser.uid).set({
         uid: currentUser.uid, token,
         role: userProfile.role || 'manager',
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-      console.log('✅ FCM token saved');
     }
 
+    _fcmSubscribed = true;
     showToast('✅ الاشعارات شغالة!');
 
     msg.onMessage((payload) => {
@@ -280,7 +292,6 @@ async function subscribeFCM() {
       if (Notification.permission === 'granted') {
         new Notification(title, { body, icon: 'https://nabil-pro.vercel.app/icon-192.png' });
       }
-      // نطق صوتي
       if ('speechSynthesis' in window) {
         let cleanText = title.replace(/[🛵💳💵📍💰👤✏️]/g, '');
         const utterance = new SpeechSynthesisUtterance(cleanText);
@@ -290,8 +301,9 @@ async function subscribeFCM() {
     });
 
   } catch(e) {
-    console.warn('FCM error:', e.message);
-    _fcmSubscribed = false; // اسمح بإعادة المحاولة
+    showToast('❌ FCM: ' + (e.message||'خطأ غير معروف'));
+    console.error('FCM error:', e);
+    _fcmSubscribed = false;
   }
 }
 

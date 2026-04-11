@@ -638,12 +638,17 @@ function selectPayment(type) {
 // ══════════════════════════════════
 // ADD ORDER — Ghost Tap Fix
 // ══════════════════════════════════
+let _addOrderInProgress = false;
 async function addOrder() {
+  // منع الضغط المزدوج
+  if (_addOrderInProgress) return;
+  _addOrderInProgress = true;
+
   // اقرأ قيمة الـ select
   const restSel = document.getElementById('restSelect');
   if (restSel) selectedRest = restSel.value || null;
 
-  if (!selectedRest) { showToast('اختر المطعم أولاً'); return; }
+  if (!selectedRest) { showToast('اختر المطعم أولاً'); _addOrderInProgress = false; return; }
 
   const submitBtn = document.getElementById('submitOrderBtn');
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ جاري الحفظ...'; }
@@ -654,6 +659,7 @@ async function addOrder() {
   const delivery = parseFloat(document.getElementById('deliveryInput').value)||0;
 
   const resetBtn = () => {
+    _addOrderInProgress = false;
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✅ حفظ الأوردر'; }
   };
 

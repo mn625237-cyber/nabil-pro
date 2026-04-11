@@ -237,25 +237,42 @@ async function subscribeFCM() {
       const p = await Notification.requestPermission();
       if (p !== 'granted') return;
     }
+
+    // انتظر الـ SW يكون جاهز — بدون reload
     const reg = await navigator.serviceWorker.ready;
+
+    // لو مفيش controller انتظر ثانيتين وكمّل
     if (!navigator.serviceWorker.controller) {
-      await new Promise(r => setTimeout(r, 1500));
-      window.location.reload(); return;
+      await new Promise(r => setTimeout(r, 2000));
     }
+
     const msg = firebase.messaging();
-    const existingDoc = await db.collection('fcm_tokens').doc(currentUser.uid).get();
-    const existingToken = existingDoc.exists ? existingDoc.data()?.token : null;
+
+    // احضر الـ token الحالي من Firestore
+    let existingToken = null;
+    try {
+      const existingDoc = await db.collection('fcm_tokens').doc(currentUser.uid).get();
+      existingToken = existingDoc.exists ? existingDoc.data()?.token : null;
+    } catch(e) {}
+
+    // احضر token جديد من FCM
     const token = await msg.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
-    if (!token) return;
+    if (!token) { console.warn('FCM: empty token'); return; }
+
     _fcmSubscribed = true;
+
+    // احفظ لو اتغير
     if (token !== existingToken) {
       await db.collection('fcm_tokens').doc(currentUser.uid).set({
         uid: currentUser.uid, token,
         role: userProfile.role || 'manager',
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      console.log('✅ FCM token saved');
     }
+
     showToast('✅ الاشعارات شغالة!');
+
     msg.onMessage((payload) => {
       const title = payload.notification?.title || 'Nabil Pro 🛵';
       const body  = payload.notification?.body  || '';
@@ -271,8 +288,10 @@ async function subscribeFCM() {
         window.speechSynthesis.speak(utterance);
       }
     });
+
   } catch(e) {
     console.warn('FCM error:', e.message);
+    _fcmSubscribed = false; // اسمح بإعادة المحاولة
   }
 }
 

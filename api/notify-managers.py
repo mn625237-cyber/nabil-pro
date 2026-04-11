@@ -15,6 +15,8 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         init_firebase()
         db = firestore.client()
+
+        # التحقق من الـ token
         ah = self.headers.get('Authorization','')
         if not ah.startswith('Bearer '):
             self._respond(403, {'error': 'غير مصرح'}); return
@@ -33,10 +35,11 @@ class handler(BaseHTTPRequestHandler):
         driver_name = body.get('driverName', '')
 
         pay_icon = '💳' if payment == 'visa' else '💵'
-        title = f'{pay_icon} أوردر جديد — {rest_name}'
-        body_text = f'📍 {address}\n💰 الإجمالي: {total} ج | 🛵 الربح: {delivery} ج\n👤 {driver_name}'
+        title = f'{pay_icon} {rest_name}'
+        body_text = f'📍 {address}\n💰 {total} ج | 🛵 {delivery} ج | 👤 {driver_name}'
 
         try:
+            # اجمع كل tokens المديرين
             docs = db.collection('fcm_tokens').stream()
             tokens = []
             for doc in docs:
@@ -46,18 +49,20 @@ class handler(BaseHTTPRequestHandler):
                 role  = data.get('role', '')
                 if not token or not uid: continue
                 if role == 'manager':
-                    tokens.append(token)
+                    tokens.append((uid, token))
                 elif not role:
                     u = db.collection('users').document(uid).get()
                     if u.exists and u.to_dict().get('role') == 'manager':
-                        tokens.append(token)
+                        tokens.append((uid, token))
 
             if not tokens:
-                self._respond(200, {'success': True, 'sent': 0}); return
+                self._respond(200, {'success': True, 'sent': 0, 'note': 'no managers'}); return
+
+            token_list = [t for _, t in tokens]
 
             msg = messaging.MulticastMessage(
                 notification=messaging.Notification(title=title, body=body_text),
-                tokens=tokens,
+                tokens=token_list,
                 android=messaging.AndroidConfig(
                     priority='high',
                     notification=messaging.AndroidNotification(
@@ -81,18 +86,22 @@ class handler(BaseHTTPRequestHandler):
                 ),
                 apns=messaging.APNSConfig(headers={'apns-priority': '10'})
             )
+
             r = messaging.send_each_for_multicast(msg)
 
+            # احذف الـ tokens الفاسدة تلقائياً
             if r.failure_count > 0:
-                all_tokens = list(tokens)
                 for i, resp in enumerate(r.responses):
                     if not resp.success:
-                        try:
-                            bad = db.collection('fcm_tokens').where('token','==',all_tokens[i]).stream()
-                            for d in bad: d.reference.delete()
-                        except: pass
+                        err = str(resp.exception)
+                        if 'UNREGISTERED' in err.upper() or 'unregistered' in err.lower():
+                            uid_to_delete = tokens[i][0]
+                            try:
+                                db.collection('fcm_tokens').document(uid_to_delete).delete()
+                            except: pass
 
-            self._respond(200, {'success': True, 'sent': r.success_count})
+            self._respond(200, {'success': True, 'sent': r.success_count, 'failed': r.failure_count})
+
         except Exception as e:
             self._respond(500, {'error': str(e)})
 

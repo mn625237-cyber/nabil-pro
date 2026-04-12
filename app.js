@@ -376,6 +376,9 @@ function initDriverApp() {
       subscribeFCM();
     }
   }, 2000);
+
+  // تحديث label بداية اليوم
+  updateDayStartLabel();
 }
 
 function listenToRestaurants() {
@@ -458,9 +461,39 @@ async function deleteRestaurant(id, name) {
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
+function getDayStart() {
+  // استخدم dayStartAt المحفوظة لو موجودة، وإلا منتصف الليل
+  try {
+    const saved = localStorage.getItem('nabilpro_daystart_' + currentUser.uid);
+    if (saved) {
+      const d = new Date(parseInt(saved));
+      const today = new Date(); today.setHours(0,0,0,0);
+      // لو من نفس اليوم استخدمها، لو قديمة روح منتصف الليل
+      if (d >= today) return d;
+    }
+  } catch(e) {}
+  const d = new Date(); d.setHours(0,0,0,0);
+  return d;
+}
+
+function updateDayStartLabel() {
+  const el = document.getElementById('dayStartLabel');
+  if (!el) return;
+  try {
+    const saved = localStorage.getItem('nabilpro_daystart_' + currentUser.uid);
+    if (saved) {
+      const d = new Date(parseInt(saved));
+      const timeStr = d.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+      el.textContent = `اليوم من ${timeStr}`;
+    } else {
+      el.textContent = 'اليوم الحالي';
+    }
+  } catch(e) {}
+}
+
 function listenToDriverOrders() {
   if (ordersUnsubscribe) ordersUnsubscribe();
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayStart = getDayStart();
   ordersUnsubscribe = ordersRef
     .where('driverId','==',currentUser.uid)
     .where('timestamp','>=', firebase.firestore.Timestamp.fromDate(todayStart))
@@ -502,12 +535,104 @@ function showRestBalance() {
 }
 
 function getTodayOrders() {
-  const start = new Date(); start.setHours(0,0,0,0);
+  const start = getDayStart();
   return ordersCache.filter(o => {
     if (!o.timestamp) return false;
     const t = o.timestamp.toDate?o.timestamp.toDate():new Date(o.timestamp);
     return t >= start;
   });
+}
+// ══════════════════════════════════
+// بداية يوم جديد للمندوب
+// ══════════════════════════════════
+function startNewDay() {
+  const todayOrders = getTodayOrders();
+  const msg = todayOrders.length > 0
+    ? `<p style="color:var(--text2);font-size:14px;margin-bottom:8px;">عندك <strong style="color:var(--orange)">${todayOrders.length} أوردر</strong> في اليوم الحالي.</p><p style="color:var(--text3);font-size:13px;">هيتنقلوا للأرشيف وتبدأ يوم جديد من دلوقتي.</p>`
+    : `<p style="color:var(--text2);font-size:14px;">هتبدأ يوم جديد من دلوقتي.</p>`;
+
+  showModal('🌅 بداية يوم جديد', msg, [
+    {label:'ابدأ',cls:'confirm',action:async()=>{
+      const now = Date.now();
+      // احفظ وقت البداية
+      localStorage.setItem('nabilpro_daystart_' + currentUser.uid, now.toString());
+      // احفظ في Firestore كمان
+      try {
+        await db.collection('users').doc(currentUser.uid).update({
+          dayStartAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch(e) {}
+      closeModal();
+      // أعد تحميل الأوردرات
+      listenToDriverOrders();
+      updateDayStartLabel();
+      showToast('✅ بدأ يومك الجديد!');
+    }},
+    {label:'إلغاء',cls:'cancel',action:closeModal}
+  ]);
+}
+
+// أرشيف المندوب
+async function showDriverArchive() {
+  showModal('📂 أرشيف أوردراتك', `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;gap:8px">
+        <button onclick="loadDriverArchive('today')" class="modal-btn cancel" style="flex:1;font-size:12px;touch-action:manipulation">اليوم</button>
+        <button onclick="loadDriverArchive('week')" class="modal-btn cancel" style="flex:1;font-size:12px;touch-action:manipulation">الأسبوع</button>
+        <button onclick="loadDriverArchive('month')" class="modal-btn cancel" style="flex:1;font-size:12px;touch-action:manipulation">الشهر</button>
+      </div>
+    </div>
+    <div id="driverArchiveResults" style="max-height:350px;overflow-y:auto">
+      <div class="empty-state"><div class="empty-text">اختر فترة</div></div>
+    </div>`,
+    [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+}
+
+async function loadDriverArchive(period) {
+  const el = document.getElementById('driverArchiveResults');
+  if (!el) return;
+  el.innerHTML = '<div class="empty-state"><div class="empty-text">⏳ جاري التحميل...</div></div>';
+  const now = new Date();
+  let startDate;
+  if (period === 'today') {
+    startDate = new Date(); startDate.setHours(0,0,0,0);
+  } else if (period === 'week') {
+    startDate = new Date(); startDate.setDate(now.getDate()-7); startDate.setHours(0,0,0,0);
+  } else {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  try {
+    const snap = await db.collection('orders')
+      .where('driverId','==',currentUser.uid)
+      .where('timestamp','>=',firebase.firestore.Timestamp.fromDate(startDate))
+      .orderBy('timestamp','desc').limit(100).get();
+    const orders = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if (!orders.length) { el.innerHTML='<div class="empty-state"><div class="empty-text">لا أوردرات</div></div>'; return; }
+    const totalDelivery = orders.reduce((s,o)=>s+(o.delivery||0),0);
+    const totalCash = orders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
+    el.innerHTML = `
+      <div style="background:var(--bg2);border-radius:10px;padding:10px;margin-bottom:10px;display:flex;justify-content:space-between">
+        <span style="font-size:12px;color:var(--text3)">${orders.length} أوردر</span>
+        <span style="font-size:12px;color:var(--green);font-weight:800">🛵 ج${totalDelivery}</span>
+        <span style="font-size:12px;color:var(--gold);font-weight:800">💵 ج${totalCash}</span>
+      </div>` +
+      orders.map(o => {
+        const t = o.timestamp?.toDate?.()??new Date();
+        const timeStr = t.toLocaleDateString('ar-EG',{day:'2-digit',month:'2-digit'}) + ' ' +
+                        t.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+        return `<div class="feed-card ${o.payment==='visa'?'visa':'cash'}" style="margin-bottom:6px">
+          <div class="feed-pay">${o.payment==='visa'?'💳':'💵'}</div>
+          <div class="feed-body">
+            <div class="feed-rest-name">${sanitize(o.restName||'—')}</div>
+            <div class="feed-driver-info">📍 ${sanitize(o.address||'—')}</div>
+            <div class="feed-time-txt">⏰ ${timeStr}</div>
+          </div>
+          <div class="feed-amt">ج${o.delivery||0}</div>
+        </div>`;
+      }).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-text">❌ ${e.message}</div></div>`;
+  }
 }
 
 function updateDriverStats() {
@@ -942,11 +1067,69 @@ function initManagerApp() {
   document.getElementById('mgrHeroDate').textContent=days[now.getDay()]+'، '+now.getDate()+' '+months[now.getMonth()];
   showScreen('managerApp');
   listenAllOrders(); loadAllDrivers(); loadMgrRestaurants(); listenToRestaurants();
+  // تحقق من الأوردرات القديمة شهرياً
+  setTimeout(checkMonthlyCleanup, 3000);
+}
+
+async function checkMonthlyCleanup() {
+  try {
+    const lastCheck = localStorage.getItem('nabilpro_cleanup_check');
+    const now = Date.now();
+    // تحقق مرة كل 7 أيام بس
+    if (lastCheck && (now - parseInt(lastCheck)) < 7 * 24 * 60 * 60 * 1000) return;
+    localStorage.setItem('nabilpro_cleanup_check', now.toString());
+
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    const snap = await db.collection('orders')
+      .where('timestamp','<', firebase.firestore.Timestamp.fromDate(monthAgo))
+      .limit(1).get();
+
+    if (!snap.empty) {
+      // فيه أوردرات أقدم من شهر
+      showModal('🗑 تنظيف شهري', `
+        <p style="color:var(--text2);font-size:14px;margin-bottom:12px;">
+          فيه أوردرات أقدم من شهر في قاعدة البيانات.
+        </p>
+        <p style="color:var(--text3);font-size:13px;">
+          حذفها هيوفر مساحة ويخلي التطبيق أسرع.
+        </p>`,
+        [{label:'🗑 حذف الأوردرات القديمة',cls:'danger',action:()=>deleteOldOrders(monthAgo)},
+         {label:'تذكيرني بعدين',cls:'cancel',action:closeModal}]);
+    }
+  } catch(e) {}
+}
+
+async function deleteOldOrders(before) {
+  const btn = document.getElementById('mBtn0');
+  if (btn) { btn.disabled=true; btn.textContent='جاري الحذف...'; }
+  try {
+    let deleted = 0;
+    let snap;
+    do {
+      snap = await db.collection('orders')
+        .where('timestamp','<', firebase.firestore.Timestamp.fromDate(before))
+        .limit(50).get();
+      if (snap.empty) break;
+      const batch = db.batch();
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      deleted += snap.docs.length;
+    } while (!snap.empty);
+    closeModal();
+    showToast(`✅ تم حذف ${deleted} أوردر قديم`);
+  } catch(e) {
+    if (btn) { btn.disabled=false; btn.textContent='🗑 حذف الأوردرات القديمة'; }
+    showToast('❌ خطأ: ' + e.message);
+  }
 }
 
 function listenAllOrders() {
   if (allOrdersUnsubscribe) allOrdersUnsubscribe();
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  // FIX timezone: نبدأ من 4 ساعات قبل منتصف الليل
+  const todayStart = new Date();
+  todayStart.setHours(0,0,0,0);
+  todayStart.setTime(todayStart.getTime() - (4 * 60 * 60 * 1000));
   allOrdersUnsubscribe = db.collection('orders')
     .where('timestamp','>=', firebase.firestore.Timestamp.fromDate(todayStart))
     .orderBy('timestamp','desc').limit(200)
@@ -1098,8 +1281,13 @@ function showAddNoteModal(driverUid) {
       const note = document.getElementById('noteText').value.trim();
       if (!note) { showToast('اكتب الملاحظة'); return; }
       const btn = document.getElementById('mBtn0');
-      // FIX: disable فوراً لمنع التكرار
       if (btn) { btn.disabled=true; btn.textContent='جاري الإرسال...'; }
+      // FIX: منع الإرسال المكرر — timestamp check
+      const nowTs = Date.now();
+      if (window._lastNoteSentAt && (nowTs - window._lastNoteSentAt) < 5000) {
+        closeModal(); showToast('✅ تم إرسال الملاحظة'); return;
+      }
+      window._lastNoteSentAt = nowTs;
       try {
         const res = await fetch('/api/notify-driver',{
           method:'POST', headers: await getAuthHeaders(),
@@ -1109,7 +1297,6 @@ function showAddNoteModal(driverUid) {
           const errData = await res.json().catch(()=>({}));
           throw new Error(errData.error||'خطأ في الإرسال');
         }
-        // Firebase Security Rule مطلوبة: allow create: if request.auth != null
         await db.collection('notes').add({
           driverId: driverUid, driverName: driver.name,
           managerId: currentUser.uid, text: note,
@@ -1117,6 +1304,7 @@ function showAddNoteModal(driverUid) {
         });
         closeModal(); showToast('✅ تم إرسال الملاحظة');
       } catch(e) {
+        window._lastNoteSentAt = null;
         if(btn){btn.disabled=false;btn.textContent='إرسال';}
         showToast('❌ ' + (e.message||'خطأ في الإرسال'));
       }

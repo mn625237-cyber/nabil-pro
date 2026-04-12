@@ -167,9 +167,12 @@ select option, select optgroup {
     <div class="drv-header-logo">🛵</div>
     <div class="drv-header-title">Nabil <span>Pro</span></div>
   </div>
-  <div class="status-pill ok" id="driverStatus">
-    <div class="status-dot pulse" id="statusDot"></div>
-    <span id="statusText">متصل • 0 أوردر</span>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 16px 0">
+    <div class="status-pill ok" id="driverStatus" style="margin:0">
+      <div class="status-dot pulse" id="statusDot"></div>
+      <span id="statusText">متصل • 0 أوردر</span>
+    </div>
+    <button id="newDayBtn" onclick="startNewDay()" style="background:linear-gradient(135deg,#00C851,#009933);color:#fff;border:none;padding:7px 14px;border-radius:20px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:800;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 10px rgba(0,200,81,0.4);">🌅 يوم جديد</button>
   </div>
   <span id="driverNameDisplay" style="display:none"></span>
   <span id="clockDisplay" style="display:none"></span>
@@ -209,6 +212,10 @@ select option, select optgroup {
 
     <!-- Page 1: Records -->
     <div class="page" id="recordsPage">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:11px;color:var(--text3);font-weight:700;" id="dayStartLabel">اليوم الحالي</div>
+        <button onclick="showDriverArchive()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:20px;font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation;">📂 الأرشيف</button>
+      </div>
       <div style="margin-bottom:12px;display:flex;gap:8px">
         <select id="filterTimeSelect" onchange="applyFilters()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
           <optgroup label="⏰ الوقت">

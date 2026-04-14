@@ -241,10 +241,25 @@ async function subscribeFCM() {
     }
 
     // خطوة 2: إذن الإشعارات
+    if (Notification.permission === 'denied') {
+      // المستخدم حظر الإشعارات — وضّح له كيف يفعّلها
+      showModal('🔔 الإشعارات محظورة', `
+        <div style="text-align:center;padding:8px 0">
+          <div style="font-size:40px;margin-bottom:12px">🔕</div>
+          <p style="color:var(--text2);font-size:14px;line-height:1.8;margin-bottom:12px">
+            أنت حظرت الإشعارات لهذا التطبيق.
+          </p>
+          <p style="color:var(--text3);font-size:13px;line-height:1.8">
+            لتفعيلها: افتح إعدادات المتصفح ← الإشعارات ← ابحث عن nabil-pro.vercel.app ← اسمح
+          </p>
+        </div>`,
+        [{label:'فهمت',cls:'cancel',action:closeModal}]);
+      return;
+    }
     if (Notification.permission !== 'granted') {
       const p = await Notification.requestPermission();
       if (p !== 'granted') {
-        showToast('❌ FCM: الإذن مرفوض'); return;
+        showToast('❌ فعّل الإشعارات من إعدادات المتصفح'); return;
       }
     }
 
@@ -311,20 +326,38 @@ async function subscribeFCM() {
 // PUSH NOTIFICATIONS
 // ══════════════════════════════════
 async function sendPushNotification(title, body, type, orderData) {
-  try {
-    const payload = orderData ? {
-      restName: orderData.restName||'', address: orderData.address||'',
-      total: orderData.total||0, delivery: orderData.delivery||0,
-      payment: orderData.payment||'cash', driverName: orderData.driverName||''
-    } : { title, body };
+  const payload = orderData ? {
+    restName: orderData.restName||'', address: orderData.address||'',
+    total: orderData.total||0, delivery: orderData.delivery||0,
+    payment: orderData.payment||'cash', driverName: orderData.driverName||''
+  } : { title, body };
+
+  const doFetch = async () => {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
-    await fetch('/api/notify-managers', {
+    const res = await fetch('/api/notify-managers', {
       method:'POST', headers: await getAuthHeaders(),
       body: JSON.stringify(payload), signal: ctrl.signal
     });
     clearTimeout(t);
-  } catch(e) { console.warn('push fail:', e.message); }
+    return res;
+  };
+
+  try {
+    await doFetch();
+  } catch(e) {
+    // محاولة ثانية بعد 3 ثواني
+    console.warn('push attempt 1 failed:', e.message);
+    setTimeout(async () => {
+      try {
+        await doFetch();
+      } catch(e2) {
+        // فشل نهائي — المدير مش هيتنبه بالـ FCM
+        // الأوردر اتحفظ في Firestore والمدير هيشوفه لما يفتح التطبيق
+        console.warn('push attempt 2 failed:', e2.message);
+      }
+    }, 3000);
+  }
 }
 
 // ══════════════════════════════════

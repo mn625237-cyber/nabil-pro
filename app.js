@@ -9,12 +9,22 @@ function sanitize(str) {
 const RAILWAY_URL = '';
 let _fcmSubscribed = false;
 
+// API_SECRET — نفس القيمة المحفوظة في Vercel Environment Variables
+const API_SECRET = 'nabilpro2024secret';
+
 async function getAuthHeaders() {
   try {
     const token = await firebase.auth().currentUser?.getIdToken();
-    return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'x-api-key': API_SECRET
+    };
   } catch(e) {
-    return { 'Content-Type': 'application/json' };
+    return {
+      'Content-Type': 'application/json',
+      'x-api-key': API_SECRET
+    };
   }
 }
 

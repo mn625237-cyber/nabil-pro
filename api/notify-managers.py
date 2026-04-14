@@ -17,6 +17,14 @@ class handler(BaseHTTPRequestHandler):
         db = firestore.client()
 
         # التحقق من الـ token
+        # Layer 1: API Secret (Denial-of-Wallet protection)
+        api_secret = os.environ.get('API_SECRET', '')
+        if api_secret:
+            req_secret = self.headers.get('x-api-key', '')
+            if req_secret != api_secret:
+                self._respond(403, {'error': 'غير مصرح'}); return
+
+        # Layer 2: Firebase ID Token
         ah = self.headers.get('Authorization','')
         if not ah.startswith('Bearer '):
             self._respond(403, {'error': 'غير مصرح'}); return

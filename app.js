@@ -1525,4 +1525,4 @@ document.addEventListener('touchend',e=>{if(!ptrActive)return;const dy=e.changed
   themeMode=isDark?'dark':'light';
 })();
 
-window.addEventListener('load',initApp);.
+window.addEventListener('load',initApp);

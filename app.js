@@ -1463,7 +1463,7 @@ function showModal(title,bodyHTML,buttons) {
   document.getElementById('modalTitle').textContent=title;
   document.getElementById('modalBody').innerHTML=bodyHTML;
   document.getElementById('modalActions').innerHTML=buttons.map((b,i)=>`<button class="modal-btn ${b.cls}" id="mBtn${i}">${b.label}</button>`).join('');
-  buttons.forEach((b,i)=>document.getElementById('mBtn'+i).onclick=b.action);
+  buttons.forEach((b,i)=>document.getElementById('mBtn'+i).onclick=b.action;
   document.getElementById('modalOverlay').classList.add('show');
 }
 function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}

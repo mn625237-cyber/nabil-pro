@@ -15,13 +15,6 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         init_firebase()
         db = firestore.client()
-        # Layer 1: API Secret
-        api_secret = os.environ.get('API_SECRET', '')
-        if api_secret:
-            if self.headers.get('x-api-key', '') != api_secret:
-                self._respond(403, {'error': 'غير مصرح'}); return
-
-        # Layer 2: Firebase ID Token
         ah = self.headers.get('Authorization','')
         if not ah.startswith('Bearer '):
             self._respond(403, {'error': 'غير مصرح'}); return

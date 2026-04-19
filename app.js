@@ -53,7 +53,7 @@ function buildWhatsappLink(phone, restName) {
 // NETWORK
 // ══════════════════════════════════
 function checkOnline() {
-  if (navigator.onLine) { showScreen('loadingScreen'); initApp(); }
+  if (navigator.onLine) { showScreen('loadingScreen'); }
   else showScreen('offlineScreen');
 }
 window.addEventListener('online', () => { if (!currentUser) checkOnline(); });
@@ -65,7 +65,7 @@ window.addEventListener('offline', () => { if (!currentUser) showScreen('offline
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const skip = ['loadingScreen','offlineScreen'];
+  const skip =['loadingScreen','offlineScreen'];
   if (!skip.includes(id)) history.pushState({screen:id},'','');
 }
 
@@ -204,8 +204,7 @@ async function doLogin() {
 }
 
 function confirmLogout() {
-  showModal('تسجيل الخروج','<p style="color:var(--text2);font-size:14px;">هل تريد تسجيل الخروج؟</p>',
-    [{label:'خروج',cls:'danger',action:doLogout},{label:'إلغاء',cls:'cancel',action:closeModal}]);
+  showModal('تسجيل الخروج','<p style="color:var(--text2);font-size:14px;">هل تريد تسجيل الخروج؟</p>',[{label:'خروج',cls:'danger',action:doLogout},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
 async function doLogout() {
@@ -268,7 +267,7 @@ async function subscribeFCM() {
 }
 
 // ══════════════════════════════════
-// RICH FCM — إشعار تفصيلي للمدير
+// RICH FCM
 // ══════════════════════════════════
 async function sendPushNotification(title, body, type, orderData) {
   try {
@@ -397,8 +396,7 @@ async function deleteRestaurant(id, name) {
     showModal('تنبيه',`<p style="color:var(--text2);font-size:14px;">لا يمكن حذف "${sanitize(name)}" لأن لديه أوردرات.</p>`,
       [{label:'حسناً',cls:'cancel',action:closeModal}]); return;
   }
-  showModal('حذف المطعم',`<p style="color:var(--text2);font-size:14px;">حذف "${sanitize(name)}"؟</p>`,
-    [{label:'حذف',cls:'danger',action:async()=>{
+  showModal('حذف المطعم',`<p style="color:var(--text2);font-size:14px;">حذف "${sanitize(name)}"؟</p>`,[{label:'حذف',cls:'danger',action:async()=>{
       await restaurantsRef.doc(id).delete();
       if (selectedRest===id) selectedRest=null;
       closeModal(); showToast('تم الحذف');
@@ -445,8 +443,7 @@ function showRestBalance() {
     </div>`;
   }).join('');
   showModal('🏪 حساب المطاعم',
-    rows||'<div class="empty-state"><div class="empty-text">لا أوردرات بعد</div></div>',
-    [{label:'إغلاق',cls:'cancel',action:closeModal}]);
+    rows||'<div class="empty-state"><div class="empty-text">لا أوردرات بعد</div></div>',[{label:'إغلاق',cls:'cancel',action:closeModal}]);
 }
 
 function getTodayOrders() {
@@ -630,8 +627,7 @@ async function editOrder(id) {
 }
 
 async function deleteOrder(id) {
-  showModal('حذف الأوردر','<p style="color:var(--text2);font-size:14px;">هل تريد حذف هذا الأوردر نهائياً؟</p>',
-    [{label:'حذف',cls:'danger',action:async()=>{await ordersRef.doc(id).delete();closeModal();showToast('🗑 تم الحذف');}},
+  showModal('حذف الأوردر','<p style="color:var(--text2);font-size:14px;">هل تريد حذف هذا الأوردر نهائياً؟</p>',[{label:'حذف',cls:'danger',action:async()=>{await ordersRef.doc(id).delete();closeModal();showToast('🗑 تم الحذف');}},
      {label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
@@ -788,8 +784,7 @@ function showMgrSettings() {
 }
 
 function editMgrName() {
-  showModal('تغيير الاسم',`<input class="form-field" id="newMgrName" value="${sanitize(userProfile.name||'')}" placeholder="اسمك...">`,
-    [{label:'حفظ',cls:'confirm',action:async()=>{
+  showModal('تغيير الاسم',`<input class="form-field" id="newMgrName" value="${sanitize(userProfile.name||'')}" placeholder="اسمك...">`,[{label:'حفظ',cls:'confirm',action:async()=>{
       const name=document.getElementById('newMgrName').value.trim()||'مدير';
       userProfile.name=name;
       await db.collection('users').doc(currentUser.uid).update({name});
@@ -987,8 +982,7 @@ function showAddNoteModal(driverUid) {
   if (!driver) return;
   showModal('📝 إضافة ملاحظة', `
     <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">إلى: <strong>${sanitize(driver.name||'')}</strong></div>
-    <textarea class="form-field" id="noteText" placeholder="اكتب ملاحظتك هنا..." style="height:100px;resize:none;" maxlength="300"></textarea>`,
-    [{label:'إرسال',cls:'confirm',action:async()=>{
+    <textarea class="form-field" id="noteText" placeholder="اكتب ملاحظتك هنا..." style="height:100px;resize:none;" maxlength="300"></textarea>`,[{label:'إرسال',cls:'confirm',action:async()=>{
       const note = document.getElementById('noteText').value.trim();
       if (!note) { showToast('اكتب الملاحظة'); return; }
       const btn = document.getElementById('mBtn0');
@@ -1016,8 +1010,7 @@ function showAddUserModal(role='driver') {
     <div style="margin-bottom:12px;"><div class="field-label">📱 رقم الموبايل</div>
       <input class="form-field" type="tel" id="newUserPhone" placeholder="01xxxxxxxxx" inputmode="numeric"></div>
     <div style="margin-bottom:8px;"><div class="field-label">🔑 كود الدخول (6 أرقام)</div>
-      <input class="form-field" type="tel" id="newUserPin" placeholder="123456" maxlength="6" inputmode="numeric"></div>`,
-    [{label:'إنشاء',cls:'confirm',action:()=>addUser(role)},{label:'إلغاء',cls:'cancel',action:closeModal}]);
+      <input class="form-field" type="tel" id="newUserPin" placeholder="123456" maxlength="6" inputmode="numeric"></div>`,[{label:'إنشاء',cls:'confirm',action:()=>addUser(role)},{label:'إلغاء',cls:'cancel',action:closeModal}]);
 }
 
 async function addUser(role) {
@@ -1093,8 +1086,7 @@ async function toggleDriverRole() {
   const driver=allDrivers.find(d=>d.uid===selectedDriverUid); if(!driver)return;
   const newRole=driver.role==='manager'?'driver':'manager';
   const label=newRole==='manager'?'ترقية لمدير':'تحويل لمندوب';
-  showModal(label,`<p style="color:var(--text2);font-size:14px;">${label} "${sanitize(driver.name)}"؟</p>`,
-    [{label:label,cls:'confirm',action:async()=>{
+  showModal(label,`<p style="color:var(--text2);font-size:14px;">${label} "${sanitize(driver.name)}"؟</p>`,[{label:label,cls:'confirm',action:async()=>{
       await db.collection('users').doc(selectedDriverUid).update({role:newRole});
       driver.role=newRole; renderDriversList(); closeModal(); showToast('✅ تم '+label);
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
@@ -1112,8 +1104,7 @@ async function editDriverInfo() {
     <div style="margin-bottom:4px">
       <div class="field-label">📞 رقم الهاتف</div>
       <input class="form-field" type="tel" id="editInfoPhone" value="${sanitize(driver.phone||'')}" placeholder="01xxxxxxxxx" inputmode="numeric">
-    </div>`,
-    [{label:'حفظ',cls:'confirm',action:async()=>{
+    </div>`,[{label:'حفظ',cls:'confirm',action:async()=>{
       const name = document.getElementById('editInfoName').value.trim();
       const phone = document.getElementById('editInfoPhone').value.trim();
       if (!name) { showToast('ادخل الاسم'); return; }
@@ -1143,8 +1134,7 @@ async function changeDriverPin() {
   showModal('🔑 تغيير كود الدخول', `
     <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">المندوب: <strong>${sanitize(driver.name||'')}</strong></div>
     <div class="field-label">كود جديد (6 أرقام)</div>
-    <input class="form-field" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">`,
-    [{label:'تغيير',cls:'confirm',action:async()=>{
+    <input class="form-field" type="tel" id="newPinInput" placeholder="123456" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">`,[{label:'تغيير',cls:'confirm',action:async()=>{
       const newPin = document.getElementById('newPinInput').value.trim();
       if (newPin.length !== 6) { showToast('الكود لازم 6 أرقام'); return; }
       const btn = document.getElementById('mBtn0');
@@ -1169,8 +1159,7 @@ async function removeDriver() {
   const driver=allDrivers.find(d=>d.uid===selectedDriverUid);
   if (selectedDriverUid===currentUser.uid){showToast('❌ مش تقدر تحذف حسابك');return;}
   showModal('حذف المستخدم',`<p style="color:var(--text2);font-size:14px;margin-bottom:8px;">حذف <strong>${sanitize(driver?.name||'المستخدم')}</strong>؟</p>
-    <p style="color:var(--red);font-size:12px;">⚠️ الأوردرات القديمة هتفضل محفوظة</p>`,
-    [{label:'🗑 حذف',cls:'danger',action:async()=>{
+    <p style="color:var(--red);font-size:12px;">⚠️ الأوردرات القديمة هتفضل محفوظة</p>`,[{label:'🗑 حذف',cls:'danger',action:async()=>{
       const btn=document.getElementById('mBtn0');
       if(btn){btn.disabled=true;btn.textContent='جاري...';}
       try {
@@ -1194,8 +1183,7 @@ async function settleDriverAccount(driverUid) {
     return t >= todayStart && !o.settled;
   });
   if (!dOrders.length) {
-    showModal('تصفية الحساب','<p style="color:var(--text2)">لا أوردرات غير مسوّاة اليوم.</p>',
-      [{label:'إغلاق',cls:'cancel',action:closeModal}]); return;
+    showModal('تصفية الحساب','<p style="color:var(--text2)">لا أوردرات غير مسوّاة اليوم.</p>',[{label:'إغلاق',cls:'cancel',action:closeModal}]); return;
   }
   const totalCash=dOrders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.total||0),0);
   const totalRestOwed=dOrders.filter(o=>o.payment==='cash').reduce((s,o)=>s+(o.restAmount||0),0);
@@ -1213,8 +1201,7 @@ async function settleDriverAccount(driverUid) {
         <span style="font-weight:900">💰 يسلّم للمدير</span><span style="color:var(--green);font-weight:900;font-size:18px">ج${netCash}</span>
       </div>
       <div class="report-row-detail" style="padding:10px 0"><span>🛵 رسوم توصيله</span><span style="color:var(--blue);font-weight:900">ج${totalDelivery}</span></div>
-    </div>`,
-    [{label:'✅ تأكيد التصفية',cls:'confirm',action:async()=>{
+    </div>`,[{label:'✅ تأكيد التصفية',cls:'confirm',action:async()=>{
       const btn=document.getElementById('mBtn0');
       if(btn){btn.disabled=true;btn.textContent='جاري...';}
       try {
@@ -1260,8 +1247,7 @@ async function loadMgrRestaurants() {
 }
 
 function showAddRestModal() {
-  showModal('إضافة مطعم',`<input class="form-field" id="newRestName" placeholder="اسم المطعم">`,
-    [{label:'إضافة',cls:'confirm',action:async()=>{
+  showModal('إضافة مطعم',`<input class="form-field" id="newRestName" placeholder="اسم المطعم">`,[{label:'إضافة',cls:'confirm',action:async()=>{
       const name=document.getElementById('newRestName').value.trim(); if(!name)return;
       await db.collection('restaurants').add({name,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
       closeModal(); showToast('✅ تم إضافة '+name); loadMgrRestaurants();
@@ -1269,8 +1255,7 @@ function showAddRestModal() {
 }
 
 async function deleteMgrRest(id,name) {
-  showModal('حذف المطعم',`<p style="color:var(--text2);">حذف "${sanitize(name)}"؟</p>`,
-    [{label:'حذف',cls:'danger',action:async()=>{
+  showModal('حذف المطعم',`<p style="color:var(--text2);">حذف "${sanitize(name)}"؟</p>`,[{label:'حذف',cls:'danger',action:async()=>{
       await db.collection('restaurants').doc(id).delete();
       closeModal(); showToast('✅ تم الحذف'); loadMgrRestaurants();
     }},{label:'إلغاء',cls:'cancel',action:closeModal}]);
@@ -1387,8 +1372,7 @@ function exportDailyReport() {
 
 function showExportModal(text) {
   showModal('📊 تقرير اليوم',
-    `<textarea style="width:100%;height:200px;background:var(--bg2);color:var(--text1);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none" readonly>${text}</textarea>`,
-    [{label:'📋 نسخ',cls:'confirm',action:()=>{const ta=document.querySelector('#modalBody textarea');ta.select();document.execCommand('copy');showToast('✅ تم النسخ');}},
+    `<textarea style="width:100%;height:200px;background:var(--bg2);color:var(--text1);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;resize:none" readonly>${text}</textarea>`,[{label:'📋 نسخ',cls:'confirm',action:()=>{const ta=document.querySelector('#modalBody textarea');ta.select();document.execCommand('copy');showToast('✅ تم النسخ');}},
      {label:'إغلاق',cls:'cancel',action:closeModal}]);
 }
 
@@ -1463,11 +1447,10 @@ function showModal(title,bodyHTML,buttons) {
   document.getElementById('modalTitle').textContent=title;
   document.getElementById('modalBody').innerHTML=bodyHTML;
   document.getElementById('modalActions').innerHTML=buttons.map((b,i)=>`<button class="modal-btn ${b.cls}" id="mBtn${i}">${b.label}</button>`).join('');
-  buttons.forEach((b,i)=>document.getElementById('mBtn'+i).onclick=b.action;
+  buttons.forEach((b,i) => { document.getElementById('mBtn'+i).onclick=b.action; });
   document.getElementById('modalOverlay').classList.add('show');
 }
 function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
-document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
 let toastTimer;
 function showToast(msg){
@@ -1525,4 +1508,12 @@ document.addEventListener('touchend',e=>{if(!ptrActive)return;const dy=e.changed
   themeMode=isDark?'dark':'light';
 })();
 
-window.addEventListener('load',initApp);
+window.addEventListener('load', () => {
+  initApp();
+  const overlay = document.getElementById('modalOverlay');
+  if (overlay) {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  }
+});

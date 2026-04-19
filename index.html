@@ -314,9 +314,25 @@ select option, select optgroup {
           <div class="settings-item-val" id="themeVal">داكن</div>
         </div>
       </div>
+      <div class="sec-title">الرسائل</div>
+      <div class="settings-group" style="margin-bottom:16px">
+        <div class="settings-item" onclick="showDriverNotes()" id="notesInboxBtn">
+          <div class="settings-item-icon" style="background:var(--blue-bg)">📬</div>
+          <div class="settings-item-label">رسائل من المدير</div>
+          <div class="settings-item-val" id="notesCountBadge">—</div>
+        </div>
+      </div>
       <div class="sec-title">المطاعم</div>
       <div id="restSettingsList"></div>
       <button class="add-btn" onclick="addRestaurant()">➕ إضافة مطعم</button>
+      <!-- خانة رسائل المدير -->
+      <div class="settings-group" style="margin-bottom:12px">
+        <div class="settings-item" onclick="showDriverNotes()">
+          <div class="settings-item-icon" style="background:var(--blue-bg)">📬</div>
+          <div class="settings-item-label">رسائل من المدير</div>
+          <div class="settings-item-val" id="notesCountBadge" style="background:var(--orange);color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:800;display:none">0</div>
+        </div>
+      </div>
       <div id="backToMgrWrap" style="display:none;margin-bottom:12px">
         <div class="settings-group">
           <div class="settings-item" onclick="switchBackToManager()">

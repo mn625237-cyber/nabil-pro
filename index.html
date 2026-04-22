@@ -88,19 +88,11 @@ window.addEventListener('load', () => { registerSW(); });
 .mgr-tab.active { color:var(--orange); border-top-color:var(--orange); background:var(--orange-bg); }
 
 /* Ghost Tap Fix */
-.submit-order-btn, .modal-btn, .nav-btn, .mgr-tab, .filter-btn, .action-btn, .rest-del-btn, .mini-add-btn, .add-btn, .period-btn, .shift-btn {
+.submit-order-btn, .modal-btn, .action-btn, .nav-btn, .mgr-tab, .nav-add-btn {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
-.submit-order-btn *, .modal-btn *, .action-btn * {
-  pointer-events: none;
-}
-/* Select styling */
-select option, select optgroup {
-  background: var(--bg2);
-  color: var(--text);
-}
-
+select option { background: var(--bg2); color: var(--text); }
 </style>
 </head>
 <body>
@@ -167,12 +159,12 @@ select option, select optgroup {
     <div class="drv-header-logo">🛵</div>
     <div class="drv-header-title">Nabil <span>Pro</span></div>
   </div>
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 16px 0">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 16px 2px">
     <div class="status-pill ok" id="driverStatus" style="margin:0">
       <div class="status-dot pulse" id="statusDot"></div>
       <span id="statusText">متصل • 0 أوردر</span>
     </div>
-    <button id="newDayBtn" onclick="startNewDay()" style="background:linear-gradient(135deg,#00C851,#009933);color:#fff;border:none;padding:7px 14px;border-radius:20px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:800;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 10px rgba(0,200,81,0.4);">🌅 يوم جديد</button>
+    <button onclick="startNewDay()" style="background:linear-gradient(135deg,#00C851,#009933);color:#fff;border:none;padding:7px 14px;border-radius:20px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:800;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 10px rgba(0,200,81,0.3);">🌅 يوم جديد</button>
   </div>
   <span id="driverNameDisplay" style="display:none"></span>
   <span id="clockDisplay" style="display:none"></span>
@@ -212,27 +204,16 @@ select option, select optgroup {
 
     <!-- Page 1: Records -->
     <div class="page" id="recordsPage">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div style="font-size:11px;color:var(--text3);font-weight:700;" id="dayStartLabel">اليوم الحالي</div>
-        <button onclick="showDriverArchive()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:20px;font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation;">📂 الأرشيف</button>
-      </div>
-      <div style="margin-bottom:12px;display:flex;gap:8px">
-        <select id="filterTimeSelect" onchange="applyFilters()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
-          <optgroup label="⏰ الوقت">
-            <option value="all">الكل</option>
-            <option value="today">اليوم</option>
-            <option value="week">الأسبوع</option>
-          </optgroup>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <select id="filterTimeSelect" onchange="renderOrdersList()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+          <option value="all">الكل</option>
+          <option value="today">اليوم</option>
+          <option value="week">الأسبوع</option>
         </select>
-        <select id="filterPaySelect" onchange="applyFilters()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
-          <optgroup label="💳 الدفع">
-            <option value="all">الكل</option>
-            <option value="cash">💵 كاش</option>
-            <option value="visa">💳 فيزا</option>
-          </optgroup>
-        </select>
-        <select id="filterRestSelect" onchange="applyFilters()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
-          <option value="">🏪 المطاعم</option>
+        <select id="filterPaySelect" onchange="renderOrdersList()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+          <option value="all">الكل</option>
+          <option value="cash">💵 كاش</option>
+          <option value="visa">💳 فيزا</option>
         </select>
       </div>
       <div id="ordersList">
@@ -244,9 +225,7 @@ select option, select optgroup {
     <div class="page" id="addPage">
       <div class="form-group">
         <div class="form-lbl">🏪 المطعم</div>
-        <select id="restSelect" onchange="selectedRest=this.value||null" style="width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;font-size:15px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer;appearance:none;-webkit-appearance:none;">
-          <option value="">اختر المطعم...</option>
-        </select>
+        <select id="restSelect" onchange="selectedRest=this.value||null" style="width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;font-size:15px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;"><option value="">اختر المطعم...</option></select>
       </div>
       <div class="form-group">
         <div class="form-lbl">📍 العنوان</div>
@@ -291,7 +270,7 @@ select option, select optgroup {
           </div>
         </div>
       </div>
-      <button class="submit-order-btn" id="submitOrderBtn" onclick="addOrder()" style="touch-action:manipulation;-webkit-tap-highlight-color:transparent;">✅ حفظ الأوردر</button>
+      <button class="submit-order-btn" id="submitOrderBtn" onclick="addOrder()" style="touch-action:manipulation">✅ حفظ الأوردر</button>
     </div>
 
     <!-- Page 3: Settings -->
@@ -314,20 +293,11 @@ select option, select optgroup {
           <div class="settings-item-val" id="themeVal">داكن</div>
         </div>
       </div>
-      <div class="sec-title">الرسائل</div>
-      <div class="settings-group" style="margin-bottom:16px">
-        <div class="settings-item" onclick="showDriverNotes()" id="notesInboxBtn">
-          <div class="settings-item-icon" style="background:var(--blue-bg)">📬</div>
-          <div class="settings-item-label">رسائل من المدير</div>
-          <div class="settings-item-val" id="notesCountBadge">—</div>
-        </div>
-      </div>
       <div class="sec-title">المطاعم</div>
       <div id="restSettingsList"></div>
       <button class="add-btn" onclick="addRestaurant()">➕ إضافة مطعم</button>
-      <!-- خانة رسائل المدير -->
       <div class="settings-group" style="margin-bottom:12px">
-        <div class="settings-item" onclick="showDriverNotes()">
+        <div class="settings-item" onclick="showDriverNotes()" style="cursor:pointer">
           <div class="settings-item-icon" style="background:var(--blue-bg)">📬</div>
           <div class="settings-item-label">رسائل من المدير</div>
           <div class="settings-item-val" id="notesCountBadge" style="background:var(--orange);color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:800;display:none">0</div>
@@ -414,15 +384,13 @@ select option, select optgroup {
         </div>
       </div>
 
-      <div style="padding:0 0 8px;display:flex;gap:8px;flex-wrap:wrap">
-        <select id="mgrFilterTime" onchange="filterMgrOrders()" style="flex:1;min-width:100px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
-          <optgroup label="⏰ الوقت">
-            <option value="today">اليوم</option>
-            <option value="week">الأسبوع</option>
-            <option value="all">الكل</option>
-          </optgroup>
+      <div style="padding:0 0 8px;display:flex;gap:8px">
+        <select id="mgrFilterTime" onchange="filterMgrOrders()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+          <option value="today">📅 اليوم</option>
+          <option value="week">📅 الأسبوع</option>
+          <option value="all">📅 الكل</option>
         </select>
-        <select id="mgrFilterRest" onchange="filterMgrOrders()" style="flex:1;min-width:100px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+        <select id="mgrFilterRest" onchange="filterMgrOrders()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
           <option value="">🏪 كل المطاعم</option>
         </select>
       </div>
@@ -489,7 +457,7 @@ select option, select optgroup {
       <div class="detail-phone" id="detailDriverPhone">—</div>
     </div>
     <div class="detail-actions">
-      <button class="detail-action-btn" style="background:var(--orange-bg);color:var(--orange);padding:0 14px;width:auto;border-radius:12px;font-size:13px;font-weight:800;" onclick="editDriverFull(selectedDriverUid)">✏️ تعديل</button>
+      <button class="detail-action-btn" style="background:var(--orange-bg);color:var(--orange);padding:0 14px;width:auto;border-radius:12px;font-size:13px;font-weight:800;touch-action:manipulation" onclick="editDriverFull(selectedDriverUid)">✏️ تعديل</button>
     </div>
   </div>
   <div class="detail-content">

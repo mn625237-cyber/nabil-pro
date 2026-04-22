@@ -1,7 +1,7 @@
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'nabil-pro-v23';
+const CACHE_NAME = 'nabil-pro-v24';
 const CACHE_FILES = ['/', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -19,13 +19,28 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    fetch(e.request).then(r => {
-      const clone = r.clone();
-      caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
-      return r;
-    }).catch(() => caches.match(e.request))
-  );
+  // Network first for JS/HTML, cache fallback for others
+  const url = e.request.url;
+  const isAppFile = url.includes('app.js') || url.includes('index.html') || url.includes('style.css');
+  if (isAppFile) {
+    e.respondWith(
+      fetch(e.request).then(r => {
+        const clone = r.clone();
+        caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+        return r;
+      }).catch(() => caches.match(e.request))
+    );
+  } else {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        return cached || fetch(e.request).then(r => {
+          const clone = r.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+          return r;
+        });
+      })
+    );
+  }
 });
 
 firebase.initializeApp({

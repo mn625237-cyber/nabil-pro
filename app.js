@@ -385,6 +385,23 @@ function listenToRestaurants() {
       } catch(e) {}
       renderRestChips();
       renderRestSettings();
+      // تعبئة فلتر المطاعم
+      const _mgr = document.getElementById('mgrFilterRest');
+      if (_mgr) {
+        const _cur = _mgr.value;
+        _mgr.innerHTML = '<option value="">🏪 كل المطاعم</option>' +
+          restaurantsCache.filter(r=>r.active!==false)
+            .map(r=>'<option value="'+r.name+'">'+r.name+'</option>').join('');
+        if (_cur) _mgr.value = _cur;
+      }
+      const _rs = document.getElementById('restSelect');
+      if (_rs) {
+        const _cv = _rs.value;
+        _rs.innerHTML = '<option value="">اختر المطعم...</option>' +
+          restaurantsCache.filter(r=>r.active!==false)
+            .map(r=>'<option value="'+r.id+'">'+r.name+'</option>').join('');
+        if (_cv) _rs.value = _cv;
+      }
     }, () => {
       // لو فشل الـ listener — ارجع للـ cache
       try {
@@ -975,7 +992,7 @@ function initManagerApp() {
   const months=['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   document.getElementById('mgrHeroDate').textContent=days[now.getDay()]+'، '+now.getDate()+' '+months[now.getMonth()];
   showScreen('managerApp');
-  listenAllOrders(); loadAllDrivers(); loadMgrRestaurants(); listenToRestaurants();
+  listenAllOrders(); loadAllDrivers(); loadMgrRestaurants(); listenToRestaurants(); listenToRestaurants(); listenToRestaurants();
   setTimeout(checkMonthlyCleanup,5000);
 }
 
@@ -1659,7 +1676,11 @@ function editDriverFull(uid) {
   const body =
     '<div style="margin-bottom:12px"><div class="field-label">👤 الاسم</div><input class="form-field" id="ef_name" value="'+sanitize(driver.name||'')+'" placeholder="الاسم"></div>'+
     '<div style="margin-bottom:12px"><div class="field-label">📞 رقم الهاتف</div><input class="form-field" type="tel" id="ef_phone" value="'+sanitize(driver.phone||'')+'" placeholder="01xxxxxxxxx" inputmode="numeric"></div>'+
-    '<div style="margin-bottom:16px"><div class="field-label">🔑 كود جديد (فاضي = بدون تغيير)</div><input class="form-field" type="tel" id="ef_pin" placeholder="123456" maxlength="6" inputmode="numeric"></div>'+
+    '<div style="margin-bottom:16px"><div class="field-label">🔑 الكود الحالي</div>'+
+'<div style="position:relative"><input class="form-field" id="ef_pin_cur" value="'+(driver.pin||'')+'" readonly type="password" style="letter-spacing:6px;font-size:18px;">'+
+'<button type="button" onclick="togglePin(\'ef_pin_cur\',this)" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;cursor:pointer;touch-action:manipulation">👁</button></div></div>'+
+'<div style="margin-bottom:16px"><div class="field-label">🔑 كود جديد (اتركه فاضي لو مش هتغيره)</div>'+
+'<input class="form-field" type="tel" id="ef_pin" placeholder="6 أرقام" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,\'\').slice(0,6)"></div>'+
     '<div style="display:flex;gap:8px">'+
     '<button id="ef_role_btn" style="flex:1;padding:10px;border-radius:10px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple);font-family:Cairo,sans-serif;font-weight:700;font-size:12px;cursor:pointer;touch-action:manipulation">'+rl+'</button>'+
     '<button id="ef_del_btn" style="flex:1;padding:10px;border-radius:10px;background:var(--red-bg);color:var(--red);border:1px solid var(--red);font-family:Cairo,sans-serif;font-weight:700;font-size:12px;cursor:pointer;touch-action:manipulation">🗑 حذف</button>'+
@@ -1820,4 +1841,10 @@ document.addEventListener('touchend',e=>{if(!ptrActive)return;const dy=e.changed
   themeMode=isDark?'dark':'light';
 })();
 
-window.addEventListener('load',initApp);
+function togglePin(inputId, iconEl) {
+  const f = document.getElementById(inputId);
+  if (!f) return;
+  const isHidden = f.type === 'password';
+  f.type = isHidden ? 'text' : 'password';
+  iconEl.textContent = isHidden ? '🔒' : '👁';
+}

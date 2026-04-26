@@ -1840,7 +1840,6 @@ document.addEventListener('touchend',e=>{if(!ptrActive)return;const dy=e.changed
   if(!isDark)document.body.dataset.theme='light';
   themeMode=isDark?'dark':'light';
 })();
-
 function togglePin(inputId, iconEl) {
   const f = document.getElementById(inputId);
   if (!f) return;
@@ -1848,3 +1847,4 @@ function togglePin(inputId, iconEl) {
   f.type = isHidden ? 'text' : 'password';
   iconEl.textContent = isHidden ? '🔒' : '👁';
 }
+window.addEventListener('load',initApp);

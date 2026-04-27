@@ -1833,24 +1833,54 @@ function showDriverStatDetail(type) {
 // ══════════════════════════════════
 // PULL TO REFRESH
 // ══════════════════════════════════
-let ptrStartY=0,ptrActive=false;
+// ══════════════════════════════════
+// PULL TO REFRESH & INIT
+// ══════════════════════════════════
+let ptrStartY=0, ptrActive=false;
 const PTR_THRESHOLD=70;
-document.addEventListener('touchstart',e=>{const el=e.target.closest('.page,.mgr-content');if(!el)return;if(el.scrollTop===0){ptrStartY=e.touches[0].clientY;ptrActive=true;}},{passive:true});
-document.addEventListener('touchmove',e=>{if(!ptrActive)return;const dy=e.touches[0].clientY-ptrStartY;if(dy>20){const ind=document.getElementById('ptrIndicator');if(ind){ind.style.opacity=Math.min(1,dy/PTR_THRESHOLD);ind.style.transform=`translateY(${Math.min(dy*0.4,28)}px)`;}}},{passive:true});
-document.addEventListener('touchend',e=>{if(!ptrActive)return;const dy=e.changedTouches[0].clientY-ptrStartY;ptrActive=false;const ind=document.getElementById('ptrIndicator');if(ind){ind.style.opacity=0;ind.style.transform='';}if(dy>PTR_THRESHOLD){showToast('🔄 جاري التحديث...');setTimeout(()=>location.reload(),400);}},{passive:true});
+document.addEventListener('touchstart', e => {
+  const el = e.target.closest('.page, .mgr-content');
+  if(!el) return;
+  if(el.scrollTop === 0) { ptrStartY = e.touches[0].clientY; ptrActive = true; }
+}, {passive:true});
 
-(function(){
-  const h=new Date().getHours();
-  const isDark=h<6||h>=18;
-  if(!isDark)document.body.dataset.theme='light';
-  themeMode=isDark?'dark':'light';
+document.addEventListener('touchmove', e => {
+  if(!ptrActive) return;
+  const dy = e.touches[0].clientY - ptrStartY;
+  if(dy > 20) {
+    const ind = document.getElementById('ptrIndicator');
+    if(ind) {
+      ind.style.opacity = Math.min(1, dy / PTR_THRESHOLD);
+      ind.style.transform = `translateY(${Math.min(dy * 0.4, 28)}px)`;
+    }
+  }
+}, {passive:true});
+
+document.addEventListener('touchend', e => {
+  if(!ptrActive) return;
+  const dy = e.changedTouches[0].clientY - ptrStartY;
+  ptrActive = false;
+  const ind = document.getElementById('ptrIndicator');
+  if(ind) { ind.style.opacity = 0; ind.style.transform = ''; }
+  if(dy > PTR_THRESHOLD) {
+    showToast('🔄 جاري التحديث...');
+    setTimeout(() => location.reload(), 400);
+  }
+}, {passive:true});
+
+(function() {
+  const h = new Date().getHours();
+  const isDark = (h < 6 || h >= 18);
+  if(!isDark) document.body.dataset.theme = 'light';
+  themeMode = isDark ? 'dark' : 'light';
 })();
 
 function togglePin(inputId, btnEl) {
-  const f=document.getElementById(inputId);
-  if(!f) return;
-  const h=f.type==='password';
-  f.type=h?'text':'password';
-  if(btnEl) btnEl.textContent=h?'🔒':'👁';
+  const f = document.getElementById(inputId);
+  if (!f) return;
+  const h = (f.type === 'password');
+  f.type = h ? 'text' : 'password';
+  if(btnEl) btnEl.textContent = h ? '🔒' : '👁️';
 }
-window.addEventListener('load',initApp);
+
+window.addEventListener('load', initApp);

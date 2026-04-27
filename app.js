@@ -1845,13 +1845,7 @@ document.addEventListener('touchend',e=>{if(!ptrActive)return;const dy=e.changed
   if(!isDark)document.body.dataset.theme='light';
   themeMode=isDark?'dark':'light';
 })();
-function togglePin(inputId, iconEl) {
-  const f = document.getElementById(inputId);
-  if (!f) return;
-  const isHidden = f.type === 'password';
-  f.type = isHidden ? 'text' : 'password';
-  iconEl.textContent = isHidden ? '🔒' : '👁';
-}
+
 function togglePin(inputId, btnEl) {
   const f=document.getElementById(inputId);
   if(!f) return;

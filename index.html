@@ -11,19 +11,16 @@
 <link rel="manifest" href="./manifest.json">
 
 <script>
-let swRegistration = null;
-
 async function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   try {
-    swRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    await navigator.serviceWorker.register('./firebase-messaging-sw.js');
   } catch(e) {}
 }
-
-window.addEventListener('load', () => { registerSW(); });
+window.addEventListener('load', registerSW);
 </script>
 
-<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEqklEQVR4nO3VTapcZwxFUbdDwL00M5eMyTP0rNxzIFAxGPu9d/VzJJ0Nu13UlRb6Pv3x+W+ix32S/wNaHYAoFIAoFIDe6Os/f8r/w+R8Af0rIzf5F0lyAZTOBVL/dRmQBI0bpoOA5FasJN0BJJfhKWk9ILkDc0lbAcm3jqStgORrhtFWQPLVwmgrIPk6YbQVkHyFE5JvYSUg+dqmJd/IGkDyVU1Ovp3pgOQbmp98R0MByRezK/m+ZgGS7+NXffvyl/w/TDakB6TFkZUtIzGgvWJGeTIFdAyNFpMXIAc3EkkWgNzcNEs6DsicTg+js4Cg08boICDoNDO6Awg6hxmVA4KOnNFiQNAZwmglIPQ4GKoCBJ2BjBwByfc3ITtA0BnLaAEg9FgZSgaEHjdDmYCgs4jROEDo8TQ0BZB8Hxu7Awg9toYSAKHH2VAUEHomJDSkBCSf+6VWAkLPqCSGngNCz8D6DQkAyad8ux2AOD9jaz5CTwChZ3idhloBySfr01xA6NlSjyEAnW0iIPTsqsFQByD5HJ0bBIjzs7HqI1QOSD5BGgEIPaurMwQgi8SA0HOgIkMAckkGCD1nqjAEIKPWAJJPin5VNyDOz7HSj1A+IPmM6PcBiEL1AULP1RINAcixoYDkc6H3Vw6I83O7rCMEINPGAZJPhD5aISDOj0MpRwhAvg0CJJ8FPQtAFKoEEO+XT/FXDEDWjQAknwJFAhCFAhCFAhCFSgb00Z8D0PYebDwTkPz7KR6AKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKFQaIPTY9tgQF4h4wigWgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCiUEhCGtvdg478DxBFyK6IHQAQgigUgCqUHhKG9Pdg1gOj/SgDxivkU1AMg96YAwtDG4u8XgKwrBMQr5lBcTyYgDO0q5fwAyLdyQLxit0vRkwwIQ1vKOj8AMq0JEIZOlqgHQI5NB4ShyT1b6HNAHKFj5eqpAoShmaWfHwB5pQGEoRtV6AGQUUpAGNpekR4AuaQHhKG91enpAIShjXpKAHGENlaqpwkQhnbpKQSEoUU16AHQ5YYCwtCKevR0A8LQcD1NgDA0uU49zwHxkI2tU48GEIYG6hEAwtC0+vVEAWFoThI9YkAYmqBHDAhD8oR6cgBhyFZPGiAMeeoZBAhDzXrGAcKQoZ5kQCmGYFRNJ1FPPiAMWeqpAYQhHz1VgLIMwSiRToWeBYAwlDjJTYByDXkyyh1g0ZYLAWHovJ5yQOmGHBilT6x0v+WAKgxdZVQxqOrldgCC0Uk63YCKDG1nVDSTtp22AqoztJFR3Sg6F9oNqNTQFkalE2jepgBQtaGxkhq+un+VGkBtjCZI6vlM1RKVgNoM9WNq/i7hBsWA+g0VeRJ+hXZ9ekByRm8ik/+HmXRmAZpsaGbyfY0DBKNddIYCwtAiPUMBwWgFnemAYDSczg5A5ozkkz8CyJCRfNoHAZkwkk/4OKDDjORTNQJ0SZJ8htaAXskdWLl5dQfQK7kMBzevDgJ6Jbdy2M2ry4B+DDRFuQD6Obik5AvondnKeGcAolAAolAAolDfAYOGVRpMJjD1AAAAAElFTkSuQmCC">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEqklEQVR4nO3VTapcZwxFUbdDwL00M5eMyTP0rNxzIFAxGPu9d/VzJJ0Nu13UlRb6Pv3x+W+ix32S/wNaHYAoFIAoFIDe6Os/f8r/w+R8Af0rIzf5F0lyAZTOBVL/dRmQBI0bpoOA5FasJN0BJJfhKWk9ILkDc0lbAcm3jqStgORrhtFWQPLVwmgrIPk6YbQVkHyFE5JvYSUg+dqmJd/IGkDyVU1Ovp3pgOQbmp98R0MByRezK/m+ZgGS7+NXffvyl/w/TDakB6TFkZUtIzGgvWJGeTIFdAyNFpMXIAc3EkkWgNzcNEs6DsicTg+js4Cg08boICDoNDO6Awg6hxmVA4KOnNFiQNAZwmglIPQ4GKoCBJ2BjBwByfc3ITtA0BnLaAEg9FgZSgaEHjdDmYCgs4jROEDo8TQ0BZB8Hxu7Awg9toYSAKHH2VAUEHomJDSkBCSf+6VWAkLPqCSGngNCz8D6DQkAyad8ux2AOD9jaz5CTwChZ3idhloBySfr01xA6NlSjyEAnW0iIPTsqsFQByD5HJ0bBIjzs7HqI1QOSD5BGgEIPaurMwQgi8SA0HOgIkMAckkGCD1nqjAEIKPWAJJPin5VNyDOz7HSj1A+IPmM6PcBiEL1AULP1RINAcixoYDkc6H3Vw6I83O7rCMEINPGAZJPhD5aISDOj0MpRwhAvg0CJJ8FPQtAFKoEEO+XT/FXDEDWjQAknwJFAhCFAhCFAhCFSgb00Z8D0PYebDwTkPz7KR6AKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKBSAKFQaIPTY9tgQF4h4wigWgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCgUgCiUEhCGtvdg478DxBFyK6IHQAQgigUgCqUHhKG9Pdg1gOj/SgDxivkU1AMg96YAwtDG4u8XgKwrBMQr5lBcTyYgDO0q5fwAyLdyQLxit0vRkwwIQ1vKOj8AMq0JEIZOlqgHQI5NB4ShyT1b6HNAHKFj5eqpAoShmaWfHwB5pQGEoRtV6AGQUUpAGNpekR4AuaQHhKG91enpAIShjXpKAHGENlaqpwkQhnbpKQSEoUU16AHQ5YYCwtCKevR0A8LQcD1NgDA0uU49zwHxkI2tU48GEIYG6hEAwtC0+vVEAWFoThI9YkAYmqBHDAhD8oR6cgBhyFZPGiAMeeoZBAhDzXrGAcKQoZ5kQCmGYFRNJ1FPPiAMWeqpAYQhHz1VgLIMwSiRToWeBYAwlDjJTYByDXkyyh1g0ZYLAWHovJ5yQOmGHBilT6x0v+WAKgxdZVQxqOrldgCC0Uk63YCKDG1nVDSTtp22AqoztJFR3Sg6F9oNqNTQFkalE2jepgBQtaGxkhq+un+VGkBtjCZI6vlM1RKVgNoM9WNq/i7hBsWA+g0VeRJ+hXZ9ekByRm8ik/+HmXRmAZpsaGbyfY0DBKNddIYCwtAiPUMBwWgFnemAYDSczg5A5ozkkz8CyJCRfNoHAZkwkk/4OKDDjORTNQJ0SZJ8htaAXskdWLl5dQfQK7kMBzevDgJ6Jbdy2M2ry4B+DDRFuQD6Obik5AvondnKeGcAolAAolDfAYOGVRpMJjD1AAAAAElFTkSuQmCC">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
@@ -35,75 +32,99 @@ window.addEventListener('load', () => { registerSW(); });
 
 <link rel="stylesheet" href="./style.css">
 <style>
-/* ══ NAV C — Floating FAB ══ */
+/* ══ Bottom Nav ══ */
 .bottom-nav {
-  height:var(--nav-h);
-  background:var(--bg2);
-  border-top:1px solid var(--border);
-  display:flex;
-  position:fixed; bottom:0; left:0; right:0; z-index:100;
-  padding-bottom:env(safe-area-inset-bottom);
-  align-items:center;
+  height: var(--nav-h);
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+  align-items: center;
 }
 .nav-btn {
-  flex:1; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; gap:4px; border:none; background:transparent;
-  cursor:pointer; color:var(--text3); font-size:10px; font-weight:700;
-  font-family:'Cairo',sans-serif; transition:color .2s;
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 4px; border: none; background: transparent;
+  cursor: pointer; color: var(--text3); font-size: 10px; font-weight: 700;
+  font-family: 'Cairo', sans-serif; transition: color .2s;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
-.nav-btn svg { width:22px; height:22px; stroke:currentColor; transition:stroke .2s; }
-.nav-btn.active { color:var(--orange); }
-.nav-btn span { font-size:10px; }
+.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; transition: stroke .2s; }
+.nav-btn.active { color: var(--orange); }
+.nav-btn span { font-size: 10px; }
+
 /* FAB Floating */
 .nav-add-btn {
-  flex:1; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; border:none; background:transparent; cursor:pointer;
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; border: none; background: transparent; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .nav-add-outer {
-  width:54px; height:54px;
-  background:var(--bg2);
-  border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  margin-top:-24px;
-  box-shadow:0 -2px 0 var(--border);
+  width: 54px; height: 54px;
+  background: var(--bg2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: -24px;
+  box-shadow: 0 -2px 0 var(--border);
 }
 .nav-add-circle {
-  width:46px; height:46px;
-  background:linear-gradient(135deg,var(--orange),#e55b24);
-  border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 6px 24px rgba(255,108,47,0.5);
+  width: 46px; height: 46px;
+  background: linear-gradient(135deg, var(--orange), #e55b24);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px rgba(255,108,47,0.5);
 }
-.nav-add-circle svg { width:22px; height:22px; stroke:#fff; }
+.nav-add-circle svg { width: 22px; height: 22px; stroke: #fff; }
 
-/* MGR TABS with SVG */
+/* MGR TABS */
 .mgr-tab {
-  flex:1; padding:10px 4px 8px; border:none; background:transparent;
-  font-family:'Cairo',sans-serif; font-size:10px; font-weight:700;
-  color:var(--text3); cursor:pointer; border-top:2px solid transparent;
-  white-space:nowrap; min-width:64px; transition:all .2s;
-  display:flex; flex-direction:column; align-items:center; gap:4px;
+  flex: 1; padding: 10px 4px 8px; border: none; background: transparent;
+  font-family: 'Cairo', sans-serif; font-size: 10px; font-weight: 700;
+  color: var(--text3); cursor: pointer; border-top: 2px solid transparent;
+  white-space: nowrap; min-width: 64px; transition: all .2s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
-.mgr-tab svg { width:20px; height:20px; stroke:currentColor; }
-.mgr-tab.active { color:var(--orange); border-top-color:var(--orange); background:var(--orange-bg); }
+.mgr-tab svg { width: 20px; height: 20px; stroke: currentColor; }
+.mgr-tab.active { color: var(--orange); border-top-color: var(--orange); background: var(--orange-bg); }
+
+/* Shared select style */
+.app-select {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  outline: none;
+  touch-action: manipulation;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  padding-left: 32px;
+}
+.app-select option { background: var(--bg2); color: var(--text); }
 
 /* Ghost Tap Fix */
-.submit-order-btn, .modal-btn, .action-btn, .nav-btn, .mgr-tab, .nav-add-btn {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-select option { background: var(--bg2); color: var(--text); }
+.submit-order-btn, .modal-btn, .action-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 </style>
 </head>
 <body>
 
 <!-- PTR Indicator -->
-<div id="ptrIndicator" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9999;
-  background:var(--orange);color:#fff;border-radius:50%;width:36px;height:36px;
-  display:flex;align-items:center;justify-content:center;font-size:18px;
-  opacity:0;transition:opacity .2s,transform .3s;pointer-events:none;">🔄</div>
+<div id="ptrIndicator" style="
+  position:fixed; top:8px; left:50%; transform:translateX(-50%);
+  z-index:9999; background:var(--orange); color:#fff; border-radius:50%;
+  width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+  font-size:18px; opacity:0; transition:opacity .2s,transform .3s; pointer-events:none;">🔄</div>
 
-<!-- OFFLINE -->
+<!-- ══════════════════════════════════
+     OFFLINE
+══════════════════════════════════ -->
 <div class="screen" id="offlineScreen">
   <div class="offline-blob">📡</div>
   <div class="offline-title">لا يوجد اتصال</div>
@@ -111,11 +132,13 @@ select option { background: var(--bg2); color: var(--text); }
   <button class="offline-btn" onclick="checkOnline()">🔄 إعادة المحاولة</button>
 </div>
 
-<!-- LOADING -->
+<!-- ══════════════════════════════════
+     LOADING
+══════════════════════════════════ -->
 <div class="screen active" id="loadingScreen">
   <div class="splash-wrap" id="splashWrap">
     <div class="splash-icon-box" id="splashBox">
-      <img src="./icon-512.png" class="splash-icon-img" id="splashImg">
+      <img src="./icon-512.png" class="splash-icon-img" id="splashImg" onerror="this.style.display='none'">
     </div>
     <div class="splash-brand">Nabil <span>Pro</span></div>
     <div class="splash-sub">منصة إدارة التوصيل الذكية</div>
@@ -123,7 +146,9 @@ select option { background: var(--bg2); color: var(--text); }
   </div>
 </div>
 
-<!-- AUTH -->
+<!-- ══════════════════════════════════
+     AUTH
+══════════════════════════════════ -->
 <div class="screen" id="authScreen">
   <div class="auth-card">
     <div class="auth-header">
@@ -137,13 +162,15 @@ select option { background: var(--bg2); color: var(--text); }
         <div class="field-wrap">
           <div class="field-prefix">🇪🇬</div>
           <input type="tel" id="phoneInput" placeholder="01xxxxxxxxx" maxlength="11"
-            oninput="this.value=this.value.replace(/\D/g,'')" inputmode="numeric">
+            oninput="this.value=this.value.replace(/\D/g,'')" inputmode="numeric"
+            autocomplete="username">
         </div>
       </div>
       <div>
         <div class="field-label">🔑 كود الدخول</div>
         <input type="tel" class="pin-field" id="pinInput" placeholder="• • • • • •"
-          maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+          maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')"
+          autocomplete="current-password">
         <div class="pin-hint" style="margin-top:8px;">الكود بيجيلك من المدير</div>
       </div>
       <button class="auth-submit" id="loginBtn" onclick="doLogin()">
@@ -153,26 +180,37 @@ select option { background: var(--bg2); color: var(--text); }
   </div>
 </div>
 
-<!-- DRIVER APP -->
+<!-- ══════════════════════════════════
+     DRIVER APP
+══════════════════════════════════ -->
 <div class="screen" id="driverApp">
   <div class="drv-header">
     <div class="drv-header-logo">🛵</div>
     <div class="drv-header-title">Nabil <span>Pro</span></div>
   </div>
+
+  <!-- Status bar + New Day button -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 16px 2px">
     <div class="status-pill ok" id="driverStatus" style="margin:0">
       <div class="status-dot pulse" id="statusDot"></div>
       <span id="statusText">متصل • 0 أوردر</span>
     </div>
-    <button onclick="startNewDay()" style="background:linear-gradient(135deg,#00C851,#009933);color:#fff;border:none;padding:7px 14px;border-radius:20px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:800;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 10px rgba(0,200,81,0.3);">🌅 يوم جديد</button>
+    <button onclick="startNewDay()" style="
+      background:linear-gradient(135deg,#00C851,#009933);color:#fff;border:none;
+      padding:7px 14px;border-radius:20px;font-family:'Cairo',sans-serif;
+      font-size:12px;font-weight:800;cursor:pointer;touch-action:manipulation;
+      box-shadow:0 3px 10px rgba(0,200,81,0.3);">🌅 يوم جديد</button>
   </div>
-  <span id="driverNameDisplay" style="display:none"></span>
-  <span id="clockDisplay" style="display:none"></span>
-  <span id="dateDisplay" style="display:none"></span>
 
+  <!-- Hidden data holders used by JS -->
+  <span id="driverNameDisplay" style="display:none"></span>
+  <span id="clockDisplay"      style="display:none"></span>
+  <span id="dateDisplay"       style="display:none"></span>
+
+  <!-- Pages wrapper (4 pages × 25% each) -->
   <div class="pages-wrapper" id="pagesWrapper">
 
-    <!-- Page 0: Home -->
+    <!-- ── Page 0: Home ── -->
     <div class="page" id="homePage">
       <div class="big-stats-grid">
         <div class="big-stat bs1" onclick="goPage(1)" style="cursor:pointer">
@@ -196,65 +234,79 @@ select option { background: var(--bg2); color: var(--text); }
           <div class="bs-val" id="statDelivery">ج0</div>
         </div>
       </div>
+
       <div class="sec-title">تقرير الشيفت</div>
       <div id="shiftReport">
-        <div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">لا أوردرات اليوم بعد</div></div>
+        <div class="empty-state">
+          <div class="empty-icon">🕐</div>
+          <div class="empty-text">لا أوردرات اليوم بعد</div>
+        </div>
       </div>
     </div>
 
-    <!-- Page 1: Records -->
+    <!-- ── Page 1: Records ── -->
     <div class="page" id="recordsPage">
       <div style="display:flex;gap:8px;margin-bottom:12px">
-        <select id="filterTimeSelect" onchange="renderOrdersList()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
-          <option value="all">الكل</option>
-          <option value="today">اليوم</option>
-          <option value="week">الأسبوع</option>
+        <select id="filterTimeSelect" onchange="renderOrdersList()" class="app-select" style="flex:1">
+          <option value="all">📋 الكل</option>
+          <option value="today">📅 اليوم</option>
+          <option value="week">📅 الأسبوع</option>
         </select>
-        <select id="filterPaySelect" onchange="renderOrdersList()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
-          <option value="all">الكل</option>
+        <select id="filterPaySelect" onchange="renderOrdersList()" class="app-select" style="flex:1">
+          <option value="all">💳 الكل</option>
           <option value="cash">💵 كاش</option>
           <option value="visa">💳 فيزا</option>
         </select>
       </div>
       <div id="ordersList">
-        <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد أوردرات</div></div>
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">لا توجد أوردرات</div>
+        </div>
       </div>
     </div>
 
-    <!-- Page 2: Add Order -->
+    <!-- ── Page 2: Add Order ── -->
     <div class="page" id="addPage">
       <div class="form-group">
         <div class="form-lbl">🏪 المطعم</div>
-        <select id="restSelect" onchange="selectedRest=this.value||null" style="width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;font-size:15px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;"><option value="">اختر المطعم...</option></select>
+        <select id="restSelect" onchange="selectedRest=this.value||null" class="app-select" style="width:100%;padding:14px 36px 14px 14px">
+          <option value="">اختر المطعم...</option>
+        </select>
       </div>
+
       <div class="form-group">
         <div class="form-lbl">📍 العنوان</div>
         <div class="voice-wrap">
-          <input class="form-field" id="addressInput" placeholder="العنوان كاملاً..." maxlength="200">
+          <input class="form-field" id="addressInput" placeholder="العنوان كاملاً..." maxlength="200" autocomplete="off">
           <button class="mic-btn" id="voiceAddress" onclick="startVoice('addressInput','voiceAddress')">🎤</button>
         </div>
       </div>
+
       <div class="form-group">
-        <div class="form-lbl">📞 رقم العميل (اختياري)</div>
+        <div class="form-lbl">📞 رقم العميل <span style="color:var(--text3);font-weight:400">(اختياري)</span></div>
         <div class="voice-wrap">
-          <input class="form-field" id="phoneOrderInput" placeholder="01xxxxxxxxx" type="tel" inputmode="numeric">
+          <input class="form-field" id="phoneOrderInput" placeholder="01xxxxxxxxx" type="tel" inputmode="numeric" autocomplete="off">
           <button class="mic-btn" id="voicePhone" onclick="startVoice('phoneOrderInput','voicePhone')">🎤</button>
         </div>
       </div>
+
       <div class="form-group">
-        <div class="form-lbl">💰 إجمالي الأوردر (ما يدفعه العميل)</div>
+        <div class="form-lbl">💰 إجمالي الأوردر <span style="color:var(--text3);font-weight:400">(ما يدفعه العميل)</span></div>
         <div class="voice-wrap">
-          <input class="form-field" id="restAmountInput" type="number" placeholder="0" inputmode="decimal">
+          <input class="form-field" id="restAmountInput" type="number" placeholder="0" inputmode="decimal" min="0">
           <button class="mic-btn" id="voiceAmount" onclick="startVoice('restAmountInput','voiceAmount')">🎤</button>
         </div>
       </div>
+
       <div class="form-group">
-        <div class="form-lbl">🛵 رسوم التوصيل (ربحك)</div>
+        <div class="form-lbl">🛵 رسوم التوصيل <span style="color:var(--text3);font-weight:400">(ربحك)</span></div>
         <div class="voice-wrap">
-          <input class="form-field" id="deliveryInput" type="number" placeholder="0" inputmode="decimal">
+          <input class="form-field" id="deliveryInput" type="number" placeholder="0" inputmode="decimal" min="0">
           <button class="mic-btn" id="voiceDelivery" onclick="startVoice('deliveryInput','voiceDelivery')">🎤</button>
         </div>
       </div>
+
       <div class="form-group">
         <div class="form-lbl">💳 طريقة الدفع</div>
         <div class="pay-grid">
@@ -270,14 +322,15 @@ select option { background: var(--bg2); color: var(--text); }
           </div>
         </div>
       </div>
-      <button class="submit-order-btn" id="submitOrderBtn" onclick="addOrder()" style="touch-action:manipulation">✅ حفظ الأوردر</button>
+
+      <button class="submit-order-btn" id="submitOrderBtn" onclick="addOrder()">✅ حفظ الأوردر</button>
     </div>
 
-    <!-- Page 3: Settings -->
+    <!-- ── Page 3: Settings ── -->
     <div class="page" id="settingsPage">
       <div class="sec-title">الحساب</div>
       <div class="settings-group">
-        <div class="settings-item">
+        <div class="settings-item" onclick="editDriverName()" style="cursor:pointer">
           <div class="settings-item-icon">👤</div>
           <div class="settings-item-label">اسم السائق</div>
           <div class="settings-item-val" id="settingsNameVal">—</div>
@@ -287,32 +340,38 @@ select option { background: var(--bg2); color: var(--text); }
           <div class="settings-item-label">رقم الهاتف</div>
           <div class="settings-item-val" id="settingsPhone" dir="ltr">—</div>
         </div>
-        <div class="settings-item" onclick="cycleTheme()">
+        <div class="settings-item" onclick="cycleTheme()" style="cursor:pointer">
           <div class="settings-item-icon" id="themeIcon">🌙</div>
           <div class="settings-item-label">المظهر</div>
           <div class="settings-item-val" id="themeVal">داكن</div>
         </div>
       </div>
+
       <div class="sec-title">المطاعم</div>
       <div id="restSettingsList"></div>
       <button class="add-btn" onclick="addRestaurant()">➕ إضافة مطعم</button>
+
       <div class="settings-group" style="margin-bottom:12px">
         <div class="settings-item" onclick="showDriverNotes()" style="cursor:pointer">
           <div class="settings-item-icon" style="background:var(--blue-bg)">📬</div>
           <div class="settings-item-label">رسائل من المدير</div>
-          <div class="settings-item-val" id="notesCountBadge" style="background:var(--orange);color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:800;display:none">0</div>
+          <div class="settings-item-val" id="notesCountBadge"
+            style="background:var(--orange);color:#fff;border-radius:20px;
+                   padding:2px 8px;font-size:11px;font-weight:800;display:none">0</div>
         </div>
       </div>
+
       <div id="backToMgrWrap" style="display:none;margin-bottom:12px">
         <div class="settings-group">
-          <div class="settings-item" onclick="switchBackToManager()">
+          <div class="settings-item" onclick="switchBackToManager()" style="cursor:pointer">
             <div class="settings-item-icon" style="background:var(--purple-bg)">👑</div>
             <div class="settings-item-label" style="color:var(--purple)">العودة للوحة المدير</div>
           </div>
         </div>
       </div>
+
       <div class="settings-group">
-        <div class="settings-item danger" onclick="confirmLogout()">
+        <div class="settings-item danger" onclick="confirmLogout()" style="cursor:pointer">
           <div class="settings-item-icon">⏏️</div>
           <div class="settings-item-label">تسجيل الخروج</div>
         </div>
@@ -324,28 +383,48 @@ select option { background: var(--bg2); color: var(--text); }
   <!-- Bottom Nav -->
   <div class="bottom-nav">
     <button class="nav-btn active" id="nav0" onclick="goPage(0)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
       <span>الرئيسية</span>
     </button>
+
     <button class="nav-btn" id="nav1" onclick="goPage(1)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="12" x2="12" y1="11" y2="17"/><line x1="9" x2="15" y1="14" y2="14"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="8" height="4" x="8" y="2" rx="1"/>
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+        <line x1="12" x2="12" y1="11" y2="17"/>
+        <line x1="9" x2="15" y1="14" y2="14"/>
+      </svg>
       <span>السجلات</span>
     </button>
+
     <button class="nav-add-btn" id="nav2" onclick="goPage(2)">
       <div class="nav-add-outer">
         <div class="nav-add-circle">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" x2="12" y1="5" y2="19"/>
+            <line x1="5" x2="19" y1="12" y2="12"/>
+          </svg>
         </div>
       </div>
     </button>
+
     <button class="nav-btn" id="nav3" onclick="goPage(3)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M20 21a8 8 0 1 0-16 0"/>
+      </svg>
       <span>حسابي</span>
     </button>
   </div>
+
 </div><!-- end driverApp -->
 
-<!-- MANAGER APP -->
+<!-- ══════════════════════════════════
+     MANAGER APP
+══════════════════════════════════ -->
 <div class="screen" id="managerApp">
   <div class="mgr-header">
     <div class="mgr-header-info">
@@ -353,7 +432,8 @@ select option { background: var(--bg2); color: var(--text); }
       <div class="mgr-header-title">لوحة الإدارة</div>
     </div>
     <span class="mgr-badge" id="managerBadge">مدير</span>
-    <button id="notifBtn" class="hdr-btn" onclick="subscribeFCM()" style="background:var(--orange-bg);color:var(--orange);" title="تفعيل الإشعارات">🔔</button>
+    <button id="notifBtn" class="hdr-btn" onclick="subscribeFCM()"
+      style="background:var(--orange-bg);color:var(--orange);" title="تفعيل الإشعارات">🔔</button>
     <button class="hdr-btn" onclick="showMgrSettings()" style="background:var(--bg3);">⚙️</button>
   </div>
 
@@ -384,20 +464,24 @@ select option { background: var(--bg2); color: var(--text); }
         </div>
       </div>
 
+      <!-- Filters -->
       <div style="padding:0 0 8px;display:flex;gap:8px">
-        <select id="mgrFilterTime" onchange="filterMgrOrders()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+        <select id="mgrFilterTime" onchange="filterMgrOrders()" class="app-select" style="flex:1">
           <option value="today">📅 اليوم</option>
           <option value="week">📅 الأسبوع</option>
           <option value="all">📅 الكل</option>
         </select>
-        <select id="mgrFilterRest" onchange="filterMgrOrders()" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:13px;color:var(--text);font-family:'Cairo',sans-serif;outline:none;touch-action:manipulation;cursor:pointer;appearance:none;-webkit-appearance:none;">
+        <select id="mgrFilterRest" onchange="filterMgrOrders()" class="app-select" style="flex:1">
           <option value="">🏪 كل المطاعم</option>
         </select>
       </div>
 
       <div class="feed-header"><div class="live-dot"></div> آخر الأوردرات</div>
       <div id="mgrRecentOrders">
-        <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا أوردرات بعد</div></div>
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">لا أوردرات بعد</div>
+        </div>
       </div>
     </div>
 
@@ -405,7 +489,7 @@ select option { background: var(--bg2); color: var(--text); }
     <div class="mgr-panel" id="mgrPanel1">
       <div class="search-box">
         <span>🔍</span>
-        <input type="text" placeholder="بحث باسم أو رقم..." id="driverSearch" oninput="filterDrivers()">
+        <input type="text" placeholder="بحث باسم أو رقم..." id="driverSearch" oninput="filterDrivers()" autocomplete="off">
       </div>
       <div id="driversList"></div>
     </div>
@@ -430,41 +514,75 @@ select option { background: var(--bg2); color: var(--text); }
 
   <div class="mgr-tabs">
     <button class="mgr-tab active" onclick="mgrTab(0,this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="7" height="7" x="3" y="3" rx="1"/>
+        <rect width="7" height="7" x="14" y="3" rx="1"/>
+        <rect width="7" height="7" x="14" y="14" rx="1"/>
+        <rect width="7" height="7" x="3" y="14" rx="1"/>
+      </svg>
       عامة
     </button>
     <button class="mgr-tab" onclick="mgrTab(1,this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
       الفريق
     </button>
     <button class="mgr-tab" onclick="mgrTab(2,this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/>
+        <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/>
+        <path d="M12 3v6"/>
+      </svg>
       مطاعم
     </button>
     <button class="mgr-tab" onclick="mgrTab(3,this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" x2="18" y1="20" y2="10"/>
+        <line x1="12" x2="12" y1="20" y2="4"/>
+        <line x1="6" x2="6" y1="20" y2="14"/>
+      </svg>
       تقارير
     </button>
   </div>
+
 </div><!-- end managerApp -->
 
-<!-- Driver Detail Overlay -->
+<!-- ══════════════════════════════════
+     DRIVER DETAIL OVERLAY
+══════════════════════════════════ -->
 <div class="detail-overlay" id="driverDetailOverlay">
   <div class="detail-header">
     <button class="back-btn" onclick="closeDriverDetail()">←</button>
     <div>
       <div class="detail-name" id="detailDriverName">—</div>
-      <div class="detail-phone" id="detailDriverPhone">—</div>
+      <div class="detail-phone" id="detailDriverPhone" dir="ltr">—</div>
     </div>
     <div class="detail-actions">
-      <button class="detail-action-btn" style="background:var(--orange-bg);color:var(--orange);padding:0 14px;width:auto;border-radius:12px;font-size:13px;font-weight:800;touch-action:manipulation" onclick="editDriverFull(selectedDriverUid)">✏️ تعديل</button>
+      <button class="detail-action-btn"
+        style="background:var(--orange-bg);color:var(--orange);padding:0 14px;
+               width:auto;border-radius:12px;font-size:13px;font-weight:800;
+               touch-action:manipulation"
+        onclick="editDriverFull(selectedDriverUid)">✏️ تعديل</button>
     </div>
   </div>
   <div class="detail-content">
     <div class="detail-stats">
-      <div class="detail-stat"><div class="detail-stat-val" id="detailOrders">0</div><div class="detail-stat-lbl">أوردرات اليوم</div></div>
-      <div class="detail-stat"><div class="detail-stat-val" id="detailDelivery">0</div><div class="detail-stat-lbl">دخل التوصيل</div></div>
-      <div class="detail-stat"><div class="detail-stat-val" id="detailTotal">0</div><div class="detail-stat-lbl">إجمالي كاش</div></div>
+      <div class="detail-stat">
+        <div class="detail-stat-val" id="detailOrders">0</div>
+        <div class="detail-stat-lbl">أوردرات اليوم</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-val" id="detailDelivery">0</div>
+        <div class="detail-stat-lbl">دخل التوصيل</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-val" id="detailTotal">0</div>
+        <div class="detail-stat-lbl">إجمالي كاش</div>
+      </div>
     </div>
     <div id="detailExtraBtns" style="padding:0 0 8px"></div>
     <div class="sec-title">أوردرات اليوم</div>
@@ -472,7 +590,9 @@ select option { background: var(--bg2); color: var(--text); }
   </div>
 </div>
 
-<!-- Modal -->
+<!-- ══════════════════════════════════
+     MODAL
+══════════════════════════════════ -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modalBox">
     <div class="modal-drag"></div>
@@ -482,6 +602,7 @@ select option { background: var(--bg2); color: var(--text); }
   </div>
 </div>
 
+<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script src="./app.js"></script>

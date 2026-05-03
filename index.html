@@ -112,9 +112,12 @@ window.addEventListener('load', registerSW);
 /* Ghost Tap Fix */
 .submit-order-btn, .modal-btn, .action-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
-/* ✅ رفع زر حفظ الأوردر وإبعاده عن الشريط السفلي */
-#submitOrderBtn { position: relative; z-index: 15; }
-#addPage { padding-bottom: calc(var(--nav-h) + 50px); }
+/* ✅ الحل النهائي لزر حفظ الأوردر */
+/* السماح بمرور النقرات عبر الزر العائم */
+.nav-add-btn { pointer-events: none; }
+.nav-add-circle { pointer-events: auto; }
+/* إبعاد زر الحفظ وتأكيد ظهوره */
+#submitOrderBtn { margin-bottom: 60px; position: relative; z-index: 15; }
 </style>
 </head>
 <body>

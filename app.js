@@ -829,6 +829,41 @@ async function addOrder() {
   if (_rs2) _rs2.value = '';
   goPage(0);
 }
+async function editOrder(id) {
+  const o = ordersCache.find(x => x.id === id);
+  if (!o) return;
+
+  editingOrderId  = id;
+  selectedRest    = o.restId;
+  selectedPayment = o.payment;
+
+  document.getElementById('addressInput').value    = o.address  || '';
+  document.getElementById('phoneOrderInput').value = o.phone    || '';
+  document.getElementById('restAmountInput').value = o.total    || '';
+  document.getElementById('deliveryInput').value   = o.delivery || '';
+
+  const _rs = document.getElementById('restSelect');
+  if (_rs) _rs.value = o.restId || '';
+
+  selectPayment(o.payment);
+  goPage(2);
+  showToast('📝 جاري التعديل...');
+}
+
+async function deleteOrder(id) {
+  showModal(
+    'حذف الأوردر',
+    '<p style="color:var(--text2);font-size:14px;">هل تريد حذف هذا الأوردر نهائياً؟</p>',
+    [
+      { label:'🗑 حذف', cls:'danger', action: async () => {
+          await ordersRef.doc(id).delete();
+          closeModal();
+          showToast('🗑 تم الحذف');
+      }},
+      { label:'إلغاء', cls:'cancel', action: closeModal }
+    ]
+  );
+}
 
 // ══════════════════════════════════
 // NAVIGATION

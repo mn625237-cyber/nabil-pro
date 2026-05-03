@@ -111,6 +111,10 @@ window.addEventListener('load', registerSW);
 
 /* Ghost Tap Fix */
 .submit-order-btn, .modal-btn, .action-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+/* ✅ رفع زر حفظ الأوردر وإبعاده عن الشريط السفلي */
+#submitOrderBtn { position: relative; z-index: 15; }
+#addPage { padding-bottom: calc(var(--nav-h) + 50px); }
 </style>
 </head>
 <body>

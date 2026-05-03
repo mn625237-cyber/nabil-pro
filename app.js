@@ -11,17 +11,12 @@ function sanitize(str) {
 // ══════════════════════════════════
 // FIREBASE CONFIG
 // ══════════════════════════════════
-const RAILWAY_URL  = '';
-const API_SECRET   = 'nabilpro2024secret';
-
-// ✅ FIX: المفتاح السري يُرسل فقط لو في مستخدم مسجّل
 async function getAuthHeaders() {
   try {
     const user  = firebase.auth().currentUser;
     const token = user ? await user.getIdToken() : null;
     const headers = { 'Content-Type': 'application/json' };
-    if (token)      headers['Authorization'] = `Bearer ${token}`;
-    if (token)      headers['x-api-key']     = API_SECRET;
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     return headers;
   } catch(e) {
     return { 'Content-Type': 'application/json' };
@@ -756,7 +751,6 @@ function selectPayment(type) {
 
 // ══════════════════════════════════
 // ADD / EDIT ORDER
-// ══════════════════════════════════
 async function addOrder() {
   if (_addOrderInProgress) return;
   _addOrderInProgress = true;
@@ -818,6 +812,8 @@ async function addOrder() {
     }
   } catch(e) {
     showToast('❌ خطأ في الحفظ: ' + (e.message||''));
+  } finally {
+    reset();
   }
 
   // تنظيف الفورم
@@ -831,31 +827,7 @@ async function addOrder() {
   document.getElementById('payVisa').className = 'pay-card';
   const _rs2 = document.getElementById('restSelect');
   if (_rs2) _rs2.value = '';
-  reset();
   goPage(0);
-}
-
-async function editOrder(id) {
-  const o = ordersCache.find(x => x.id === id); if (!o) return;
-  editingOrderId = id; selectedRest = o.restId; selectedPayment = o.payment;
-  document.getElementById('addressInput').value    = o.address  || '';
-  document.getElementById('phoneOrderInput').value = o.phone    || '';
-  document.getElementById('restAmountInput').value = o.total    || '';
-  document.getElementById('deliveryInput').value   = o.delivery || '';
-  const _rs = document.getElementById('restSelect');
-  if (_rs) _rs.value = o.restId || '';
-  selectPayment(o.payment);
-  goPage(2);
-  showToast('📝 جاري التعديل...');
-}
-
-async function deleteOrder(id) {
-  showModal('حذف الأوردر',
-    '<p style="color:var(--text2);font-size:14px;">هل تريد حذف هذا الأوردر نهائياً؟</p>',
-    [{ label:'حذف', cls:'danger', action: async () => {
-      await ordersRef.doc(id).delete();
-      closeModal(); showToast('🗑 تم الحذف');
-    }}, { label:'إلغاء', cls:'cancel', action: closeModal }]);
 }
 
 // ══════════════════════════════════
@@ -1349,11 +1321,7 @@ async function addUser(role) {
       if (btn) { btn.disabled=false; btn.textContent='إنشاء'; }
       showToast('❌ ' + (data.error||'خطأ')); return;
     }
-    await db.collection('users').doc(data.uid).set({
-      uid: data.uid, name, phone: p, email, role, pin,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      createdBy: currentUser.uid
-    });
+    // ✅ البيانات تُحفظ في Firestore من الـ API مباشرة
     allDrivers.push({ uid: data.uid, name, phone: p, email, role });
     renderDriversList(); closeModal();
     showToast('✅ تم إنشاء حساب ' + name);
@@ -1773,54 +1741,65 @@ function showOrdersArchive() {
 }
 
 async function loadArchive(period) {
-  const el = document.getElementById('archiveResults'); if (!el) return;
+  const el = document.getElementById('archiveResults');
+  if (!el) return;
   el.innerHTML = '<div class="empty-state"><div class="empty-text">⏳ جاري التحميل...</div></div>';
-  const now = new Date(); let startDate, endDate;
+  const now = new Date();
+  let startDate, endDate;
   if (period === 'yesterday') {
-    startDate = new Date(now); startDate.setDate(now.getDate()-1); startDate.setHours(0,0,0,0);
-    // ✅ FIX: ينتهي في 23:59:59.999 من يوم أمس
-    endDate   = new Date(now); endDate.setHours(0,0,0,0); endDate.setMilliseconds(-1);
+    startDate = new Date(now);
+    startDate.setDate(now.getDate() - 1);
+    startDate.setHours(0, 0, 0, 0);
+    // ✅ FIX: endDate = نهاية يوم أمس 23:59:59.999
+    endDate = new Date(startDate);
+    endDate.setHours(23, 59, 59, 999);
   } else if (period === 'week') {
-    startDate = new Date(now); startDate.setDate(now.getDate()-7); startDate.setHours(0,0,0,0);
-    endDate   = now;
+    startDate = new Date(now);
+    startDate.setDate(now.getDate() - 7);
+    startDate.setHours(0, 0, 0, 0);
+    endDate = now;
   } else {
     startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    endDate   = now;
+    endDate = now;
   }
+
   try {
     const snap = await db.collection('orders')
-      .where('timestamp','>=', firebase.firestore.Timestamp.fromDate(startDate))
-      .where('timestamp','<=', firebase.firestore.Timestamp.fromDate(endDate))
-      .orderBy('timestamp','desc').limit(100).get();
-    const orders = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(startDate))
+      .where('timestamp', '<=', firebase.firestore.Timestamp.fromDate(endDate))
+      .orderBy('timestamp', 'desc')
+      .limit(100)
+      .get();
+    const orders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
     if (!orders.length) {
       el.innerHTML = '<div class="empty-state"><div class="empty-text">لا أوردرات</div></div>';
       return;
     }
-    const total = orders.reduce((s,o) => s+(o.delivery||0), 0);
-    el.innerHTML =
-      `<div style="text-align:center;padding:8px;background:var(--bg2);
-         border-radius:8px;margin-bottom:10px">
-        <strong>${orders.length} أوردر</strong> — توصيل
-        <strong style="color:var(--green)">ج${total}</strong></div>` +
-      orders.map(o => {
-        const t       = o.timestamp?.toDate?.() ?? new Date();
-        const timeStr = t.toLocaleDateString('ar-EG',{day:'2-digit',month:'2-digit'}) + ' ' +
-                        t.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
-        return `<div class="feed-card ${o.payment==='visa'?'visa':'cash'}"
-                  style="margin-bottom:6px">
-          <div class="feed-pay">${o.payment==='visa'?'💳':'💵'}</div>
+
+    const total = orders.reduce((s, o) => s + (o.delivery || 0), 0);
+    el.innerHTML = `
+      <div style="text-align:center;padding:8px;background:var(--bg2);border-radius:8px;margin-bottom:10px">
+        <strong>${orders.length} أوردر</strong> — توصيل <strong style="color:var(--green)">ج${total}</strong>
+      </div>
+      ${orders.map(o => {
+        const t = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
+        const timeStr = t.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit' }) + ' ' +
+                        t.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        return `<div class="feed-card ${o.payment === 'visa' ? 'visa' : 'cash'}" style="margin-bottom:6px">
+          <div class="feed-pay">${o.payment === 'visa' ? '💳' : '💵'}</div>
           <div class="feed-body">
-            <div class="feed-rest-name">${sanitize(o.restName||'—')}</div>
-            <div class="feed-driver-info">👤 ${sanitize(o.driverName||'—')} •
-              📍 ${sanitize(o.address||'—')}</div>
+            <div class="feed-rest-name">${sanitize(o.restName || '—')}</div>
+            <div class="feed-driver-info">👤 ${sanitize(o.driverName || '—')} • 📍 ${sanitize(o.address || '—')}</div>
             <div class="feed-time-txt">⏰ ${timeStr}</div>
           </div>
-          <div class="feed-amt">ج${o.delivery||0}</div>
+          <div class="feed-amt">ج${o.delivery || 0}</div>
         </div>`;
-      }).join('');
-  } catch(e) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-text">❌ ${e.message}</div></div>`;
+      }).join('')}
+    `;
+  } catch (e) {
+    console.error(e);
+    el.innerHTML = `<div class="empty-state"><div class="empty-text">❌ خطأ في التحميل: ${e.message}</div></div>`;
   }
 }
 
@@ -1848,7 +1827,7 @@ function editDriverFull(uid) {
                   touch-action:manipulation;line-height:1">👁️</button>
        </div></div>
      <div style="margin-bottom:16px">
-       <div class="field-label">🔑 كود جديد <span style="color:var(--text3);font-weight:400">(فاضي = بدون تغيير)</span></div>
+       <div class="field-label">🔑 كود جديد <span style="color:var(--text3);font-weight:400">(اتركه فاضي لو مش هتغيره)</span></div>
        <input class="form-field" type="tel" id="ef_pin" placeholder="6 أرقام"
          maxlength="6" inputmode="numeric"
          oninput="this.value=this.value.replace(/\\D/g,'').slice(0,6)"></div>
@@ -1920,19 +1899,33 @@ function quickRoleToggle(uid) {
 
 function quickDeleteDriver(uid) {
   if (uid === currentUser.uid) { showToast('❌ مش تقدر تحذف حسابك'); return; }
-  const driver = allDrivers.find(d => d.uid === uid); closeModal();
+  const driver = allDrivers.find(d => d.uid === uid);
+  if (!driver) return;
+  closeModal();
   showModal('حذف',
     `<p style="color:var(--text2);font-size:14px;margin-bottom:8px">
-       حذف "<strong>${sanitize(driver?.name||'')}</strong>" من قاعدة البيانات؟</p>
+       حذف "<strong>${sanitize(driver.name||'')}</strong>" من قاعدة البيانات؟</p>
      <p style="color:var(--red);font-size:12px;line-height:1.7">
-       ⚠️ الأوردرات القديمة هتفضل محفوظة.<br>
-       🔐 تذكر حذف الحساب يدوياً من Firebase Auth Console
-       على الرابط: <span style="direction:ltr;display:inline-block">
-       console.firebase.google.com</span></p>`,
+       ⚠️ الأوردرات القديمة هتفضل محفوظة.</p>`,
     [{ label:'🗑 حذف', cls:'danger', action: async () => {
-      await db.collection('users').doc(uid).delete();
-      allDrivers = allDrivers.filter(d => d.uid !== uid);
-      renderDriversList(); closeModal(); closeDriverDetail(); showToast('✅ تم الحذف');
+      try {
+        const res = await fetch('/api/delete-user', {
+          method: 'POST',
+          headers: await getAuthHeaders(),
+          body: JSON.stringify({ uid })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'فشل الحذف من الخادم');
+        }
+        allDrivers = allDrivers.filter(d => d.uid !== uid);
+        renderDriversList();
+        closeModal();
+        closeDriverDetail();
+        showToast('✅ تم حذف المستخدم نهائياً');
+      } catch (e) {
+        showToast('❌ ' + e.message);
+      }
     }}, { label:'إلغاء', cls:'cancel', action: closeModal }]);
 }
 

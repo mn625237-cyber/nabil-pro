@@ -913,7 +913,6 @@ body[data-theme=light] .splash-icon-box {
 }
 .logout-btn:active { transform:scale(0.95); box-shadow:none; }
 
-/* ── TOAST ── */
 .toast {
   position:fixed; bottom:calc(var(--nav-h) + 20px); left:50%;
   transform:translateX(-50%) translateY(16px);
@@ -923,8 +922,14 @@ body[data-theme=light] .splash-icon-box {
   transition:all .3s cubic-bezier(0.34,1.56,0.64,1);
   border:1px solid var(--border2); backdrop-filter:blur(10px);
   max-width:calc(100vw - 40px); overflow:hidden; text-overflow:ellipsis;
+  pointer-events: none;      /* 🔥 */
+  visibility: hidden;        /* 🔥 */
 }
-.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.show {
+  opacity:1; transform:translateX(-50%) translateY(0);
+  pointer-events: auto;      /* 🔥 */
+  visibility: visible;       /* 🔥 */
+}
 
 /* ── EMPTY STATE ── */
 .empty-state { text-align:center; padding:48px 16px; color:var(--text3); }

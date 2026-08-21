@@ -18,43 +18,60 @@ class handler(BaseHTTPRequestHandler):
         init_firebase()
         db = firestore.client()
 
-        # ✅ يسمح للمندوب والمدير — المندوب يُشعر المدير عند إضافة أوردر
+        # يسمح للمندوب والمدير — المندوب يحتاج يُشعر المدير عند إضافة أوردر
         ah = self.headers.get('Authorization', '')
         if not ah.startswith('Bearer '):
             self._respond(403, {'error': 'غير مصرح'}); return
         try:
-            auth.verify_id_token(ah.split('Bearer ')[1])
-        except Exception as e:
-            self._respond(403, {'error': 'token غير صالح: ' + str(e)}); return
+            decoded    = auth.verify_id_token(ah.split('Bearer ')[1])
+            uid_caller = decoded['uid']
+        except Exception:
+            self._respond(403, {'error': 'غير مصرح — تحقق من تسجيل الدخول'}); return
 
-        body        = json.loads(self.rfile.read(int(self.headers.get('Content-Length', 0))))
-        rest_name   = body.get('restName',   '')
-        address     = body.get('address',    '')
-        total       = body.get('total',       0)
-        delivery    = body.get('delivery',    0)
-        payment     = body.get('payment',  'cash')
-        driver_name = body.get('driverName', '')
+        body     = json.loads(self.rfile.read(int(self.headers.get('Content-Length', 0))))
+        order_id = str(body.get('orderId', ''))[:200].strip()
+
+        if not order_id:
+            self._respond(400, {'error': 'orderId مطلوب'}); return
+
+        # ✅ مصدر الحقيقة الوحيد لمحتوى الإشعار هو المستند الفعلي في Firestore — لا نثق بأي حقل من الجهاز
+        order_doc = db.collection('orders').document(order_id).get()
+        if not order_doc.exists:
+            self._respond(404, {'error': 'الأوردر غير موجود'}); return
+
+        od = order_doc.to_dict()
+
+        caller_doc = db.collection('users').document(uid_caller).get()
+        is_manager = caller_doc.exists and caller_doc.to_dict().get('role') == 'manager'
+
+        # المتصل لازم يكون صاحب الأوردر الفعلي، أو مديراً
+        if od.get('driverId') != uid_caller and not is_manager:
+            self._respond(403, {'error': 'غير مصرح بهذا الأوردر'}); return
+
+        rest_name   = str(od.get('restName',   ''))[:150]
+        address     = str(od.get('address',    ''))[:300]
+        driver_name = str(od.get('driverName', ''))[:100]
+        payment     = od.get('payment', 'cash')
+        if payment not in ('cash', 'visa'):
+            payment = 'cash'
+        try:
+            total    = float(od.get('total', 0))
+            delivery = float(od.get('delivery', 0))
+        except (TypeError, ValueError):
+            total, delivery = 0, 0
 
         pay_icon  = '💳' if payment == 'visa' else '💵'
-        title     = f'{pay_icon} {rest_name}'
+        title     = f'{pay_icon} {rest_name}' if rest_name else 'أوردر جديد 🛵'
         body_text = f'📍 {address}\n💰 {total} ج | 🛵 {delivery} ج | 👤 {driver_name}'
 
         try:
-            docs   = db.collection('fcm_tokens').stream()
-            tokens = []
-            for doc in docs:
-                data  = doc.to_dict()
-                token = data.get('token')
-                uid   = data.get('uid')
-                role  = data.get('role', '')
-                if not token or not uid:
-                    continue
-                if role == 'manager':
-                    tokens.append((uid, token))
-                elif not role:
-                    u = db.collection('users').document(uid).get()
-                    if u.exists and u.to_dict().get('role') == 'manager':
-                        tokens.append((uid, token))
+            # ✅ استعلام مباشر بـ role بدل قراءة الكوليكشن كله + قراءات إضافية لكل توكن
+            tokens_stream = (db.collection('fcm_tokens')
+                              .where('role', '==', 'manager')
+                              .limit(200)
+                              .stream())
+            tokens = [(d.id, d.to_dict().get('token'))
+                      for d in tokens_stream if d.to_dict().get('token')]
 
             if not tokens:
                 self._respond(200, {'success': True, 'sent': 0, 'note': 'no managers'}); return
@@ -91,13 +108,14 @@ class handler(BaseHTTPRequestHandler):
                     if not resp.success and 'UNREGISTERED' in str(resp.exception).upper():
                         try:
                             db.collection('fcm_tokens').document(tokens[i][0]).delete()
-                        except:
+                        except Exception:
                             pass
 
             self._respond(200, {'success': True, 'sent': r.success_count, 'failed': r.failure_count})
 
         except Exception as e:
-            self._respond(500, {'error': str(e)})
+            print('notify-managers error:', e)
+            self._respond(500, {'error': 'حدث خطأ أثناء إرسال الإشعار'})
 
     def _cors(self, code=200):
         self.send_response(code)

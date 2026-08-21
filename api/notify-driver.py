@@ -28,16 +28,16 @@ class handler(BaseHTTPRequestHandler):
             user_doc   = db.collection('users').document(uid_caller).get()
             if not user_doc.exists or user_doc.to_dict().get('role') != 'manager':
                 self._respond(403, {'error': 'مديرين فقط'}); return
-        except Exception as e:
-            self._respond(403, {'error': 'غير مصرح: ' + str(e)}); return
+        except Exception:
+            self._respond(403, {'error': 'غير مصرح — تحقق من تسجيل الدخول'}); return
 
         body      = json.loads(self.rfile.read(int(self.headers.get('Content-Length', 0))))
         uid       = body.get('uid',   '').strip()
         title     = body.get('title', '')
         body_text = body.get('body',  '')
 
-        if not uid or not title:
-            self._respond(400, {'error': 'uid و title مطلوبان'}); return
+        if not uid or len(uid) > 128 or not title or len(title) > 100 or len(body_text) > 500:
+            self._respond(400, {'error': 'بيانات الإشعار غير صالحة'}); return
 
         try:
             doc = db.collection('fcm_tokens').document(uid).get()
@@ -75,11 +75,12 @@ class handler(BaseHTTPRequestHandler):
             if 'UNREGISTERED' in err_str.upper():
                 try:
                     db.collection('fcm_tokens').document(uid).delete()
-                except:
+                except Exception:
                     pass
                 self._respond(200, {'success': True, 'note': 'token deleted'})
             else:
-                self._respond(500, {'error': err_str})
+                print('notify-driver error:', err_str)
+                self._respond(500, {'error': 'حدث خطأ أثناء إرسال الإشعار'})
 
     def _cors(self, code=200):
         self.send_response(code)

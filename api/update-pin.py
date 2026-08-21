@@ -28,20 +28,21 @@ class handler(BaseHTTPRequestHandler):
             user_doc   = db.collection('users').document(uid_caller).get()
             if not user_doc.exists or user_doc.to_dict().get('role') != 'manager':
                 self._respond(403, {'error': 'مديرين فقط'}); return
-        except Exception as e:
-            self._respond(403, {'error': 'غير مصرح: ' + str(e)}); return
+        except Exception:
+            self._respond(403, {'error': 'غير مصرح — تحقق من تسجيل الدخول'}); return
 
         body    = json.loads(self.rfile.read(int(self.headers.get('Content-Length', 0))))
         uid     = body.get('uid',  '').strip()
         new_pin = str(body.get('pin', '')).strip()
 
-        if not uid or not re.match(r'^\d{6}$', new_pin):
+        if not uid or len(uid) > 128 or not re.match(r'^\d{6}$', new_pin):
             self._respond(400, {'error': 'uid وpin مطلوبان (6 أرقام)'}); return
 
         try:
             auth.update_user(uid, password=new_pin)
+            # ✅ لا يُخزَّن الـ PIN الجديد في Firestore — Auth هو مصدر الحقيقة الوحيد.
+            # pinUpdatedAt سجل تدقيق (تاريخ فقط) غير حساس، تم الإبقاء عليه.
             db.collection('users').document(uid).update({
-                'pin': new_pin,
                 'pinUpdatedAt': firestore.SERVER_TIMESTAMP
             })
             # إشعار المندوب بتغيير الكود
@@ -68,7 +69,7 @@ class handler(BaseHTTPRequestHandler):
                                     link='https://nabil-pro.vercel.app')
                             )
                         ))
-            except:
+            except Exception:
                 pass
 
             self._respond(200, {'success': True})
@@ -76,7 +77,8 @@ class handler(BaseHTTPRequestHandler):
         except auth.UserNotFoundError:
             self._respond(404, {'error': 'المستخدم مش موجود'})
         except Exception as e:
-            self._respond(500, {'error': str(e)})
+            print('update-pin error:', e)
+            self._respond(500, {'error': 'حدث خطأ أثناء تحديث الكود'})
 
     def _cors(self, code=200):
         self.send_response(code)

@@ -28,8 +28,8 @@ class handler(BaseHTTPRequestHandler):
             user_doc   = db.collection('users').document(uid_caller).get()
             if not user_doc.exists or user_doc.to_dict().get('role') != 'manager':
                 self._respond(403, {'error': 'مديرين فقط'}); return
-        except Exception as e:
-            self._respond(403, {'error': 'غير مصرح: ' + str(e)}); return
+        except Exception:
+            self._respond(403, {'error': 'غير مصرح — تحقق من تسجيل الدخول'}); return
 
         body  = json.loads(self.rfile.read(int(self.headers.get('Content-Length', 0))))
         name  = body.get('name',  '').strip()
@@ -41,8 +41,12 @@ class handler(BaseHTTPRequestHandler):
         # التحقق من البيانات
         if not name or not email or not re.match(r'^\d{6}$', pin):
             self._respond(400, {'error': 'بيانات ناقصة أو PIN غلط'}); return
+        if len(name) > 100:
+            self._respond(400, {'error': 'الاسم طويل جداً'}); return
+        if not re.match(r'^\d{8,15}$', phone):
+            self._respond(400, {'error': 'رقم الهاتف غير صالح'}); return
 
-        # ✅ تحقق أن الـ email ينتهي بـ @nabilpro.app
+        # الـ email لازم ينتهي بـ @nabilpro.app
         if not email.endswith('@nabilpro.app'):
             self._respond(400, {'error': 'الـ email لازم ينتهي بـ @nabilpro.app'}); return
 
@@ -50,17 +54,16 @@ class handler(BaseHTTPRequestHandler):
             self._respond(400, {'error': 'role غير صالح'}); return
 
         try:
-            # إنشاء في Firebase Auth
+            # إنشاء في Firebase Auth — الـ PIN يُخزَّن هنا فقط (مشفّراً داخلياً بواسطة Firebase)
             user = auth.create_user(email=email, password=pin, display_name=name)
 
-            # ✅ حفظ في Firestore مباشرة من الـ API
+            # ✅ لا يُخزَّن الـ PIN في Firestore إطلاقاً — Auth هو مصدر الحقيقة الوحيد
             db.collection('users').document(user.uid).set({
                 'uid':       user.uid,
                 'name':      name,
                 'phone':     phone,
                 'email':     email,
                 'role':      role,
-                'pin':       pin,
                 'createdAt': firestore.SERVER_TIMESTAMP,
                 'createdBy': uid_caller
             })
@@ -70,7 +73,8 @@ class handler(BaseHTTPRequestHandler):
         except auth.EmailAlreadyExistsError:
             self._respond(409, {'error': 'الرقم ده موجود بالفعل'})
         except Exception as e:
-            self._respond(500, {'error': str(e)})
+            print('create-user error:', e)
+            self._respond(500, {'error': 'حدث خطأ أثناء إنشاء الحساب'})
 
     def _cors(self, code=200):
         self.send_response(code)

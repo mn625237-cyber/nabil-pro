@@ -28,20 +28,20 @@ class handler(BaseHTTPRequestHandler):
             user_doc   = db.collection('users').document(uid_caller).get()
             if not user_doc.exists or user_doc.to_dict().get('role') != 'manager':
                 self._respond(403, {'error': 'مديرين فقط'}); return
-        except Exception as e:
-            self._respond(403, {'error': 'غير مصرح: ' + str(e)}); return
+        except Exception:
+            self._respond(403, {'error': 'غير مصرح — تحقق من تسجيل الدخول'}); return
 
         body = json.loads(self.rfile.read(int(self.headers.get('Content-Length', 0))))
         uid  = body.get('uid', '').strip()
 
-        if not uid:
-            self._respond(400, {'error': 'uid مطلوب'}); return
+        if not uid or len(uid) > 128:
+            self._respond(400, {'error': 'uid غير صالح'}); return
 
         # منع حذف النفس
         if uid == uid_caller:
             self._respond(400, {'error': 'لا يمكنك حذف حسابك الخاص'}); return
 
-        errors = []
+        had_error = False
 
         # 1) حذف من Firebase Auth
         try:
@@ -49,22 +49,24 @@ class handler(BaseHTTPRequestHandler):
         except auth.UserNotFoundError:
             pass  # مش موجود في Auth — متابعة
         except Exception as e:
-            errors.append('Auth: ' + str(e))
+            print('delete-user auth error:', e)
+            had_error = True
 
         # 2) حذف من Firestore
         try:
             db.collection('users').document(uid).delete()
         except Exception as e:
-            errors.append('Firestore: ' + str(e))
+            print('delete-user firestore error:', e)
+            had_error = True
 
         # 3) حذف الـ FCM token
         try:
             db.collection('fcm_tokens').document(uid).delete()
-        except Exception as e:
+        except Exception:
             pass  # مش مشكلة لو مش موجود
 
-        if errors:
-            self._respond(500, {'error': ' | '.join(errors)})
+        if had_error:
+            self._respond(500, {'error': 'حدث خطأ أثناء الحذف — راجع سجلات السيرفر'})
         else:
             self._respond(200, {'success': True, 'uid': uid})
 

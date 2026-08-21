@@ -1,7 +1,7 @@
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'nabil-pro-v24';
+const CACHE_NAME = 'nabil-pro-v26';
 const CACHE_FILES = ['/', './index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -19,7 +19,6 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  // Network first for JS/HTML, cache fallback for others
   const url = e.request.url;
   const isAppFile = url.includes('app.js') || url.includes('index.html') || url.includes('style.css');
   if (isAppFile) {
@@ -55,8 +54,8 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(payload => {
-  const title = payload.notification?.title || 'Nabil Pro 🛵';
-  const body  = payload.notification?.body  || 'إشعار جديد';
+  const title = payload.notification?.title || 'Nabil Pro ðŸ›µ';
+  const body  = payload.notification?.body  || 'Ø¥Ø´Ø¹Ø§Ø± Ø¬Ø¯ÙŠØ¯';
   return self.registration.showNotification(title, {
     body,
     icon: 'https://nabil-pro.vercel.app/icon-192.png',
